@@ -50,7 +50,10 @@ export default function ProfilePage() {
 
     if (value) {
       const subscription = await subscribeToPush()
-      if (subscription) await saveSubscription(user.id, subscription)
+      if (subscription) {
+        const result = await saveSubscription(user.id, subscription)
+        console.log('Save result:', result)
+      }
     } else {
       await unsubscribeFromPush()
       await deleteSubscription(user.id)

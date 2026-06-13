@@ -11,8 +11,8 @@ export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange(callback)
 }
 
-// Resolves to 'authenticated', 'needs-login' (session expired), or
-// 'needs-onboarding' (brand new visitor). Starts as 'loading'.
+// Resolves to 'authenticated' or 'unauthenticated' (no session — show login).
+// Starts as 'loading'.
 export function useAuthStatus() {
   const [status, setStatus] = useState('loading')
 
@@ -24,7 +24,7 @@ export function useAuthStatus() {
       const hasLocalUser = Boolean(localStorage.getItem('welcome_user'))
 
       if (!session) {
-        if (!cancelled) setStatus(hasLocalUser ? 'needs-login' : 'needs-onboarding')
+        if (!cancelled) setStatus('unauthenticated')
         return
       }
 
@@ -37,7 +37,7 @@ export function useAuthStatus() {
       if (cancelled) return
 
       if (error || !profile) {
-        setStatus('needs-login')
+        setStatus('unauthenticated')
         return
       }
 

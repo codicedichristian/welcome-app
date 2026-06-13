@@ -17,6 +17,7 @@ import MyEventsPage from './pages/MyEventsPage.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
+import { supabase } from './lib/supabase.js'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -36,9 +37,15 @@ export default function App() {
   useEffect(() => {
     const user = getStoredUser()
     if (!user.id || !user.notifications?.app) return
+    if (Notification.permission !== 'default') return
 
-    subscribeToPush().then((subscription) => {
-      if (subscription) saveSubscription(user.id, subscription)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return
+
+      subscribeToPush().then((subscription) => {
+        if (!subscription) return
+        saveSubscription(user.id, subscription).then((result) => console.log('Save result:', result))
+      })
     })
   }, [])
 

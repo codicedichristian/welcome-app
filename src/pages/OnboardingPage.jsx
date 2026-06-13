@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { TOTAL_STEPS, initialFormData, isStepValid } from '../onboarding/validation.js'
-import { registerUser } from '../lib/api.js'
+import { registerUser, saveSubscription } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
+import { subscribeToPush } from '../lib/push.js'
 import NameStep from '../onboarding/steps/NameStep.jsx'
 import EmailStep from '../onboarding/steps/EmailStep.jsx'
 import PhoneStep from '../onboarding/steps/PhoneStep.jsx'
@@ -51,6 +52,15 @@ export default function OnboardingPage() {
       }
 
       localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(user, authId)))
+
+      if (formData.notifications.app) {
+        const subscription = await subscribeToPush()
+        if (subscription) {
+          const result = await saveSubscription(user.id, subscription)
+          console.log('Save result:', result)
+        }
+      }
+
       navigate('/', { replace: true })
       return
     }
@@ -106,6 +116,12 @@ export default function OnboardingPage() {
       >
         {isLastStep ? (saving ? 'Saving...' : "Let's go") : 'Continue'}
       </button>
+
+      {step === 1 && (
+        <button type="button" onClick={() => navigate('/login')} className="mt-4 text-center text-xs text-zinc-500">
+          Already have an account? Sign in
+        </button>
+      )}
     </div>
   )
 }
