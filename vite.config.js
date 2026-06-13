@@ -12,6 +12,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'logo.svg', 'icon-192.svg', 'icon-512.svg'],
+      workbox: {
+        importScripts: ['push-sw.js'],
+      },
       manifest: {
         name: config.churchName,
         short_name: config.churchName,

@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { TOTAL_STEPS, initialFormData, isStepValid } from '../onboarding/validation.js'
 import { registerUser } from '../lib/api.js'
+import { toStoredUser } from '../lib/user.js'
 import NameStep from '../onboarding/steps/NameStep.jsx'
 import EmailStep from '../onboarding/steps/EmailStep.jsx'
 import PhoneStep from '../onboarding/steps/PhoneStep.jsx'
+import PasswordStep from '../onboarding/steps/PasswordStep.jsx'
 import SourceStep from '../onboarding/steps/SourceStep.jsx'
 import AgeRangeStep from '../onboarding/steps/AgeRangeStep.jsx'
 import InterestsStep from '../onboarding/steps/InterestsStep.jsx'
 import NotificationsStep from '../onboarding/steps/NotificationsStep.jsx'
 
-const STEPS = [NameStep, EmailStep, PhoneStep, SourceStep, AgeRangeStep, InterestsStep, NotificationsStep]
+const STEPS = [NameStep, EmailStep, PhoneStep, PasswordStep, SourceStep, AgeRangeStep, InterestsStep, NotificationsStep]
 
 export default function OnboardingPage() {
   const navigate = useNavigate()
@@ -20,12 +22,6 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState(initialFormData)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    if (localStorage.getItem('welcome_user')) {
-      navigate('/', { replace: true })
-    }
-  }, [navigate])
 
   const update = (patch) => setFormData((prev) => ({ ...prev, ...patch }))
 
@@ -45,21 +41,16 @@ export default function OnboardingPage() {
       setSaving(true)
       setError(null)
 
-      const registeredAt = new Date().toISOString()
-      const { data, error: apiError } = await registerUser(formData)
+      console.log('Starting registration...')
+      const { user, authId, error: registerError } = await registerUser(formData)
 
-      localStorage.setItem(
-        'welcome_user',
-        JSON.stringify({ ...formData, id: data?.id, registeredAt }),
-      )
-
-      if (apiError) {
-        setError('Something went wrong, try again')
+      if (registerError) {
+        setError(registerError.message || 'Something went wrong, try again')
         setSaving(false)
-        setTimeout(() => navigate('/', { replace: true }), 1500)
         return
       }
 
+      localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(user, authId)))
       navigate('/', { replace: true })
       return
     }

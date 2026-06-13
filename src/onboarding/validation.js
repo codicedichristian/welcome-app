@@ -1,10 +1,12 @@
-export const TOTAL_STEPS = 7
+export const TOTAL_STEPS = 8
 
 export const initialFormData = {
   firstName: '',
   lastName: '',
   email: '',
   phone: '',
+  password: '',
+  confirmPassword: '',
   source: '',
   ageRange: '',
   interests: [],
@@ -12,6 +14,7 @@ export const initialFormData = {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MIN_PASSWORD_LENGTH = 8
 
 export function isStepValid(step, data) {
   switch (step) {
@@ -22,12 +25,14 @@ export function isStepValid(step, data) {
     case 3:
       return data.phone.trim() !== ''
     case 4:
-      return data.source !== ''
+      return data.password.length >= MIN_PASSWORD_LENGTH && data.password === data.confirmPassword
     case 5:
-      return data.ageRange !== ''
+      return data.source !== ''
     case 6:
-      return data.interests.length > 0
+      return data.ageRange !== ''
     case 7:
+      return data.interests.length > 0
+    case 8:
       return true
     default:
       return false

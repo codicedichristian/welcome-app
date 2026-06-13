@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell } from 'lucide-react'
 import { INTERESTS_OPTIONS } from '../onboarding/options.js'
+import { supabase } from '../lib/supabase.js'
+import { saveSubscription, deleteSubscription } from '../lib/api.js'
+import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
 
 function getStoredUser() {
   try {
@@ -38,14 +41,26 @@ export default function ProfilePage() {
     persist({ ...user, interests: updated })
   }
 
-  const toggleNotification = (key) => {
-    const notifications = { ...user.notifications, [key]: !user.notifications?.[key] }
+  const toggleNotification = async (key) => {
+    const value = !user.notifications?.[key]
+    const notifications = { ...user.notifications, [key]: value }
     persist({ ...user, notifications })
+
+    if (key !== 'app') return
+
+    if (value) {
+      const subscription = await subscribeToPush()
+      if (subscription) await saveSubscription(user.id, subscription)
+    } else {
+      await unsubscribeFromPush()
+      await deleteSubscription(user.id)
+    }
   }
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
     localStorage.removeItem('welcome_user')
-    navigate('/onboarding', { replace: true })
+    navigate('/login', { replace: true })
   }
 
   const infoRows = [
