@@ -6,6 +6,9 @@ import config from './src/config.js'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     tailwindcss(),

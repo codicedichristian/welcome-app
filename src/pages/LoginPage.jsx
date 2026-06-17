@@ -6,6 +6,16 @@ import { getUserByAuthId } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
 import PasswordField from '../onboarding/components/PasswordField.jsx'
 import TextField from '../onboarding/components/TextField.jsx'
+import config from '../config.js'
+
+const buildTime = new Date(__BUILD_TIME__)
+const buildLabel =
+  'v' +
+  config.appVersion +
+  ' · Built ' +
+  buildTime.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
+  ' at ' +
+  buildTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -57,6 +67,7 @@ export default function LoginPage() {
       <div className="flex flex-col items-center gap-2">
         <Cross size={40} className="text-primary" />
         <p className="text-lg text-primary">Welcome</p>
+        <p style={{ fontSize: '11px' }} className="text-zinc-600">{buildLabel}</p>
       </div>
 
       {showReset ? (

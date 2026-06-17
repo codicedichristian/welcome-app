@@ -1,6 +1,15 @@
 import { Cross } from 'lucide-react'
 import config from '../config.js'
 
+const buildTime = new Date(__BUILD_TIME__)
+const buildLabel =
+  'v' +
+  config.appVersion +
+  ' · Built ' +
+  buildTime.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) +
+  ' at ' +
+  buildTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
 export default function SplashScreen({ visible }) {
   return (
     <div
@@ -10,6 +19,7 @@ export default function SplashScreen({ visible }) {
     >
       <Cross size={48} className="text-primary" />
       <p className="text-[20px] text-primary">{config.churchName}</p>
+      <p style={{ fontSize: '11px' }} className="text-zinc-600">{buildLabel}</p>
     </div>
   )
 }

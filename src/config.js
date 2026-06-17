@@ -2,6 +2,7 @@
 // Update the values below to re-brand the app — no other files need to change.
 const config = {
   churchName: 'Welcome',
+  appVersion: '1.0.0',
   logo: '/logo.svg',
 
   primaryColor: '#ffffff',
