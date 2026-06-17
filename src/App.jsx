@@ -2,7 +2,9 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import SplashScreen from './components/SplashScreen.jsx'
 import AppLayout from './layouts/AppLayout.jsx'
+import AdminLayout from './layouts/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
+import AdminRoute from './components/AdminRoute.jsx'
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated.jsx'
 import OnboardingPage from './pages/OnboardingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -14,6 +16,11 @@ import NewsDetailPage from './pages/NewsDetailPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import EditInfoPage from './pages/EditInfoPage.jsx'
 import MyEventsPage from './pages/MyEventsPage.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import AdminEvents from './pages/admin/AdminEvents.jsx'
+import AdminNews from './pages/admin/AdminNews.jsx'
+import AdminMidweek from './pages/admin/AdminMidweek.jsx'
+import AdminMembers from './pages/admin/AdminMembers.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
@@ -75,6 +82,16 @@ export default function App() {
               }
             />
             <Route path="my-events" element={<MyEventsPage />} />
+          </Route>
+
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/events" element={<AdminEvents />} />
+              <Route path="admin/news" element={<AdminNews />} />
+              <Route path="admin/midweek" element={<AdminMidweek />} />
+              <Route path="admin/members" element={<AdminMembers />} />
+            </Route>
           </Route>
         </Route>
       </Routes>

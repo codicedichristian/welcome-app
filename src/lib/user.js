@@ -18,6 +18,7 @@ export function toStoredUser(profile, authId) {
     ageRange: profile.age_range,
     interests: profile.interests,
     notifications: profile.notifications,
+    role: profile.role,
     registeredAt: profile.created_at,
   }
 }

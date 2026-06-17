@@ -208,3 +208,191 @@ export async function getNews() {
     return { data: null, error }
   }
 }
+
+// ADMIN: EVENTS
+
+export async function adminGetEvents() {
+  try {
+    const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminCreateEvent(eventData) {
+  try {
+    const { data, error } = await supabase.from('events').insert(eventData).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminUpdateEvent(id, eventData) {
+  try {
+    const { data, error } = await supabase.from('events').update(eventData).eq('id', id).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteEvent(id) {
+  try {
+    const { error } = await supabase.from('events').delete().eq('id', id)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+// ADMIN: NEWS
+
+export async function adminGetNews() {
+  try {
+    const { data, error } = await supabase.from('news').select('*').order('published_at', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminCreateNews(newsData) {
+  try {
+    const { data, error } = await supabase.from('news').insert(newsData).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminUpdateNews(id, newsData) {
+  try {
+    const { data, error } = await supabase.from('news').update(newsData).eq('id', id).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteNews(id) {
+  try {
+    const { error } = await supabase.from('news').delete().eq('id', id)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+// ADMIN: MIDWEEK GROUPS
+
+export async function adminGetMidweekGroups() {
+  try {
+    const { data, error } = await supabase
+      .from('midweek_groups')
+      .select('*, midweek_rsvps(count)')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminCreateMidweekGroup(groupData) {
+  try {
+    const { data, error } = await supabase.from('midweek_groups').insert(groupData).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminUpdateMidweekGroup(id, groupData) {
+  try {
+    const { data, error } = await supabase.from('midweek_groups').update(groupData).eq('id', id).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteMidweekGroup(id) {
+  try {
+    const { error } = await supabase.from('midweek_groups').delete().eq('id', id)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+// ADMIN: MEMBERS & DASHBOARD
+
+export async function adminGetMembers() {
+  try {
+    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminGetStats() {
+  try {
+    const [
+      { count: totalMembers, error: membersError },
+      { data: events, error: eventsError },
+      { count: totalNews, error: newsError },
+      { count: activeMidweekGroups, error: midweekError },
+      { data: recentMembers, error: recentError },
+    ] = await Promise.all([
+      supabase.from('users').select('*', { count: 'exact', head: true }),
+      supabase.from('events').select('*'),
+      supabase.from('news').select('*', { count: 'exact', head: true }),
+      supabase.from('midweek_groups').select('*', { count: 'exact', head: true }).eq('active', true),
+      supabase.from('users').select('first_name, last_name, email, created_at').order('created_at', { ascending: false }).limit(5),
+    ])
+
+    const error = membersError || eventsError || newsError || midweekError || recentError
+    if (error) throw error
+
+    return {
+      data: {
+        totalMembers: totalMembers ?? 0,
+        events: events ?? [],
+        totalNews: totalNews ?? 0,
+        activeMidweekGroups: activeMidweekGroups ?? 0,
+        recentMembers: recentMembers ?? [],
+      },
+      error: null,
+    }
+  } catch (error) {
+    return { data: null, error }
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell } from 'lucide-react'
+import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck } from 'lucide-react'
 import { INTERESTS_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription } from '../lib/api.js'
@@ -81,6 +81,17 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 pt-6 pb-8">
+      {user.role === 'admin' && (
+        <button
+          type="button"
+          onClick={() => navigate('/admin')}
+          className="mb-4 flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3.5 text-left"
+        >
+          <ShieldCheck size={18} className="shrink-0 text-accent-blue" />
+          <span className="flex-1 text-sm font-medium text-primary">Admin Panel</span>
+        </button>
+      )}
+
       <div className="flex flex-col items-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-primary bg-surface text-xl font-medium text-primary">
           {initials}

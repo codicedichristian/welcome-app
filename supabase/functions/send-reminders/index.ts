@@ -1,12 +1,13 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import webpush from 'npm:web-push@3'
 
-const RECURRING_WEEKDAY: Record<string, number> = {
-  weekly_sunday: 0,
-  weekly_monday: 1,
-  weekly_wednesday: 3,
-  biweekly_sunday: 0,
-}
+const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+
+webpush.setVapidDetails(
+  Deno.env.get('VAPID_EMAIL')!,
+  Deno.env.get('VAPID_PUBLIC_KEY')!,
+  Deno.env.get('VAPID_PRIVATE_KEY')!,
+)
 
 // ISO week number, used to determine "even" weeks for biweekly events.
 function getISOWeek(date: Date) {
@@ -21,95 +22,102 @@ function isEvenWeek(date: Date) {
   return getISOWeek(date) % 2 === 0
 }
 
-interface EventRow {
-  id: string
-  title: string
-  location: string | null
-  event_date: string | null
-  start_time: string
-  recurring: string | null
-}
-
-// Returns the Date this event starts on today, or null if it doesn't occur today.
-function getTodaysOccurrence(event: EventRow, now: Date): Date | null {
-  const weekday = event.recurring ? RECURRING_WEEKDAY[event.recurring] : undefined
-
-  if (weekday !== undefined) {
-    if (now.getDay() !== weekday) return null
-    if (event.recurring === 'biweekly_sunday' && !isEvenWeek(now)) return null
-  } else if (event.event_date) {
-    const eventDate = new Date(`${event.event_date}T00:00:00`)
-    if (eventDate.toDateString() !== now.toDateString()) return null
-  } else {
-    return null
-  }
-
-  const [hours, minutes] = event.start_time.split(':').map(Number)
-  const occurrence = new Date(now)
-  occurrence.setHours(hours, minutes, 0, 0)
-  return occurrence
-}
-
 Deno.serve(async (_req) => {
-  webpush.setVapidDetails(
-    Deno.env.get('VAPID_EMAIL')!,
-    Deno.env.get('VAPID_PUBLIC_KEY')!,
-    Deno.env.get('VAPID_PRIVATE_KEY')!,
-  )
+  console.log('send-reminders started at', new Date().toISOString())
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
-
+  // Get current time and time + 1 hour
   const now = new Date()
-  const windowEnd = new Date(now.getTime() + 60 * 60 * 1000)
+  const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
+  const nowTime = now.toTimeString().slice(0, 5) // "HH:MM"
+  const laterTime = oneHourLater.toTimeString().slice(0, 5)
+  const today = now.toISOString().slice(0, 10) // "YYYY-MM-DD"
+  const dayOfWeek = now.getDay() // 0=Sun, 1=Mon, 3=Wed
 
-  const { data: events, error: eventsError } = await supabase
-    .from('events')
-    .select('id, title, location, event_date, start_time, recurring')
+  console.log('Looking for events between', nowTime, 'and', laterTime)
+
+  // Fetch all events
+  const { data: events, error: eventsError } = await supabase.from('events').select('*')
 
   if (eventsError) {
-    return new Response(JSON.stringify({ error: eventsError.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    console.error('Error fetching events:', eventsError)
+    return new Response(JSON.stringify({ error: eventsError.message }), { status: 500 })
   }
 
-  const upcoming = (events ?? []).filter((event: EventRow) => {
-    const occurrence = getTodaysOccurrence(event, now)
-    return occurrence !== null && occurrence >= now && occurrence <= windowEnd
+  console.log('Total events found:', events.length)
+
+  // Filter events happening in next hour
+  const upcomingEvents = events.filter((event) => {
+    const eventTime = event.start_time?.slice(0, 5)
+    if (!eventTime) return false
+
+    // Check if time is in range
+    const inTimeRange = eventTime >= nowTime && eventTime <= laterTime
+    if (!inTimeRange) return false
+
+    // Check recurrence
+    if (event.recurring === 'weekly_sunday') return dayOfWeek === 0
+    if (event.recurring === 'weekly_monday') return dayOfWeek === 1
+    if (event.recurring === 'weekly_wednesday') return dayOfWeek === 3
+    if (event.recurring === 'biweekly_sunday') return dayOfWeek === 0 && isEvenWeek(now)
+    if (!event.recurring) return event.event_date === today
+
+    return false
   })
 
+  console.log('Upcoming events in next hour:', upcomingEvents.length)
+
+  // Also include test events (event_date = today, type = 'special') for manual testing
+  const testEvents = events.filter((event) => event.event_date === today && event.type === 'special')
+  console.log('Test events today:', testEvents.length)
+
+  const eventsToNotify = [...upcomingEvents, ...testEvents].filter(
+    (event, index, all) => all.findIndex((other) => other.id === event.id) === index,
+  )
+  console.log('Events to notify:', eventsToNotify.map((event) => event.title))
+
+  // Get all push subscriptions
+  const { data: subscriptions, error: subError } = await supabase
+    .from('push_subscriptions')
+    .select('*, users(id, first_name)')
+
+  if (subError) {
+    console.error('Error fetching subscriptions:', subError)
+    return new Response(JSON.stringify({ error: subError.message }), { status: 500 })
+  }
+
+  console.log('Total push subscriptions:', subscriptions.length)
+
   let sent = 0
+  let failed = 0
 
-  for (const event of upcoming) {
-    const { data: rsvps } = await supabase.from('event_rsvps').select('user_id').eq('event_id', event.id)
-    if (!rsvps?.length) continue
-
-    const userIds = rsvps.map((rsvp) => rsvp.user_id)
-
-    const { data: subscriptions } = await supabase
-      .from('push_subscriptions')
-      .select('user_id, subscription')
-      .in('user_id', userIds)
-
-    if (!subscriptions?.length) continue
-
-    const payload = JSON.stringify({
-      title: event.title,
-      body: `Starting in 1 hour at ${event.location}`,
-      data: { url: '/events' },
-    })
-
-    for (const { user_id, subscription } of subscriptions) {
+  for (const event of eventsToNotify) {
+    for (const sub of subscriptions) {
       try {
-        await webpush.sendNotification(subscription, payload)
+        const payload = JSON.stringify({
+          title: event.title,
+          body: `Starting at ${event.start_time?.slice(0, 5)} · ${event.location}`,
+          data: { url: '/events' },
+        })
+
+        await webpush.sendNotification(sub.subscription, payload)
         sent++
-      } catch (error) {
-        if (error.statusCode === 404 || error.statusCode === 410) {
-          await supabase.from('push_subscriptions').delete().eq('user_id', user_id)
+        console.log('Notification sent to user:', sub.users?.first_name, 'for event:', event.title)
+      } catch (err) {
+        failed++
+        console.error('Failed to send to user:', sub.users?.first_name, err.message)
+
+        // Remove invalid subscription
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          await supabase.from('push_subscriptions').delete().eq('id', sub.id)
+          console.log('Removed invalid subscription:', sub.id)
         }
       }
     }
   }
 
-  return new Response(JSON.stringify({ sent }), { headers: { 'Content-Type': 'application/json' } })
+  console.log('Done. Sent:', sent, 'Failed:', failed)
+
+  return new Response(JSON.stringify({ sent, failed, events: eventsToNotify.length }), {
+    headers: { 'Content-Type': 'application/json' },
+  })
 })

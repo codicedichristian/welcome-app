@@ -76,6 +76,9 @@ create table news (
 alter table users add column if not exists auth_id uuid references auth.users(id) on delete cascade;
 create unique index if not exists users_auth_id_idx on users(auth_id);
 
+-- Admin role
+alter table users add column if not exists role text default 'member';
+
 -- Push subscriptions
 create table push_subscriptions (
   id uuid default gen_random_uuid() primary key,
