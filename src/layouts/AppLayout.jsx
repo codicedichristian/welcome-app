@@ -6,7 +6,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-dvh bg-bg pt-[env(safe-area-inset-top)] text-primary">
-      <main style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom))' }}>
+      <main style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom))' }}>
         <div key={location.key} className="animate-fade-in">
           <Outlet />
         </div>

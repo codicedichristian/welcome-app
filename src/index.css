@@ -27,6 +27,7 @@ html,
 body,
 #root {
   height: 100%;
+  background: #0f0f0f;
 }
 
 body {
@@ -36,6 +37,7 @@ body {
   color: var(--color-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Prevent iOS auto-zoom on input focus */

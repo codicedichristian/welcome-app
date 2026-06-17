@@ -13,7 +13,8 @@ const buildLabel =
 export default function SplashScreen({ visible }) {
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-bg transition-opacity duration-500 ease-out ${
+      style={{ zIndex: 9999 }}
+      className={`fixed inset-0 flex flex-col items-center justify-center gap-4 bg-bg transition-opacity duration-500 ease-out ${
         visible ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
     >

@@ -16,10 +16,11 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        paddingBottom: 'env(safe-area-inset-bottom)',
         background: '#0f0f0f',
         borderTop: '0.5px solid #1e1e1e',
-        zIndex: 100,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingTop: '8px',
+        zIndex: 50,
       }}
     >
       <ul className="flex h-[64px] items-stretch justify-around">
