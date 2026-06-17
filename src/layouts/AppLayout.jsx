@@ -5,6 +5,9 @@ import { getStoredUser } from '../lib/user.js'
 import { useSwipeGesture } from '../hooks/useSwipeGesture.js'
 import LeftSidebar from '../components/LeftSidebar.jsx'
 import RightPanel from '../components/RightPanel.jsx'
+import FloatingNav from '../components/FloatingNav.jsx'
+
+const MAIN_ROUTES = ['/', '/events', '/news']
 
 export default function AppLayout() {
   const location = useLocation()
@@ -18,6 +21,8 @@ export default function AppLayout() {
   const openRight = useCallback(() => setIsRightOpen(true), [])
 
   useSwipeGesture({ onSwipeRight: openLeft, onSwipeLeft: openRight })
+
+  const showNav = MAIN_ROUTES.includes(location.pathname)
 
   return (
     <div className="min-h-dvh bg-bg text-primary">
@@ -38,11 +43,13 @@ export default function AppLayout() {
         </button>
       </header>
 
-      <main>
+      <main style={{ paddingBottom: showNav ? 'calc(90px + env(safe-area-inset-bottom))' : undefined }}>
         <div key={location.key} className="animate-fade-in">
           <Outlet />
         </div>
       </main>
+
+      {showNav && <FloatingNav />}
 
       <LeftSidebar isOpen={isLeftOpen} onClose={() => setIsLeftOpen(false)} />
       <RightPanel isOpen={isRightOpen} onClose={() => setIsRightOpen(false)} />
