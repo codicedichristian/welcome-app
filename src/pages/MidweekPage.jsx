@@ -108,8 +108,8 @@ export default function MidweekPage() {
     <div className="min-h-dvh bg-bg px-4 pt-6 pb-8">
       <BackRow label="Events" />
 
-      <h1 className="mt-4 text-[15px] font-medium text-primary">Find your group</h1>
-      <p className="mt-1 text-[10px] text-zinc-500">Wed · {midweekEvent.time}</p>
+      <h1 className="mt-4 text-[20px] font-medium text-primary">Find your group</h1>
+      <p className="mt-1 text-[12px] text-zinc-500">Wed · {midweekEvent.time}</p>
 
       {loading ? (
         <Spinner />
@@ -134,7 +134,7 @@ export default function MidweekPage() {
             </MapContainer>
           </div>
 
-          {!selectedGroup && <p className="mt-3 text-[10px] text-zinc-500">Tap a pin to see the group details</p>}
+          {!selectedGroup && <p className="mt-3 text-[12px] text-zinc-500">Tap a pin to see the group details</p>}
 
           {selectedGroup && (
             <div ref={popupRef} className="mt-3 rounded-[14px] border border-border bg-surface p-4">
@@ -143,20 +143,20 @@ export default function MidweekPage() {
                   {selectedGroup.initials}
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] text-primary">{selectedGroup.host}</p>
-                  <p className="text-[10px] text-zinc-500">{selectedGroup.zone}</p>
+                  <p className="text-[14px] text-primary">{selectedGroup.host}</p>
+                  <p className="text-[12px] text-zinc-500">{selectedGroup.zone}</p>
                 </div>
-                <div className="rounded-full bg-accent-blue px-2.5 py-1 text-[9px] font-medium text-bg">
+                <div className="rounded-full bg-accent-blue px-2.5 py-1 text-[11px] font-medium text-bg">
                   {selectedGroup.confirmed ?? 0} confirmed
                 </div>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <div className="flex items-center gap-2 text-[13px] text-zinc-400">
                   <MapPin size={14} className="text-accent-blue" />
                   <span>{selectedGroup.address}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <div className="flex items-center gap-2 text-[13px] text-zinc-400">
                   <Clock size={14} className="text-accent-blue" />
                   <span>{midweekEvent.time}</span>
                 </div>
@@ -167,13 +167,13 @@ export default function MidweekPage() {
                   {(selectedGroup.confirmedPeople ?? []).map((initial, index) => (
                     <span
                       key={index}
-                      className="-ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-bg bg-surface text-[8px] text-primary first:ml-0"
+                      className="-ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-bg bg-surface text-[9px] text-primary first:ml-0"
                     >
                       {initial}
                     </span>
                   ))}
                 </div>
-                <span className="text-[10px] text-zinc-500">{selectedGroup.confirmed ?? 0} people going</span>
+                <span className="text-[12px] text-zinc-500">{selectedGroup.confirmed ?? 0} people going</span>
               </div>
 
               <button

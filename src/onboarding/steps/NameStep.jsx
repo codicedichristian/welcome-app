@@ -3,7 +3,7 @@ import TextField from '../components/TextField.jsx'
 export default function NameStep({ formData, update }) {
   return (
     <div>
-      <h1 className="mb-6 text-lg text-primary">What's your name?</h1>
+      <h1 className="mb-6 text-[20px] text-primary">What's your name?</h1>
       <div className="flex flex-col gap-3">
         <TextField
           type="text"

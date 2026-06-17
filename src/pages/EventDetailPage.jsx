@@ -13,7 +13,7 @@ const ICONS = { Cross, Zap, Home, HandHeart, Star }
 
 function MetaRow({ icon: Icon, accentClass, text }) {
   return (
-    <div className="flex items-center gap-3 text-xs text-zinc-400">
+    <div className="flex items-center gap-3 text-[13px] text-zinc-400">
       <Icon size={16} className={accentClass} />
       <span>{text}</span>
     </div>
@@ -33,7 +33,7 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <div className="px-4 pt-6">
-        <p className="text-sm text-zinc-500">Event not found.</p>
+        <p className="text-[13px] text-zinc-500">Event not found.</p>
       </div>
     )
   }
@@ -60,19 +60,19 @@ export default function EventDetailPage() {
           <Icon size={36} className={colors.accent} />
         </div>
 
-        <div className={`absolute bottom-3 left-3 rounded-full px-3 py-1 text-[10px] font-medium text-bg ${colors.badge}`}>
+        <div className={`absolute bottom-3 left-3 rounded-full px-3 py-1 text-[11px] font-medium text-bg ${colors.badge}`}>
           {event.typeLabel}
         </div>
 
         <div className="absolute right-3 top-3 flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-bg leading-none">
           <span className="text-sm font-bold leading-none text-primary">{event.day}</span>
-          <span className="mt-0.5 text-[9px] uppercase leading-none text-zinc-500">{event.month}</span>
+          <span className="mt-0.5 text-[11px] uppercase leading-none text-zinc-500">{event.month}</span>
         </div>
       </div>
 
       <div className="mt-4">
-        <h1 className="text-[16px] font-bold text-primary">{event.name}</h1>
-        <p className="mt-1 text-[10px] text-zinc-500">{event.subtitle}</p>
+        <h1 className="text-[20px] font-bold text-primary">{event.name}</h1>
+        <p className="mt-1 text-[12px] text-zinc-500">{event.subtitle}</p>
       </div>
 
       <div className="mt-4 flex flex-col gap-3">
@@ -82,7 +82,7 @@ export default function EventDetailPage() {
         <MetaRow icon={Users} accentClass={colors.accent} text={event.audience} />
       </div>
 
-      <p className="mt-4 text-[10px] leading-[1.5] text-zinc-500">{event.description}</p>
+      <p className="mt-4 text-[13px] leading-[1.6] text-zinc-500">{event.description}</p>
 
       <div className="mt-6">
         {event.type === 'midweek' ? (
@@ -93,8 +93,8 @@ export default function EventDetailPage() {
           >
             <Map size={20} />
             <div>
-              <p className="text-sm font-medium">Find your group</p>
-              <p className="text-xs">See all locations on the map</p>
+              <p className="text-[14px] font-medium">Find your group</p>
+              <p className="text-[12px]">See all locations on the map</p>
             </div>
           </button>
         ) : (

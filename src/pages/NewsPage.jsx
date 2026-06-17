@@ -37,8 +37,8 @@ export default function NewsPage() {
 
   return (
     <div className="px-4 pt-6 pb-8">
-      <h1 className="text-[15px] font-medium text-primary">News</h1>
-      <p className="mt-1 text-[10px] text-zinc-500">From the church</p>
+      <h1 className="text-[20px] font-medium text-primary">News</h1>
+      <p className="mt-1 text-[12px] text-zinc-500">From the church</p>
 
       {loading ? (
         <Spinner />
@@ -47,7 +47,7 @@ export default function NewsPage() {
       ) : news.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">
           <Megaphone size={32} className="text-zinc-600" />
-          <p className="mt-3 text-sm text-primary">No announcements yet</p>
+          <p className="mt-3 text-[14px] text-primary">No announcements yet</p>
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-3">
@@ -60,15 +60,15 @@ export default function NewsPage() {
             >
               <div className="flex items-center justify-between">
                 <span
-                  className="rounded-full px-2.5 py-1 text-[9px] font-medium text-bg"
+                  className="rounded-full px-2.5 py-1 text-[11px] font-medium text-bg"
                   style={{ backgroundColor: item.color }}
                 >
                   {item.category}
                 </span>
-                <span className="text-[10px] text-zinc-500">{formatShortDate(item.published_at)}</span>
+                <span className="text-[11px] text-zinc-500">{formatShortDate(item.published_at)}</span>
               </div>
-              <p className="mt-1.5 text-[13px] font-medium text-primary">{item.title}</p>
-              <p className="mt-1 line-clamp-3 text-[10px] leading-[1.5] text-zinc-500">{item.body}</p>
+              <p className="mt-1.5 text-[14px] font-medium text-primary">{item.title}</p>
+              <p className="mt-1 line-clamp-3 text-[12px] leading-[1.5] text-zinc-500">{item.body}</p>
             </button>
           ))}
         </div>

@@ -7,7 +7,7 @@ export default function BackRow({ label }) {
   return (
     <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-1">
       <ArrowLeft size={16} className="text-[#666666]" />
-      <span className="text-[10px] text-[#444444]">{label}</span>
+      <span className="text-[12px] text-[#444444]">{label}</span>
     </button>
   )
 }

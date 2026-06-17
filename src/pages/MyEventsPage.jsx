@@ -82,18 +82,16 @@ export default function MyEventsPage() {
     <div className="min-h-dvh bg-bg px-4 pt-6 pb-8">
       <BackRow label="Home" />
 
-      <h1 className="mt-4 text-[15px] font-medium text-primary">My Events</h1>
-      <p className="mt-1 text-[10px] text-zinc-500">Events you're going to</p>
+      <h1 className="mt-4 text-[20px] font-medium text-primary">My Events</h1>
+      <p className="mt-1 text-[12px] text-zinc-500">Events you're going to</p>
 
       {loading ? (
         <Spinner />
       ) : myEvents.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">
           <CalendarX size={32} className="text-zinc-600" />
-          <p className="mt-3 text-sm text-primary">No events yet</p>
-          <p className="mt-1 text-[10px] text-zinc-500">
-            Tap "I'll be there" on any event to save it here
-          </p>
+          <p className="mt-3 text-[14px] text-primary">No events yet</p>
+          <p className="mt-1 text-[12px] text-zinc-500">Tap "I'll be there" on any event to save it here</p>
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-2">

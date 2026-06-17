@@ -6,8 +6,8 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-dvh bg-bg pt-[env(safe-area-inset-top)] text-primary">
-      <main className="pb-[calc(5rem+env(safe-area-inset-bottom))]">
-        <div key={location.pathname} className="animate-fade-in">
+      <main className="pb-[calc(var(--nav-height)+env(safe-area-inset-bottom))]">
+        <div key={location.key} className="animate-fade-in">
           <Outlet />
         </div>
       </main>

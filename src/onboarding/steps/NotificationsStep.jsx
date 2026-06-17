@@ -7,7 +7,7 @@ export default function NotificationsStep({ formData, update }) {
 
   return (
     <div>
-      <h1 className="mb-6 text-lg text-primary">Stay in the loop</h1>
+      <h1 className="mb-6 text-[20px] text-primary">Stay in the loop</h1>
       <div className="flex flex-col gap-3">
         <Toggle
           label="Email"
@@ -28,8 +28,8 @@ export default function NotificationsStep({ formData, update }) {
 
       <div className="mt-6 rounded-xl border border-border bg-surface p-5 text-center">
         <Heart className="mx-auto mb-2 text-accent-green" size={28} fill="currentColor" />
-        <p className="text-base font-medium text-primary">You're part of the family!</p>
-        <p className="text-sm text-zinc-500">Welcome home</p>
+        <p className="text-[14px] font-medium text-primary">You're part of the family!</p>
+        <p className="text-[13px] text-zinc-500">Welcome home</p>
       </div>
     </div>
   )

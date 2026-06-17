@@ -57,8 +57,8 @@ export default function HomePage() {
             <Cross size={18} className="text-primary" />
           </div>
           <div>
-            <p className="text-[13px] text-primary">Welcome</p>
-            <p className="text-[10px] text-zinc-500">Welcome home, {user.firstName}</p>
+            <p className="text-[14px] text-primary">Welcome</p>
+            <p className="text-[11px] text-zinc-500">Welcome home, {user.firstName}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export default function HomePage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-primary">
               <CalendarCheck size={16} />
             </span>
-            <span className="text-[10px] text-primary">My Events</span>
+            <span className="text-[11px] text-primary">My Events</span>
           </button>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-xs font-medium text-primary">
             {initials}
@@ -88,14 +88,14 @@ export default function HomePage() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] text-zinc-500">Next event</p>
+                  <p className="text-[11px] text-zinc-500">Next event</p>
                   <h2 className="mt-1 text-lg font-bold text-bg">{nextEvent.name}</h2>
                   <div className="mt-3 flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2 text-xs text-zinc-600">
+                    <div className="flex items-center gap-2 text-[12px] text-zinc-600">
                       <Clock size={14} />
                       <span>{nextEvent.time}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-zinc-600">
+                    <div className="flex items-center gap-2 text-[12px] text-zinc-600">
                       <MapPin size={14} />
                       <span>{nextEvent.location}</span>
                     </div>
@@ -116,8 +116,8 @@ export default function HomePage() {
 
           <section className="mt-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs text-primary">Upcoming events</h3>
-              <button type="button" onClick={() => navigate('/events')} className="text-xs text-zinc-500">
+              <h3 className="text-[12px] text-primary">Upcoming events</h3>
+              <button type="button" onClick={() => navigate('/events')} className="text-[12px] text-zinc-500">
                 See all
               </button>
             </div>
@@ -132,14 +132,14 @@ export default function HomePage() {
 
       <section className="mt-6 pb-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs text-primary">Announcements</h3>
-          <button type="button" onClick={() => navigate('/news')} className="text-xs text-zinc-500">
+          <h3 className="text-[12px] text-primary">Announcements</h3>
+          <button type="button" onClick={() => navigate('/news')} className="text-[12px] text-zinc-500">
             See all
           </button>
         </div>
         <div className="mt-3 rounded-xl border border-border bg-surface p-4">
-          <p className="text-[11px] text-primary">{announcement.title}</p>
-          <p className="mt-1 text-[10px] text-zinc-500">{announcement.body}</p>
+          <p className="text-[14px] text-primary">{announcement.title}</p>
+          <p className="mt-1 text-[12px] text-zinc-500">{announcement.body}</p>
         </div>
       </section>
     </div>

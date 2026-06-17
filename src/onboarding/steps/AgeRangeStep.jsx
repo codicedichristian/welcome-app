@@ -4,7 +4,7 @@ import { AGE_RANGE_OPTIONS } from '../options.js'
 export default function AgeRangeStep({ formData, update }) {
   return (
     <div>
-      <h1 className="mb-6 text-lg text-primary">What's your age range?</h1>
+      <h1 className="mb-6 text-[20px] text-primary">What's your age range?</h1>
       <div className="grid grid-cols-2 gap-3">
         {AGE_RANGE_OPTIONS.map((option) => (
           <OptionButton

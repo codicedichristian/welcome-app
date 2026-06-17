@@ -19,6 +19,10 @@
   --color-accent-orange: #f97316;
 }
 
+:root {
+  --nav-height: 64px;
+}
+
 html,
 body,
 #root {
@@ -27,16 +31,34 @@ body,
 
 body {
   margin: 0;
+  font-size: 16px;
   background-color: var(--color-bg);
   color: var(--color-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Page transition: fade + slight slide up */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: page-enter 200ms ease-out;
+}
+
+/* Onboarding step transitions: full-width slide */
 @keyframes slide-in-right {
   from {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(100%);
   }
   to {
     opacity: 1;
@@ -47,7 +69,7 @@ body {
 @keyframes slide-in-left {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-100%);
   }
   to {
     opacity: 1;
@@ -56,11 +78,11 @@ body {
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.25s ease-out;
+  animation: slide-in-right 250ms ease-out;
 }
 
 .animate-slide-in-left {
-  animation: slide-in-left 0.25s ease-out;
+  animation: slide-in-left 250ms ease-out;
 }
 
 @keyframes fade-in {
@@ -72,8 +94,13 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
+/* Nav item tap spring: scale down on press, spring back on release */
+.nav-tap {
+  transition: transform 120ms ease-out;
+}
+
+.nav-tap:active {
+  transform: scale(0.9);
 }
 
 /* Midweek map pins */
