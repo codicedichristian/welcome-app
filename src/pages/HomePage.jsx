@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Cross, Clock, MapPin, ArrowUpRight, CalendarCheck } from 'lucide-react'
+import { Clock, MapPin, ArrowUpRight, CalendarCheck } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { getNextOccurrence, normalizeEvent } from '../lib/events.js'
@@ -13,7 +13,6 @@ import ErrorState from '../components/ErrorState.jsx'
 export default function HomePage() {
   const navigate = useNavigate()
   const user = getStoredUser()
-  const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
 
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -50,31 +49,10 @@ export default function HomePage() {
   const upcomingEvents = upcoming.slice(1, 3).map((item) => normalizeEvent(item.event, item.date))
 
   return (
-    <div className="px-4 pt-6">
-      <header className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary bg-surface">
-            <Cross size={18} className="text-primary" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[18px] font-semibold text-primary">Welcome</p>
-            <p className="truncate text-[14px]" style={{ color: '#888' }}>
-              Welcome home, {user.firstName}
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button type="button" onClick={() => navigate('/my-events')} className="flex items-center gap-1.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-primary">
-              <CalendarCheck size={16} />
-            </span>
-            <span className="text-[13px] text-primary">My Events</span>
-          </button>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-[12px] font-medium text-primary">
-            {initials}
-          </div>
-        </div>
-      </header>
+    <div className="px-4 pb-8">
+      <p className="text-[14px]" style={{ color: '#888' }}>
+        Welcome home, {user.firstName}
+      </p>
 
       {loading ? (
         <Spinner />
@@ -86,7 +64,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => navigate(`/events/${nextEvent.id}`, { state: { event: nextEvent } })}
-              className="mt-5 block w-full rounded-xl bg-primary p-4 text-left"
+              className="mt-4 block w-full rounded-xl bg-primary p-4 text-left"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -132,7 +110,7 @@ export default function HomePage() {
         </>
       )}
 
-      <section className="mt-6 pb-6">
+      <section className="mt-6">
         <div className="flex items-center justify-between">
           <h3 className="text-[17px] font-semibold text-primary">Announcements</h3>
           <button type="button" onClick={() => navigate('/news')} className="text-[14px] text-zinc-500">
@@ -144,6 +122,16 @@ export default function HomePage() {
           <p className="mt-1 text-[13px] text-zinc-500">{announcement.body}</p>
         </div>
       </section>
+
+      <button
+        type="button"
+        onClick={() => navigate('/my-events')}
+        className="mt-4 flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3.5"
+      >
+        <CalendarCheck size={17} className="text-zinc-500" />
+        <span className="text-[15px] text-primary">My Events</span>
+        <ArrowUpRight size={15} className="ml-auto text-zinc-600" />
+      </button>
     </div>
   )
 }

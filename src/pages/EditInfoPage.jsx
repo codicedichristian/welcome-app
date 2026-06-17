@@ -32,7 +32,7 @@ export default function EditInfoPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col px-4 pt-6 pb-8">
+    <div className="flex min-h-dvh flex-col px-4 pt-3 pb-8">
       <BackRow label="Profile" />
 
       <h1 className="mt-4 text-[24px] font-medium text-primary">Edit info</h1>

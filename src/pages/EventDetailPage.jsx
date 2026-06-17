@@ -32,7 +32,7 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-3">
         <p className="text-[14px] text-zinc-500">Event not found.</p>
       </div>
     )
@@ -52,7 +52,7 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg px-4 pt-6 pb-8">
+    <div className="min-h-dvh bg-bg px-4 pt-3 pb-8">
       <BackRow label="Events" />
 
       <div className="relative mt-4 h-[110px] rounded-[14px] bg-surface">

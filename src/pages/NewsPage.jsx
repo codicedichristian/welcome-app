@@ -36,10 +36,7 @@ export default function NewsPage() {
   }, [])
 
   return (
-    <div className="px-4 pt-6 pb-8">
-      <h1 className="text-[24px] font-medium text-primary">News</h1>
-      <p className="mt-1 text-[13px] text-zinc-500">From the church</p>
-
+    <div className="px-4 pb-8">
       {loading ? (
         <Spinner />
       ) : error ? (
@@ -50,7 +47,7 @@ export default function NewsPage() {
           <p className="mt-3 text-[16px] text-primary">No announcements yet</p>
         </div>
       ) : (
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="mt-2 flex flex-col gap-3">
           {news.map((item) => (
             <button
               key={item.id}

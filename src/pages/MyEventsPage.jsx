@@ -79,7 +79,7 @@ export default function MyEventsPage() {
   }, [])
 
   return (
-    <div className="min-h-dvh bg-bg px-4 pt-6 pb-8">
+    <div className="min-h-dvh bg-bg px-4 pt-3 pb-8">
       <BackRow label="Home" />
 
       <h1 className="mt-4 text-[24px] font-medium text-primary">My Events</h1>
