@@ -5,9 +5,9 @@ export default function BackRow({ label }) {
   const navigate = useNavigate()
 
   return (
-    <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-1">
-      <ArrowLeft size={16} className="text-[#666666]" />
-      <span className="text-[12px] text-[#444444]">{label}</span>
+    <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-1.5">
+      <ArrowLeft size={18} className="text-[#666666]" />
+      <span className="text-[14px] text-[#444444]">{label}</span>
     </button>
   )
 }

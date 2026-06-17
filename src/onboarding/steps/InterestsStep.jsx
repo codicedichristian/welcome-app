@@ -13,7 +13,7 @@ export default function InterestsStep({ formData, update }) {
 
   return (
     <div>
-      <h1 className="mb-6 text-[20px] text-primary">What interests you?</h1>
+      <h1 className="mb-6 text-[22px] text-primary">What interests you?</h1>
       <div className="flex flex-wrap gap-2">
         {INTERESTS_OPTIONS.map((option) => (
           <Chip

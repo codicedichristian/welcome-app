@@ -6,7 +6,7 @@ export default function PasswordStep({ formData, update }) {
 
   return (
     <div>
-      <h1 className="mb-6 text-[20px] text-primary">Create a password</h1>
+      <h1 className="mb-6 text-[22px] text-primary">Create a password</h1>
       <div className="flex flex-col gap-3">
         <PasswordField
           placeholder="Password"

@@ -90,7 +90,7 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-zinc-500">
+      <p className="mt-3 text-[13px] text-zinc-500">
         Step {step} of {TOTAL_STEPS}
       </p>
 

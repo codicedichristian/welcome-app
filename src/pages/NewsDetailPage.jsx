@@ -12,7 +12,7 @@ export default function NewsDetailPage() {
     return (
       <div className="px-4 pt-6">
         <BackRow label="News" />
-        <p className="mt-4 text-[13px] text-zinc-500">News item not found.</p>
+        <p className="mt-4 text-[14px] text-zinc-500">News item not found.</p>
       </div>
     )
   }
@@ -23,16 +23,16 @@ export default function NewsDetailPage() {
 
       <div className="mt-4 flex items-center justify-between">
         <span
-          className="rounded-full px-2.5 py-1 text-[11px] font-medium text-bg"
+          className="rounded-full px-2.5 py-1 text-[13px] font-medium text-bg"
           style={{ backgroundColor: item.color }}
         >
           {item.category}
         </span>
-        <span className="text-[11px] text-zinc-500">{formatShortDate(item.published_at)}</span>
+        <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
       </div>
 
-      <h1 className="mt-3 text-[20px] font-medium text-primary">{item.title}</h1>
-      <p className="mt-3 text-[13px] leading-[1.6] text-zinc-400">{item.body}</p>
+      <h1 className="mt-3 text-[24px] font-medium text-primary">{item.title}</h1>
+      <p className="mt-3 text-[14px] leading-[1.7] text-zinc-400">{item.body}</p>
     </div>
   )
 }

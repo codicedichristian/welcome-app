@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Default values mirror src/config.js so Tailwind utilities (bg-bg, text-primary,
- * text-inactive, etc.) work out of the box. main.jsx overrides these CSS vars at
- * runtime from config.js, so config.js remains the single source of truth for
- * white-labeling.
- */
 @theme {
   --color-bg: #0f0f0f;
   --color-surface: #1a1a1a;
@@ -21,6 +15,12 @@
 
 :root {
   --nav-height: 64px;
+  --text-xs: 13px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-md: 18px;
+  --text-lg: 20px;
+  --text-xl: 24px;
 }
 
 html,
@@ -31,11 +31,18 @@ body,
 
 body {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-md);
   background-color: var(--color-bg);
   color: var(--color-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent iOS auto-zoom on input focus */
+input,
+textarea,
+select {
+  font-size: var(--text-base) !important;
 }
 
 /* Page transition: fade + slight slide up */
@@ -85,16 +92,7 @@ body {
   animation: slide-in-left 250ms ease-out;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Nav item tap spring: scale down on press, spring back on release */
+/* Nav item tap spring */
 .nav-tap {
   transition: transform 120ms ease-out;
 }

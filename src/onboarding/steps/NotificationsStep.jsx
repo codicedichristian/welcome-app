@@ -7,7 +7,7 @@ export default function NotificationsStep({ formData, update }) {
 
   return (
     <div>
-      <h1 className="mb-6 text-[20px] text-primary">Stay in the loop</h1>
+      <h1 className="mb-6 text-[22px] text-primary">Stay in the loop</h1>
       <div className="flex flex-col gap-3">
         <Toggle
           label="Email"

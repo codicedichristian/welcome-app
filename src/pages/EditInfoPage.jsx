@@ -35,11 +35,11 @@ export default function EditInfoPage() {
     <div className="flex min-h-dvh flex-col px-4 pt-6 pb-8">
       <BackRow label="Profile" />
 
-      <h1 className="mt-4 text-[20px] font-medium text-primary">Edit info</h1>
+      <h1 className="mt-4 text-[24px] font-medium text-primary">Edit info</h1>
 
       <div className="mt-6 flex flex-1 flex-col gap-4">
         <div>
-          <p className="mb-1.5 text-[12px] uppercase tracking-[0.5px] text-inactive">First name</p>
+          <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">First name</p>
           <TextField
             type="text"
             autoComplete="given-name"
@@ -49,7 +49,7 @@ export default function EditInfoPage() {
         </div>
 
         <div>
-          <p className="mb-1.5 text-[12px] uppercase tracking-[0.5px] text-inactive">Last name</p>
+          <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">Last name</p>
           <TextField
             type="text"
             autoComplete="family-name"
@@ -59,7 +59,7 @@ export default function EditInfoPage() {
         </div>
 
         <div>
-          <p className="mb-1.5 text-[12px] uppercase tracking-[0.5px] text-inactive">Email</p>
+          <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">Email</p>
           <TextField
             type="email"
             autoComplete="email"
@@ -69,7 +69,7 @@ export default function EditInfoPage() {
         </div>
 
         <div>
-          <p className="mb-1.5 text-[12px] uppercase tracking-[0.5px] text-inactive">Phone</p>
+          <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">Phone</p>
           <TextField
             type="tel"
             autoComplete="tel"
@@ -79,7 +79,7 @@ export default function EditInfoPage() {
         </div>
 
         <div>
-          <p className="mb-1.5 text-[12px] uppercase tracking-[0.5px] text-inactive">Age range</p>
+          <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">Age range</p>
           <div className="grid grid-cols-2 gap-3">
             {AGE_RANGE_OPTIONS.map((option) => (
               <OptionButton
@@ -97,7 +97,7 @@ export default function EditInfoPage() {
       <button
         type="button"
         onClick={handleSave}
-        className="mt-6 w-full rounded-xl bg-primary py-3.5 text-base font-medium text-bg"
+        className="mt-6 w-full rounded-xl bg-primary py-4 text-[16px] font-medium text-bg"
       >
         Save changes
       </button>

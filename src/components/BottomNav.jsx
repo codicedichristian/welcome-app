@@ -11,23 +11,31 @@ const tabs = [
 export default function BottomNav() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 border-t border-border bg-surface"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(var(--nav-height) + env(safe-area-inset-bottom))' }}
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        background: '#0f0f0f',
+        borderTop: '0.5px solid #1e1e1e',
+        zIndex: 100,
+      }}
     >
-      <ul className="flex h-[var(--nav-height)] items-stretch justify-around">
+      <ul className="flex h-[64px] items-stretch justify-around">
         {tabs.map(({ to, label, icon: Icon, end }) => (
           <li key={to} className="flex-1">
             <NavLink
               to={to}
               end={end}
               className={({ isActive }) =>
-                `nav-tap flex h-full flex-col items-center justify-center gap-1 text-xs transition-colors ${
+                `nav-tap flex h-full flex-col items-center justify-center gap-1 transition-colors ${
                   isActive ? 'text-primary' : 'text-inactive'
                 }`
               }
             >
               <Icon size={22} strokeWidth={2} />
-              <span>{label}</span>
+              <span style={{ fontSize: '11px' }}>{label}</span>
             </NavLink>
           </li>
         ))}

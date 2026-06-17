@@ -34,17 +34,25 @@ function DayCircle({ day, eventColors, isToday, isSelected }) {
   const n = Math.min(eventColors.length, 3)
   const hexColors = eventColors.slice(0, 3).map((c) => COLOR_HEX[c] ?? '#888888')
 
+  // Number color and weight
   let textColor = '#aaaaaa'
+  let fontWeight = '600'
+
   if (isSelected) {
     textColor = '#0f0f0f'
+    fontWeight = '700'
   } else if (isToday) {
     textColor = '#ffffff'
+    fontWeight = '600'
   } else if (n === 1 && eventColors[0] === 'white') {
-    textColor = '#333333'
+    textColor = '#0f0f0f'
+    fontWeight = '700'
   } else if (n > 0) {
     textColor = '#ffffff'
+    fontWeight = '700'
   }
 
+  // Background slices
   let bg = null
   if (isSelected) {
     bg = <circle cx={C} cy={C} r={R} fill="#ffffff" />
@@ -92,9 +100,9 @@ function DayCircle({ day, eventColors, isToday, isSelected }) {
         textAnchor="middle"
         dominantBaseline="central"
         fill={textColor}
-        fontSize={11}
+        fontSize={18}
         fontFamily="system-ui, -apple-system, sans-serif"
-        fontWeight={isSelected ? '500' : '400'}
+        fontWeight={fontWeight}
       >
         {day}
       </text>
@@ -158,7 +166,7 @@ export default function EventsPage() {
 
   return (
     <div className="px-4 pt-6 pb-6">
-      <h1 className="text-[20px] font-medium text-primary">Events</h1>
+      <h1 className="text-[24px] font-medium text-primary">Events</h1>
 
       {loading ? (
         <Spinner />
@@ -168,17 +176,17 @@ export default function EventsPage() {
         <>
           <div className="mt-5 flex items-center justify-between">
             <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month" className="text-zinc-500">
-              <ChevronLeft size={18} />
+              <ChevronLeft size={20} />
             </button>
-            <p className="text-[12px] text-primary">{monthLabel}</p>
+            <p className="text-[13px] text-primary">{monthLabel}</p>
             <button type="button" onClick={() => changeMonth(1)} aria-label="Next month" className="text-zinc-500">
-              <ChevronRight size={18} />
+              <ChevronRight size={20} />
             </button>
           </div>
 
           <div className="mt-3 grid grid-cols-7">
             {DAY_HEADERS.map((label, index) => (
-              <div key={index} className="flex items-center justify-center py-1 text-[10px] text-[#555]">
+              <div key={index} className="flex items-center justify-center py-1 text-[11px] text-[#555]">
                 {label}
               </div>
             ))}
@@ -211,7 +219,7 @@ export default function EventsPage() {
             {events.map((event) => (
               <div key={event.id} className="flex items-center gap-1.5">
                 <span className={`h-2 w-2 rounded-full ${EVENT_COLOR_CLASSES[normalizeColor(event.color)].dot}`} />
-                <span className="text-[11px] text-[#666]">{capitalize(event.type)}</span>
+                <span className="text-[13px] text-[#666]">{capitalize(event.type)}</span>
               </div>
             ))}
           </div>
@@ -220,13 +228,13 @@ export default function EventsPage() {
 
           <div>
             {selectedDate && (
-              <p className="text-[12px] text-zinc-500">
+              <p className="text-[13px] text-zinc-500">
                 {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
             )}
 
             {selectedDate && selectedEvents.length === 0 && (
-              <p className="mt-3 text-[12px] text-zinc-500">No events today</p>
+              <p className="mt-3 text-[13px] text-zinc-500">No events today</p>
             )}
 
             {selectedEvents.length > 0 && (
