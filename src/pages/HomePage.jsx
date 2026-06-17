@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Clock, MapPin, ArrowUpRight, CalendarCheck } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
@@ -12,6 +12,7 @@ import ErrorState from '../components/ErrorState.jsx'
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { openRightPanel } = useOutletContext()
   const user = getStoredUser()
 
   const [events, setEvents] = useState([])
@@ -50,9 +51,16 @@ export default function HomePage() {
 
   return (
     <div className="px-4 pb-8">
-      <p className="text-[14px]" style={{ color: '#888' }}>
-        Welcome home, {user.firstName}
-      </p>
+      <button
+        type="button"
+        onClick={openRightPanel}
+        className="text-left"
+        style={{ cursor: 'pointer' }}
+      >
+        <p className="text-[14px]" style={{ color: '#888' }}>
+          Welcome home, {user.firstName}
+        </p>
+      </button>
 
       {loading ? (
         <Spinner />

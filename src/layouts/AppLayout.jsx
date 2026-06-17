@@ -20,7 +20,8 @@ export default function AppLayout() {
   const openLeft = useCallback(() => setIsLeftOpen(true), [])
   const openRight = useCallback(() => setIsRightOpen(true), [])
 
-  useSwipeGesture({ onSwipeRight: openLeft, onSwipeLeft: openRight })
+  // Only left-edge swipe to open sidebar; right panel opened by tapping avatar/greeting
+  useSwipeGesture({ onSwipeRight: openLeft })
 
   const showNav = MAIN_ROUTES.includes(location.pathname)
 
@@ -36,7 +37,7 @@ export default function AppLayout() {
         </button>
         <button
           type="button"
-          onClick={() => setIsRightOpen(true)}
+          onClick={openRight}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-[13px] font-medium text-primary"
         >
           {initials}
@@ -45,7 +46,7 @@ export default function AppLayout() {
 
       <main style={{ paddingBottom: showNav ? 'calc(90px + env(safe-area-inset-bottom))' : undefined }}>
         <div key={location.key} className="animate-fade-in">
-          <Outlet />
+          <Outlet context={{ openRightPanel: openRight }} />
         </div>
       </main>
 
