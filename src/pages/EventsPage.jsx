@@ -34,7 +34,6 @@ function DayCircle({ day, eventColors, isToday, isSelected }) {
   const n = Math.min(eventColors.length, 3)
   const hexColors = eventColors.slice(0, 3).map((c) => COLOR_HEX[c] ?? '#888888')
 
-  // Number color and weight
   let textColor = '#aaaaaa'
   let fontWeight = '600'
 
@@ -52,7 +51,6 @@ function DayCircle({ day, eventColors, isToday, isSelected }) {
     fontWeight = '700'
   }
 
-  // Background slices
   let bg = null
   if (isSelected) {
     bg = <circle cx={C} cy={C} r={R} fill="#ffffff" />
@@ -165,28 +163,26 @@ export default function EventsPage() {
     : []
 
   return (
-    <div className="px-4 pt-6 pb-6">
-      <h1 className="text-[24px] font-medium text-primary">Events</h1>
-
+    <div className="flex min-h-dvh flex-col px-4 pt-4 pb-6">
       {loading ? (
         <Spinner />
       ) : error ? (
         <ErrorState />
       ) : (
         <>
-          <div className="mt-5 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month" className="text-zinc-500">
-              <ChevronLeft size={20} />
+              <ChevronLeft size={22} />
             </button>
-            <p className="text-[13px] text-primary">{monthLabel}</p>
+            <p className="text-[20px] font-semibold text-primary">{monthLabel}</p>
             <button type="button" onClick={() => changeMonth(1)} aria-label="Next month" className="text-zinc-500">
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </button>
           </div>
 
           <div className="mt-3 grid grid-cols-7">
             {DAY_HEADERS.map((label, index) => (
-              <div key={index} className="flex items-center justify-center py-1 text-[11px] text-[#555]">
+              <div key={index} className="flex items-center justify-center py-1 text-[13px] text-[#555]">
                 {label}
               </div>
             ))}
@@ -224,17 +220,15 @@ export default function EventsPage() {
             ))}
           </div>
 
-          <div className="my-4 border-t border-border" />
-
-          <div>
+          <div className="mt-3">
             {selectedDate && (
-              <p className="text-[13px] text-zinc-500">
+              <p className="text-[15px] font-medium text-primary">
                 {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
             )}
 
             {selectedDate && selectedEvents.length === 0 && (
-              <p className="mt-3 text-[13px] text-zinc-500">No events today</p>
+              <p className="mt-4 text-center text-[15px] text-zinc-500">No events today</p>
             )}
 
             {selectedEvents.length > 0 && (
