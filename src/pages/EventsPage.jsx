@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
+import BackRow from '../components/BackRow.jsx'
 import { events as fallbackEvents } from '../data/events.js'
 import { getOccurrencesInMonth, normalizeColor, normalizeEvent } from '../lib/events.js'
 import { EVENT_COLOR_CLASSES } from '../lib/eventColors.js'
@@ -163,7 +164,9 @@ export default function EventsPage() {
     : []
 
   return (
-    <div className="flex min-h-dvh flex-col px-4 pt-4 pb-6">
+    <div className="flex min-h-dvh flex-col px-4 pt-3 pb-6">
+      <BackRow label="Home" />
+
       {loading ? (
         <Spinner />
       ) : error ? (

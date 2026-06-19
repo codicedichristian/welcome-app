@@ -15,6 +15,7 @@ export const events = [
     event_date: null,
     start_time: '10:00:00',
     end_time: null,
+    image_url: null,
   },
   {
     id: 'youth-night',
@@ -30,6 +31,7 @@ export const events = [
     event_date: '2026-06-13',
     start_time: '19:00:00',
     end_time: null,
+    image_url: null,
   },
   {
     id: 'midweek',
@@ -45,6 +47,7 @@ export const events = [
     event_date: null,
     start_time: '19:00:00',
     end_time: null,
+    image_url: null,
   },
   {
     id: 'prayer-meeting',
@@ -60,6 +63,7 @@ export const events = [
     event_date: null,
     start_time: '09:00:00',
     end_time: null,
+    image_url: null,
   },
   {
     id: 'womens-retreat',
@@ -75,6 +79,7 @@ export const events = [
     event_date: '2026-06-20',
     start_time: null,
     end_time: null,
+    image_url: null,
   },
 ]
 

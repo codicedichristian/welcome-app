@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck } from 'lucide-react'
 import { INTERESTS_OPTIONS } from '../onboarding/options.js'
@@ -22,6 +22,8 @@ function formatMemberSince(isoDate) {
 
 export default function RightPanel({ isOpen, onClose }) {
   const navigate = useNavigate()
+  const panelRef = useRef(null)
+  const touchStartY = useRef(0)
   const [user, setUser] = useState(getStoredUser)
 
   useEffect(() => {
@@ -74,6 +76,15 @@ export default function RightPanel({ isOpen, onClose }) {
     navigate('/admin')
   }
 
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e) => {
+    const diffY = e.changedTouches[0].clientY - touchStartY.current
+    if (diffY > 60 && (panelRef.current?.scrollTop ?? 0) <= 0) onClose()
+  }
+
   const infoRows = [
     { icon: User, label: 'Full name', value: fullName },
     { icon: Mail, label: 'Email', value: user.email },
@@ -89,37 +100,48 @@ export default function RightPanel({ isOpen, onClose }) {
 
   return (
     <>
+      {/* Overlay */}
       <div
         onClick={onClose}
         style={{
           position: 'fixed',
           inset: 0,
-          background: '#000000',
-          opacity: isOpen ? 0.5 : 0,
+          background: 'rgba(0,0,0,0.6)',
+          opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'opacity 280ms ease-out',
+          transition: 'opacity 300ms ease-out',
           zIndex: 200,
         }}
       />
+
+      {/* Bottom sheet */}
       <div
+        ref={panelRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           position: 'fixed',
-          top: 0,
-          right: 0,
           bottom: 0,
-          width: '80%',
+          left: 0,
+          right: 0,
+          height: '90%',
           background: '#111111',
+          borderRadius: '20px 20px 0 0',
           zIndex: 201,
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 280ms ease-out',
+          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 300ms ease-out',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        {/* Handle bar */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '8px' }}>
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: '#333' }} />
+        </div>
+
         <div
           className="px-4"
           style={{
-            paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)',
           }}
         >

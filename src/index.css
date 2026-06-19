@@ -92,6 +92,18 @@ select {
   animation: slide-in-left 250ms ease-out;
 }
 
+/* Event card Instagram-style slide (pure translate, no opacity) */
+@keyframes card-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes card-from-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+.card-enter-right { animation: card-from-right 250ms ease-out; }
+.card-enter-left  { animation: card-from-left  250ms ease-out; }
+
 /* Nav item tap spring */
 .nav-tap {
   transition: transform 120ms ease-out;

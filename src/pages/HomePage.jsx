@@ -16,6 +16,15 @@ const GRADIENTS = {
   special: 'linear-gradient(135deg, #3d2010, #281508)',
 }
 
+// End color of each gradient for image overlay blending
+const GRADIENT_END = {
+  sunday:  '#0f0f1a',
+  youth:   '#0f2419',
+  midweek: '#0f1628',
+  prayer:  '#180f28',
+  special: '#281508',
+}
+
 const BADGE = {
   sunday:  { bg: 'rgba(91,140,255,0.2)',  color: '#5b8cff' },
   youth:   { bg: 'rgba(76,175,125,0.2)',  color: '#4caf7d' },
@@ -140,7 +149,7 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [cardVisible, setCardVisible] = useState(true)
+  const [slideDir, setSlideDir] = useState(null) // 'right' | 'left' | null
   const [showDonate, setShowDonate] = useState(false)
 
   const touchStartX = useRef(0)
@@ -173,11 +182,8 @@ export default function HomePage() {
 
   const changeCard = (newIndex) => {
     if (newIndex < 0 || newIndex >= upcoming.length) return
-    setCardVisible(false)
-    setTimeout(() => {
-      setActiveIndex(newIndex)
-      setCardVisible(true)
-    }, 150)
+    setSlideDir(newIndex > activeIndex ? 'right' : 'left')
+    setActiveIndex(newIndex)
   }
 
   const handleTouchStart = (e) => {
@@ -197,9 +203,11 @@ export default function HomePage() {
     }
   }
 
-  const current = upcoming[activeIndex]
-  const gradient = current ? (GRADIENTS[current.type] ?? GRADIENTS.special) : GRADIENTS.special
-  const badge   = current ? (BADGE[current.type]    ?? BADGE.special)    : BADGE.special
+  const current     = upcoming[activeIndex]
+  const gradient    = current ? (GRADIENTS[current.type]    ?? GRADIENTS.special)    : GRADIENTS.special
+  const gradientEnd = current ? (GRADIENT_END[current.type] ?? GRADIENT_END.special) : GRADIENT_END.special
+  const badge       = current ? (BADGE[current.type]        ?? BADGE.special)        : BADGE.special
+  const slideClass  = slideDir === 'right' ? 'card-enter-right' : slideDir === 'left' ? 'card-enter-left' : ''
 
   return (
     <div
@@ -237,76 +245,101 @@ export default function HomePage() {
 
             {upcoming.length > 0 ? (
               <>
+                {/* Clipping container — overflow hidden so slide animation is clipped */}
                 <div
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
-                  style={{ opacity: cardVisible ? 1 : 0, transition: 'opacity 150ms ease' }}
+                  style={{ borderRadius: '20px', overflow: 'hidden', height: '140px' }}
                 >
                   <div
+                    key={activeIndex}
+                    className={slideClass}
                     style={{
-                      height: '140px',
-                      borderRadius: '20px',
-                      background: gradient,
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      overflow: 'hidden',
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
                       cursor: 'pointer',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <span
-                        style={{
-                          background: badge.bg,
-                          color: badge.color,
-                          fontSize: '10px',
-                          fontWeight: '600',
-                          padding: '3px 8px',
-                          borderRadius: '20px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        {capitalize(current.type)}
-                      </span>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          background: 'rgba(255,255,255,0.1)',
-                          borderRadius: '10px',
-                          padding: '4px 10px',
-                          minWidth: '44px',
-                        }}
-                      >
-                        <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
-                          {current.day}
-                        </span>
+                    {/* Base gradient or image background */}
+                    {current.image_url ? (
+                      <>
+                        <img
+                          src={current.image_url}
+                          alt=""
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        {/* Gradient overlay blending into the event color */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: `linear-gradient(to bottom, transparent 0%, ${gradientEnd} 60%)`,
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <div style={{ position: 'absolute', inset: 0, background: gradient }} />
+                    )}
+
+                    {/* Content layer */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        zIndex: 1,
+                        height: '100%',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <span
                           style={{
+                            background: badge.bg,
+                            color: badge.color,
                             fontSize: '10px',
-                            color: 'rgba(255,255,255,0.6)',
+                            fontWeight: '600',
+                            padding: '3px 8px',
+                            borderRadius: '20px',
                             textTransform: 'uppercase',
-                            marginTop: '1px',
+                            letterSpacing: '0.5px',
                           }}
                         >
-                          {current.month}
+                          {capitalize(current.type)}
                         </span>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '10px',
+                            padding: '4px 10px',
+                            minWidth: '44px',
+                          }}
+                        >
+                          <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
+                            {current.day}
+                          </span>
+                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
+                            {current.month}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
-                        {current.name}
-                      </p>
-                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
-                        {current.time} · {current.location}
-                      </p>
-                    </div>
+                      <div>
+                        <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                          {current.name}
+                        </p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+                          {current.time} · {current.location}
+                        </p>
+                      </div>
 
-                    <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)' }}>Tap for details</p>
+                      <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)' }}>Tap for details</p>
+                    </div>
                   </div>
                 </div>
 
@@ -426,11 +459,7 @@ export default function HomePage() {
                 icon={<Play size={24} color="#ffffff" />}
                 label="Last Sunday"
                 sub="Sermon"
-                onClick={() =>
-                  lastSunday
-                    ? navigate(`/events/${lastSunday.id}`, { state: { event: lastSunday } })
-                    : navigate('/events')
-                }
+                onClick={() => navigate('/last-sunday')}
               />
               <QuickCard
                 icon={<MapPin size={24} color="#5b8cff" />}

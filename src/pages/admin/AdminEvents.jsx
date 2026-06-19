@@ -37,6 +37,7 @@ const EMPTY_EVENT = {
   event_date: '',
   start_time: '',
   end_time: '',
+  image_url: '',
 }
 
 function toFormState(event) {
@@ -52,6 +53,7 @@ function toFormState(event) {
     event_date: event.event_date ?? '',
     start_time: event.start_time?.slice(0, 5) ?? '',
     end_time: event.end_time?.slice(0, 5) ?? '',
+    image_url: event.image_url ?? '',
   }
 }
 
@@ -68,6 +70,7 @@ function toPayload(form) {
     event_date: form.recurring === 'none' ? form.event_date || null : null,
     start_time: form.start_time || null,
     end_time: form.end_time || null,
+    image_url: form.image_url || null,
   }
 }
 
@@ -164,6 +167,15 @@ function EventForm({ initial, onSave, onCancel, saving }) {
           <Input type="time" value={form.end_time} onChange={(e) => update({ end_time: e.target.value })} />
         </Field>
       </div>
+
+      <Field label="Image URL">
+        <Input
+          type="url"
+          placeholder="https://..."
+          value={form.image_url}
+          onChange={(e) => update({ image_url: e.target.value })}
+        />
+      </Field>
 
       <div className="mt-2 flex gap-3">
         <button type="button" onClick={onCancel} className="flex-1 rounded-xl border border-border py-2.5 text-sm text-primary">

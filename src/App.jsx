@@ -16,6 +16,7 @@ import NewsDetailPage from './pages/NewsDetailPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import EditInfoPage from './pages/EditInfoPage.jsx'
 import MyEventsPage from './pages/MyEventsPage.jsx'
+import LastSundayPage from './pages/LastSundayPage.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminEvents from './pages/admin/AdminEvents.jsx'
 import AdminNews from './pages/admin/AdminNews.jsx'
@@ -82,6 +83,7 @@ export default function App() {
               }
             />
             <Route path="my-events" element={<MyEventsPage />} />
+            <Route path="last-sunday" element={<LastSundayPage />} />
           </Route>
 
           <Route element={<AdminRoute />}>
