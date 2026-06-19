@@ -50,6 +50,7 @@ function renderLayout(initialPath = '/') {
           <Route path="news" element={<div>News Page</div>} />
           <Route path="news/:id" element={<div>News Detail Page</div>} />
           <Route path="profile" element={<div>Profile Page</div>} />
+          <Route path="my-events" element={<div>My Events Page</div>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -65,11 +66,12 @@ afterEach(() => {
 })
 
 describe('FloatingNav', () => {
-  test('Renders Home, Events, and News tab buttons', () => {
+  test('Renders Home, Events, News, and My Events tab buttons', () => {
     renderFloatingNav('/')
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /events/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
   })
 
   test('Home tab is visually active when at /', () => {
@@ -81,7 +83,7 @@ describe('FloatingNav', () => {
 
   test('Events tab is visually active when at /events', () => {
     renderFloatingNav('/events')
-    const eventsBtn = screen.getByRole('button', { name: /events/i })
+    const eventsBtn = screen.getByRole('button', { name: /^events$/i })
     expect(eventsBtn).toHaveStyle({ background: '#2e2e2e' })
   })
 
@@ -117,7 +119,7 @@ describe('FloatingNav', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /events/i }))
+    await user.click(screen.getByRole('button', { name: /^events$/i }))
     expect(screen.getByText('Events Page')).toBeInTheDocument()
   })
 
@@ -135,6 +137,27 @@ describe('FloatingNav', () => {
     await user.click(screen.getByRole('button', { name: /news/i }))
     expect(screen.getByText('News Page')).toBeInTheDocument()
   })
+
+  test('Tapping My Events tab navigates to /my-events', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<FloatingNav />} />
+          <Route path="/my-events" element={<div>My Events Page</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: /my events/i }))
+    expect(screen.getByText('My Events Page')).toBeInTheDocument()
+  })
+
+  test('My Events tab is visually active when at /my-events', () => {
+    renderFloatingNav('/my-events')
+    const btn = screen.getByRole('button', { name: /my events/i })
+    expect(btn).toHaveStyle({ background: '#2e2e2e' })
+  })
 })
 
 describe('AppLayout FloatingNav visibility', () => {
@@ -145,7 +168,7 @@ describe('AppLayout FloatingNav visibility', () => {
 
   test('FloatingNav is visible on /events', () => {
     renderLayout('/events')
-    expect(screen.getByRole('button', { name: /events/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
   })
 
   test('FloatingNav is visible on /news', () => {
@@ -168,5 +191,10 @@ describe('AppLayout FloatingNav visibility', () => {
   test('FloatingNav is hidden on profile page (/profile)', () => {
     renderLayout('/profile')
     expect(screen.queryByRole('button', { name: /home/i })).not.toBeInTheDocument()
+  })
+
+  test('FloatingNav is visible on /my-events', () => {
+    renderLayout('/my-events')
+    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
   })
 })

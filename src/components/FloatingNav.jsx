@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, CalendarDays, Megaphone } from 'lucide-react'
+import { Home, CalendarDays, Megaphone, Bookmark } from 'lucide-react'
 
 const TABS = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/events', icon: CalendarDays, label: 'Events' },
   { to: '/news', icon: Megaphone, label: 'News' },
+  { to: '/my-events', icon: Bookmark, label: 'My Events' },
 ]
 
 export default function FloatingNav() {

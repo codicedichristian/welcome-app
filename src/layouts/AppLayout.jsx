@@ -5,7 +5,7 @@ import { getStoredUser } from '../lib/user.js'
 import RightPanel from '../components/RightPanel.jsx'
 import FloatingNav from '../components/FloatingNav.jsx'
 
-const MAIN_ROUTES = ['/', '/events', '/news']
+const MAIN_ROUTES = ['/', '/events', '/news', '/my-events']
 
 export default function AppLayout() {
   const location = useLocation()
