@@ -110,9 +110,9 @@ describe('HomePage', () => {
   test('Upcoming events section renders with at least one event card', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
-    // The card container is square (aspect-ratio 1/1)
+    // The card container is 160px tall
     await waitFor(() => {
-      const card = document.querySelector('[style*="aspect-ratio"]')
+      const card = document.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
   })
@@ -120,7 +120,7 @@ describe('HomePage', () => {
   test('Dot indicators count matches upcoming events', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="aspect-ratio"]')
+      const card = document.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
 
@@ -203,12 +203,12 @@ describe('HomePage', () => {
   test('Swiping left on card advances to next event', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="aspect-ratio"]')
+      const card = document.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
 
-    // Capture the name on the first card (18px bold)
-    const firstEventName = document.querySelector('[style*="font-size: 18px"][style*="font-weight: 700"]')?.textContent
+    // Capture the name on the first card (16px bold)
+    const firstEventName = document.querySelector('[style*="font-size: 16px"][style*="font-weight: 700"]')?.textContent
 
     const container = document.querySelector('[style*="border-radius: 20px"][style*="overflow: hidden"]')
     expect(container).toBeTruthy()

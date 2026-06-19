@@ -25,7 +25,7 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
     <>
       <div
         onClick={onClose}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200 }}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200 }}
       />
       <div
         style={{
@@ -33,10 +33,10 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
           bottom: 0,
           left: 0,
           right: 0,
-          background: '#111111',
+          background: '#1a1a1a',
           borderRadius: '20px 20px 0 0',
           zIndex: 201,
-          padding: '12px 16px',
+          padding: '20px',
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
         }}
       >
@@ -132,63 +132,65 @@ export default function EventDetailPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg px-4 pt-3 pb-8">
-      <BackRow label="Events" />
+    <>
+      <div className="min-h-dvh bg-bg px-4 pt-3 pb-8">
+        <BackRow label="Events" />
 
-      <div className="relative mt-4 h-[110px] rounded-[14px] bg-surface">
-        <div className="flex h-full items-center justify-center">
-          <Icon size={38} className={colors.accent} />
+        <div className="relative mt-4 h-[110px] rounded-[14px] bg-surface">
+          <div className="flex h-full items-center justify-center">
+            <Icon size={38} className={colors.accent} />
+          </div>
+
+          <div className={`absolute bottom-3 left-3 rounded-full px-3 py-1 text-[13px] font-medium text-bg ${colors.badge}`}>
+            {event.typeLabel}
+          </div>
+
+          <div className="absolute right-3 top-3 flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-bg leading-none">
+            <span className="text-[16px] font-bold leading-none text-primary">{event.day}</span>
+            <span className="mt-0.5 text-[11px] uppercase leading-none text-zinc-500">{event.month}</span>
+          </div>
         </div>
 
-        <div className={`absolute bottom-3 left-3 rounded-full px-3 py-1 text-[13px] font-medium text-bg ${colors.badge}`}>
-          {event.typeLabel}
+        <div className="mt-4">
+          <h1 className="text-[24px] font-bold text-primary">{event.name}</h1>
+          <p className="mt-1 text-[13px] text-zinc-500">{event.subtitle}</p>
         </div>
 
-        <div className="absolute right-3 top-3 flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-bg leading-none">
-          <span className="text-[16px] font-bold leading-none text-primary">{event.day}</span>
-          <span className="mt-0.5 text-[11px] uppercase leading-none text-zinc-500">{event.month}</span>
+        <div className="mt-4 flex flex-col gap-3">
+          <MetaRow icon={Calendar} accentClass={colors.accent} text={event.date} />
+          <MetaRow icon={Clock} accentClass={colors.accent} text={event.time} />
+          <MetaRow icon={MapPin} accentClass={colors.accent} text={event.location} />
+          <MetaRow icon={Users} accentClass={colors.accent} text={event.audience} />
         </div>
-      </div>
 
-      <div className="mt-4">
-        <h1 className="text-[24px] font-bold text-primary">{event.name}</h1>
-        <p className="mt-1 text-[13px] text-zinc-500">{event.subtitle}</p>
-      </div>
+        <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
 
-      <div className="mt-4 flex flex-col gap-3">
-        <MetaRow icon={Calendar} accentClass={colors.accent} text={event.date} />
-        <MetaRow icon={Clock} accentClass={colors.accent} text={event.time} />
-        <MetaRow icon={MapPin} accentClass={colors.accent} text={event.location} />
-        <MetaRow icon={Users} accentClass={colors.accent} text={event.audience} />
-      </div>
-
-      <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
-
-      <div className="mt-6">
-        {event.type === 'midweek' ? (
-          <button
-            type="button"
-            onClick={() => navigate('/midweek')}
-            className="flex w-full items-center gap-3 rounded-xl bg-accent-blue p-4 text-left text-bg"
-          >
-            <Map size={22} />
-            <div>
-              <p className="text-[16px] font-medium">Find your group</p>
-              <p className="text-[13px]">See all locations on the map</p>
-            </div>
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-              going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
-            }`}
-          >
-            {going && <Check size={18} />}
-            <span>{going ? "You're in!" : "I'll be there"}</span>
-          </button>
-        )}
+        <div className="mt-6">
+          {event.type === 'midweek' ? (
+            <button
+              type="button"
+              onClick={() => navigate('/midweek')}
+              className="flex w-full items-center gap-3 rounded-xl bg-accent-blue p-4 text-left text-bg"
+            >
+              <Map size={22} />
+              <div>
+                <p className="text-[16px] font-medium">Find your group</p>
+                <p className="text-[13px]">See all locations on the map</p>
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+              }`}
+            >
+              {going && <Check size={18} />}
+              <span>{going ? "You're in!" : "I'll be there"}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {showCancelSheet && (
@@ -198,6 +200,6 @@ export default function EventDetailPage() {
           onClose={() => setShowCancelSheet(false)}
         />
       )}
-    </div>
+    </>
   )
 }

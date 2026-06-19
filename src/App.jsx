@@ -26,6 +26,7 @@ import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
 import { supabase } from './lib/supabase.js'
+import { ScrollToTop } from './components/ScrollToTop.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -70,6 +71,7 @@ export default function App() {
   return (
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
+      <ScrollToTop />
       <Routes>
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/onboarding" element={<OnboardingPage />} />

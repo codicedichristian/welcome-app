@@ -259,7 +259,7 @@ export default function HomePage() {
 
             {upcoming.length > 0 ? (
               <>
-                {/* Clipping container — square, overflow hidden so slide animation is clipped */}
+                {/* Clipping container — 160px tall, overflow hidden so slide animation is clipped */}
                 <div
                   ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
@@ -267,7 +267,7 @@ export default function HomePage() {
                   style={{
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    aspectRatio: '1 / 1',
+                    height: '160px',
                     position: 'relative',
                   }}
                 >
@@ -279,9 +279,9 @@ export default function HomePage() {
                     {/* Background layers */}
                     {current.image_url ? (
                       <>
-                        {/* Bottom half: solid card color */}
-                        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '50%', background: gradientEnd }} />
-                        {/* Top half: photo */}
+                        {/* Bottom 45%: solid card color */}
+                        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', background: gradientEnd }} />
+                        {/* Top 55%: photo */}
                         <img
                           src={current.image_url}
                           alt=""
@@ -290,19 +290,19 @@ export default function HomePage() {
                             top: 0,
                             left: 0,
                             width: '100%',
-                            height: '50%',
+                            height: '55%',
                             objectFit: 'cover',
                             objectPosition: 'center',
                           }}
                         />
-                        {/* Fade: transparent → card color over the bottom 60% of the image area */}
+                        {/* Fade: transparent → card color over the bottom 60% of the image area (22%–55%) */}
                         <div
                           style={{
                             position: 'absolute',
                             left: 0,
                             right: 0,
-                            top: '20%',
-                            height: '30%',
+                            top: '22%',
+                            height: '33%',
                             background: `linear-gradient(to bottom, transparent 0%, ${gradientEnd} 100%)`,
                           }}
                         />
@@ -311,19 +311,22 @@ export default function HomePage() {
                       <div style={{ position: 'absolute', inset: 0, background: gradient }} />
                     )}
 
-                    {/* Content layer */}
+                    {/* Content layer — sits inside the bottom 45% color area */}
                     <div
                       style={{
                         position: 'absolute',
-                        inset: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '45%',
                         zIndex: 1,
-                        padding: '16px',
+                        padding: '10px 14px',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span
                           style={{
                             background: badge.bg,
@@ -344,25 +347,25 @@ export default function HomePage() {
                             flexDirection: 'column',
                             alignItems: 'center',
                             background: 'rgba(255,255,255,0.1)',
-                            borderRadius: '10px',
-                            padding: '4px 10px',
-                            minWidth: '44px',
+                            borderRadius: '8px',
+                            padding: '3px 8px',
+                            minWidth: '36px',
                           }}
                         >
-                          <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
+                          <span style={{ fontSize: '15px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
                             {current.day}
                           </span>
-                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
+                          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
                             {current.month}
                           </span>
                         </div>
                       </div>
 
                       <div>
-                        <p style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                        <p style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '2px', lineHeight: 1.2 }}>
                           {current.name}
                         </p>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>
                           {current.time} · {current.location}
                         </p>
                       </div>
