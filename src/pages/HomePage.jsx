@@ -154,6 +154,7 @@ export default function HomePage() {
 
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
+  const cardContainerRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -166,6 +167,19 @@ export default function HomePage() {
     }
     load()
     return () => { cancelled = true }
+  }, [])
+
+  // Attach non-passive touchmove to card so preventDefault can block Safari's page-back gesture
+  useEffect(() => {
+    const el = cardContainerRef.current
+    if (!el) return
+    const handleMove = (e) => {
+      const diffX = e.touches[0].clientX - touchStartX.current
+      const diffY = e.touches[0].clientY - touchStartY.current
+      if (Math.abs(diffX) > Math.abs(diffY)) e.preventDefault()
+    }
+    el.addEventListener('touchmove', handleMove, { passive: false })
+    return () => el.removeEventListener('touchmove', handleMove)
   }, [])
 
   const upcoming = events
@@ -247,6 +261,7 @@ export default function HomePage() {
               <>
                 {/* Clipping container — overflow hidden so slide animation is clipped */}
                 <div
+                  ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
                   style={{ borderRadius: '20px', overflow: 'hidden', height: '140px' }}

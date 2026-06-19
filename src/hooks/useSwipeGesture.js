@@ -10,6 +10,15 @@ export function useSwipeGesture({ onSwipeLeft, onSwipeRight, threshold = 50 }) {
       startY = e.touches[0].clientY
     }
 
+    const handleTouchMove = (e) => {
+      const diffX = e.touches[0].clientX - startX
+      const diffY = e.touches[0].clientY - startY
+      // Prevent Safari's page-back gesture on left-edge and page-forward on right-edge swipes
+      if (Math.abs(diffX) > Math.abs(diffY) && (startX < 30 || startX > window.innerWidth - 30)) {
+        e.preventDefault()
+      }
+    }
+
     const handleTouchEnd = (e) => {
       const endX = e.changedTouches[0].clientX
       const endY = e.changedTouches[0].clientY
@@ -26,10 +35,12 @@ export function useSwipeGesture({ onSwipeLeft, onSwipeRight, threshold = 50 }) {
     }
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
     }
   }, [onSwipeLeft, onSwipeRight, threshold])

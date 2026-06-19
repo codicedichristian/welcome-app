@@ -29,6 +29,12 @@ body,
   background: #0f0f0f;
 }
 
+html,
+body {
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   margin: 0;
   font-size: var(--text-md);
