@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Youtube, Image } from 'lucide-react'
+import { PlayCircle, Image } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 
 function getLastSundayDate() {
@@ -74,7 +74,7 @@ export default function LastSundayPage() {
           className="flex w-full items-center gap-3 rounded-[14px] border border-border p-4 text-left"
           style={{ background: '#1a1a1a' }}
         >
-          <Youtube size={24} color="#ff0000" />
+          <PlayCircle size={24} color="#ff0000" />
           <div className="flex-1">
             <p style={{ fontSize: '14px', fontWeight: '500', color: '#ffffff' }}>Watch on YouTube</p>
             <p
