@@ -15,7 +15,7 @@ export const events = [
     event_date: null,
     start_time: '10:00:00',
     end_time: null,
-    image_url: null,
+    image_url: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80',
   },
   {
     id: 'youth-night',
@@ -31,7 +31,7 @@ export const events = [
     event_date: '2026-06-13',
     start_time: '19:00:00',
     end_time: null,
-    image_url: null,
+    image_url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',
   },
   {
     id: 'midweek',
@@ -47,7 +47,7 @@ export const events = [
     event_date: null,
     start_time: '19:00:00',
     end_time: null,
-    image_url: null,
+    image_url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',
   },
   {
     id: 'prayer-meeting',
@@ -63,7 +63,7 @@ export const events = [
     event_date: null,
     start_time: '09:00:00',
     end_time: null,
-    image_url: null,
+    image_url: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&q=80',
   },
   {
     id: 'womens-retreat',
@@ -79,7 +79,7 @@ export const events = [
     event_date: '2026-06-20',
     start_time: null,
     end_time: null,
-    image_url: null,
+    image_url: 'https://images.unsplash.com/photo-1607748862156-7c548e7e98f4?w=800&q=80',
   },
 ]
 

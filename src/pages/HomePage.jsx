@@ -289,7 +289,7 @@ export default function HomePage() {
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            background: `linear-gradient(to bottom, transparent 0%, ${gradientEnd} 60%)`,
+                            background: `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, ${gradientEnd} 55%, ${gradientEnd} 100%)`,
                           }}
                         />
                       </>
