@@ -2,8 +2,6 @@ import { useCallback, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Cross } from 'lucide-react'
 import { getStoredUser } from '../lib/user.js'
-import { useSwipeGesture } from '../hooks/useSwipeGesture.js'
-import LeftSidebar from '../components/LeftSidebar.jsx'
 import RightPanel from '../components/RightPanel.jsx'
 import FloatingNav from '../components/FloatingNav.jsx'
 
@@ -11,17 +9,12 @@ const MAIN_ROUTES = ['/', '/events', '/news']
 
 export default function AppLayout() {
   const location = useLocation()
-  const [isLeftOpen, setIsLeftOpen] = useState(false)
   const [isRightOpen, setIsRightOpen] = useState(false)
 
   const user = getStoredUser()
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
 
-  const openLeft = useCallback(() => setIsLeftOpen(true), [])
   const openRight = useCallback(() => setIsRightOpen(true), [])
-
-  // Only left-edge swipe to open sidebar; right panel opened by tapping avatar/greeting
-  useSwipeGesture({ onSwipeRight: openLeft })
 
   const showNav = MAIN_ROUTES.includes(location.pathname)
   const isHome  = location.pathname === '/'
@@ -33,10 +26,10 @@ export default function AppLayout() {
           className="flex items-center justify-between px-4 pb-3"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
         >
-          <button type="button" onClick={() => setIsLeftOpen(true)} className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Cross size={20} className="text-primary" />
             <span className="text-[18px] font-semibold text-primary">Welcome</span>
-          </button>
+          </div>
           <button
             type="button"
             onClick={openRight}
@@ -55,7 +48,6 @@ export default function AppLayout() {
 
       {showNav && <FloatingNav />}
 
-      <LeftSidebar isOpen={isLeftOpen} onClose={() => setIsLeftOpen(false)} />
       <RightPanel isOpen={isRightOpen} onClose={() => setIsRightOpen(false)} />
     </div>
   )
