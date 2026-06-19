@@ -131,6 +131,21 @@ export async function rsvpEvent(userId, eventId) {
   }
 }
 
+export async function deleteRsvp(userId, eventId) {
+  try {
+    const { error } = await supabase
+      .from('event_rsvps')
+      .delete()
+      .eq('user_id', userId)
+      .eq('event_id', eventId)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
 export async function getUserRsvps(userId) {
   try {
     const { data, error } = await supabase

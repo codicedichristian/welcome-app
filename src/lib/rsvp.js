@@ -21,6 +21,11 @@ export function addRsvp(eventId) {
   }
 }
 
+export function removeRsvp(eventId) {
+  const ids = getRsvpIds()
+  localStorage.setItem(RSVP_KEY, JSON.stringify(ids.filter((id) => id !== eventId)))
+}
+
 export function getMidweekGroupId() {
   return localStorage.getItem(MIDWEEK_GROUP_KEY) || null
 }

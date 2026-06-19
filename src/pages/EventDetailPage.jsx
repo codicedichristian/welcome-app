@@ -4,9 +4,9 @@ import { Calendar, Clock, MapPin, Users, Map, Check, Cross, Zap, Home, HandHeart
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { EVENT_COLOR_CLASSES } from '../lib/eventColors.js'
-import { isRsvped, addRsvp } from '../lib/rsvp.js'
+import { isRsvped, addRsvp, removeRsvp } from '../lib/rsvp.js'
 import { getStoredUser } from '../lib/user.js'
-import { rsvpEvent } from '../lib/api.js'
+import { rsvpEvent, deleteRsvp } from '../lib/api.js'
 import BackRow from '../components/BackRow.jsx'
 
 const ICONS = { Cross, Zap, Home, HandHeart, Star }
@@ -20,6 +20,76 @@ function MetaRow({ icon: Icon, accentClass, text }) {
   )
 }
 
+function CancelSheet({ eventName, onConfirm, onClose }) {
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200 }}
+      />
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#111111',
+          borderRadius: '20px 20px 0 0',
+          zIndex: 201,
+          padding: '12px 16px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '16px' }}>
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: '#333' }} />
+        </div>
+        <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
+          Cancel attendance?
+        </p>
+        <p style={{ fontSize: '13px', color: '#888', textAlign: 'center', marginBottom: '24px' }}>
+          Are you sure you don't want to go to {eventName}?
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={onConfirm}
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: '12px',
+              background: '#e55555',
+              color: '#ffffff',
+              fontSize: '15px',
+              fontWeight: '600',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Yes, cancel
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: '12px',
+              background: '#1a1a1a',
+              border: '1px solid #2e2e2e',
+              color: '#ffffff',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Keep my spot
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function EventDetailPage() {
   const { eventId } = useParams()
   const location = useLocation()
@@ -29,6 +99,7 @@ export default function EventDetailPage() {
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
 
   const [going, setGoing] = useState(() => (event ? isRsvped(event.id) : false))
+  const [showCancelSheet, setShowCancelSheet] = useState(false)
 
   if (!event) {
     return (
@@ -44,10 +115,19 @@ export default function EventDetailPage() {
   const handleRsvp = () => {
     addRsvp(event.id)
     setGoing(true)
-
     const user = getStoredUser()
     if (user.id) {
       rsvpEvent(user.id, event.id)
+    }
+  }
+
+  const handleCancelConfirm = () => {
+    removeRsvp(event.id)
+    setGoing(false)
+    setShowCancelSheet(false)
+    const user = getStoredUser()
+    if (user.id) {
+      deleteRsvp(user.id, event.id)
     }
   }
 
@@ -100,8 +180,7 @@ export default function EventDetailPage() {
         ) : (
           <button
             type="button"
-            onClick={handleRsvp}
-            disabled={going}
+            onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
             className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
               going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
             }`}
@@ -111,6 +190,14 @@ export default function EventDetailPage() {
           </button>
         )}
       </div>
+
+      {showCancelSheet && (
+        <CancelSheet
+          eventName={event.name}
+          onConfirm={handleCancelConfirm}
+          onClose={() => setShowCancelSheet(false)}
+        />
+      )}
     </div>
   )
 }

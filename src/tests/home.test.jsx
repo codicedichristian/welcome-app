@@ -110,13 +110,19 @@ describe('HomePage', () => {
   test('Upcoming events section renders with at least one event card', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
-    // The first upcoming event from fallback data on any given day
-    await waitFor(() => expect(screen.getByText('Tap for details')).toBeInTheDocument())
+    // The card container is square (aspect-ratio 1/1)
+    await waitFor(() => {
+      const card = document.querySelector('[style*="aspect-ratio"]')
+      expect(card).not.toBeNull()
+    })
   })
 
   test('Dot indicators count matches upcoming events', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getByText('Tap for details')).toBeInTheDocument())
+    await waitFor(() => {
+      const card = document.querySelector('[style*="aspect-ratio"]')
+      expect(card).not.toBeNull()
+    })
 
     // Dot buttons have height: 5px and border-radius: 50px
     const dots = document.querySelectorAll('button[style*="height: 5px"]')
@@ -196,10 +202,13 @@ describe('HomePage', () => {
 
   test('Swiping left on card advances to next event', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getByText('Tap for details')).toBeInTheDocument())
+    await waitFor(() => {
+      const card = document.querySelector('[style*="aspect-ratio"]')
+      expect(card).not.toBeNull()
+    })
 
-    // Capture the name on the first card
-    const firstEventName = document.querySelector('[style*="font-size: 20px"][style*="font-weight: 700"]')?.textContent
+    // Capture the name on the first card (18px bold)
+    const firstEventName = document.querySelector('[style*="font-size: 18px"][style*="font-weight: 700"]')?.textContent
 
     const container = document.querySelector('[style*="border-radius: 20px"][style*="overflow: hidden"]')
     expect(container).toBeTruthy()

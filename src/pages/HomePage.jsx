@@ -259,37 +259,51 @@ export default function HomePage() {
 
             {upcoming.length > 0 ? (
               <>
-                {/* Clipping container — overflow hidden so slide animation is clipped */}
+                {/* Clipping container — square, overflow hidden so slide animation is clipped */}
                 <div
                   ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
-                  style={{ borderRadius: '20px', overflow: 'hidden', height: '140px' }}
+                  style={{
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    aspectRatio: '1 / 1',
+                    position: 'relative',
+                  }}
                 >
                   <div
                     key={activeIndex}
                     className={slideClass}
-                    style={{
-                      position: 'relative',
-                      width: '100%',
-                      height: '100%',
-                      cursor: 'pointer',
-                    }}
+                    style={{ position: 'absolute', inset: 0, cursor: 'pointer' }}
                   >
-                    {/* Base gradient or image background */}
+                    {/* Background layers */}
                     {current.image_url ? (
                       <>
+                        {/* Bottom half: solid card color */}
+                        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '50%', background: gradientEnd }} />
+                        {/* Top half: photo */}
                         <img
                           src={current.image_url}
                           alt=""
-                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '50%',
+                            objectFit: 'cover',
+                            objectPosition: 'center',
+                          }}
                         />
-                        {/* Gradient overlay blending into the event color */}
+                        {/* Fade: transparent → card color over the bottom 60% of the image area */}
                         <div
                           style={{
                             position: 'absolute',
-                            inset: 0,
-                            background: `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, ${gradientEnd} 55%, ${gradientEnd} 100%)`,
+                            left: 0,
+                            right: 0,
+                            top: '20%',
+                            height: '30%',
+                            background: `linear-gradient(to bottom, transparent 0%, ${gradientEnd} 100%)`,
                           }}
                         />
                       </>
@@ -300,9 +314,9 @@ export default function HomePage() {
                     {/* Content layer */}
                     <div
                       style={{
-                        position: 'relative',
+                        position: 'absolute',
+                        inset: 0,
                         zIndex: 1,
-                        height: '100%',
                         padding: '16px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -345,15 +359,13 @@ export default function HomePage() {
                       </div>
 
                       <div>
-                        <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+                        <p style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
                           {current.name}
                         </p>
                         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
                           {current.time} · {current.location}
                         </p>
                       </div>
-
-                      <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)' }}>Tap for details</p>
                     </div>
                   </div>
                 </div>
