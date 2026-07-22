@@ -86,7 +86,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={resetSubmitting || !resetEmail}
-                className="w-full rounded-xl bg-primary py-3.5 text-base font-medium text-bg transition-opacity disabled:opacity-50"
+                className="w-full rounded-xl bg-primary py-3.5 text-[17px] font-medium text-bg transition-opacity disabled:opacity-50"
               >
                 {resetSubmitting ? 'Sending...' : 'Send reset link'}
               </button>
@@ -119,7 +119,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting || !email || !password}
-            className="w-full rounded-xl bg-primary py-3.5 text-base font-medium text-bg transition-opacity disabled:opacity-50"
+            className="w-full rounded-xl bg-primary py-3.5 text-[17px] font-medium text-bg transition-opacity disabled:opacity-50"
           >
             {submitting ? 'Signing in...' : 'Sign in'}
           </button>

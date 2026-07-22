@@ -13,8 +13,8 @@ export default function EventListItem({ event, to }) {
     >
       <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${EVENT_COLOR_CLASSES[event.color].dot}`} />
       <div className="flex-1">
-        <p className="text-[16px] font-medium text-primary">{event.name}</p>
-        <p className="mt-0.5 text-[13px]" style={{ color: '#666' }}>{event.subtitle}</p>
+        <p className="text-[18px] font-semibold text-primary">{event.name}</p>
+        <p className="mt-0.5 text-[14px]" style={{ color: '#666' }}>{event.subtitle}</p>
         {event.meta && <p className="mt-0.5 text-[13px] text-zinc-600">{event.meta}</p>}
       </div>
       <ChevronRight size={18} className="text-zinc-600" />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ChevronRight, CalendarDays, Play, MapPin, Heart } from 'lucide-react'
+import { ChevronRight, CalendarDays, Play, MapPin, Heart, Bookmark } from 'lucide-react'
 import { getEvents, getNews } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -14,15 +14,6 @@ const GRADIENTS = {
   midweek: 'linear-gradient(135deg, #1a2340, #0f1628)',
   prayer:  'linear-gradient(135deg, #2a1a40, #180f28)',
   special: 'linear-gradient(135deg, #3d2010, #281508)',
-}
-
-// End color of each gradient for image overlay blending
-const GRADIENT_END = {
-  sunday:  '#0f0f1a',
-  youth:   '#0f2419',
-  midweek: '#0f1628',
-  prayer:  '#180f28',
-  special: '#281508',
 }
 
 const BADGE = {
@@ -60,8 +51,8 @@ function QuickCard({ icon, label, sub, onClick }) {
     >
       {icon}
       <div>
-        <p style={{ fontSize: '13px', fontWeight: '500', color: '#ffffff' }}>{label}</p>
-        <p style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>{sub}</p>
+        <p style={{ fontSize: '15px', fontWeight: '500', color: '#ffffff' }}>{label}</p>
+        <p style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>{sub}</p>
       </div>
     </button>
   )
@@ -94,10 +85,10 @@ function DonateModal({ onClose }) {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
           <Heart size={32} color="#4caf7d" fill="#4caf7d" />
         </div>
-        <p style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
+        <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
           Support the church
         </p>
-        <p style={{ fontSize: '13px', color: '#888', textAlign: 'center', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', marginBottom: '16px' }}>
           Your generosity makes everything possible.
         </p>
         <div
@@ -106,7 +97,7 @@ function DonateModal({ onClose }) {
             borderRadius: '12px',
             padding: '14px',
             fontFamily: 'monospace',
-            fontSize: '13px',
+            fontSize: '14px',
             color: '#ffffff',
             lineHeight: '1.7',
             marginBottom: '16px',
@@ -124,8 +115,8 @@ function DonateModal({ onClose }) {
             borderRadius: '12px',
             background: '#ffffff',
             color: '#0f0f0f',
-            fontSize: '15px',
-            fontWeight: '600',
+            fontSize: '17px',
+            fontWeight: '500',
             padding: '12px',
             border: 'none',
             cursor: 'pointer',
@@ -191,9 +182,6 @@ export default function HomePage() {
 
   const recentNews = news.slice(0, 3)
 
-  const lastSundayRaw = events.find((e) => e.type === 'sunday')
-  const lastSunday = lastSundayRaw ? normalizeEvent(lastSundayRaw, getNextOccurrence(lastSundayRaw)) : null
-
   const changeCard = (newIndex) => {
     if (newIndex < 0 || newIndex >= upcoming.length) return
     setSlideDir(newIndex > activeIndex ? 'right' : 'left')
@@ -217,11 +205,10 @@ export default function HomePage() {
     }
   }
 
-  const current     = upcoming[activeIndex]
-  const gradient    = current ? (GRADIENTS[current.type]    ?? GRADIENTS.special)    : GRADIENTS.special
-  const gradientEnd = current ? (GRADIENT_END[current.type] ?? GRADIENT_END.special) : GRADIENT_END.special
-  const badge       = current ? (BADGE[current.type]        ?? BADGE.special)        : BADGE.special
-  const slideClass  = slideDir === 'right' ? 'card-enter-right' : slideDir === 'left' ? 'card-enter-left' : ''
+  const current    = upcoming[activeIndex]
+  const gradient   = current ? (GRADIENTS[current.type] ?? GRADIENTS.special) : GRADIENTS.special
+  const badge      = current ? (BADGE[current.type]     ?? BADGE.special)     : BADGE.special
+  const slideClass = slideDir === 'right' ? 'card-enter-right' : slideDir === 'left' ? 'card-enter-left' : ''
 
   return (
     <div
@@ -231,18 +218,51 @@ export default function HomePage() {
       {/* 1. HEADER */}
       <div className="flex items-center justify-between mb-6">
         <button type="button" onClick={openRightPanel} className="text-left" style={{ cursor: 'pointer' }}>
-          <p style={{ fontSize: '13px', color: '#666' }}>{getGreeting()}</p>
-          <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', lineHeight: 1.2 }}>
+          <p style={{ fontSize: '14px', color: '#666' }}>{getGreeting()}</p>
+          <p style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', lineHeight: 1.2 }}>
             {user.firstName || 'Friend'}
           </p>
         </button>
-        <button
-          type="button"
-          onClick={openRightPanel}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-[14px] font-medium text-primary"
-        >
-          {initials}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/my-events')}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '2px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <Bookmark size={20} color="#ffffff" />
+            <span style={{ fontSize: '13px', color: '#ffffff' }}>My Events</span>
+          </button>
+          <button
+            type="button"
+            onClick={openRightPanel}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: '1.5px solid #ffffff',
+              background: '#1a1a1a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#ffffff',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {initials}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -253,13 +273,13 @@ export default function HomePage() {
         <>
           {/* 2. UPCOMING EVENTS */}
           <section style={{ marginBottom: '28px' }}>
-            <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
+            <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
               Upcoming events
             </p>
 
             {upcoming.length > 0 ? (
               <>
-                {/* Clipping container — 160px tall, overflow hidden so slide animation is clipped */}
+                {/* Clipping container — 170px tall, overflow hidden so slide animation is clipped */}
                 <div
                   ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
@@ -267,7 +287,7 @@ export default function HomePage() {
                   style={{
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    height: '160px',
+                    height: '170px',
                     position: 'relative',
                   }}
                 >
@@ -276,99 +296,88 @@ export default function HomePage() {
                     className={slideClass}
                     style={{ position: 'absolute', inset: 0, cursor: 'pointer' }}
                   >
-                    {/* Background layers */}
+                    {/* Background: full-cover image or gradient */}
                     {current.image_url ? (
-                      <>
-                        {/* Bottom 45%: solid card color */}
-                        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', background: gradientEnd }} />
-                        {/* Top 55%: photo */}
-                        <img
-                          src={current.image_url}
-                          alt=""
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '55%',
-                            objectFit: 'cover',
-                            objectPosition: 'center',
-                          }}
-                        />
-                        {/* Fade: transparent → card color over the bottom 60% of the image area (22%–55%) */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            top: '22%',
-                            height: '33%',
-                            background: `linear-gradient(to bottom, transparent 0%, ${gradientEnd} 100%)`,
-                          }}
-                        />
-                      </>
+                      <img
+                        src={current.image_url}
+                        alt=""
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                        }}
+                      />
                     ) : (
                       <div style={{ position: 'absolute', inset: 0, background: gradient }} />
                     )}
 
-                    {/* Content layer — sits inside the bottom 45% color area */}
+                    {/* Gradient overlay — ensures text is always readable */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
+                      }}
+                    />
+
+                    {/* Date badge — top right */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '12px',
+                        right: '12px',
+                        background: 'rgba(0,0,0,0.5)',
+                        borderRadius: '8px',
+                        padding: '4px 10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        zIndex: 2,
+                      }}
+                    >
+                      <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
+                        {current.day}
+                      </span>
+                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
+                        {current.month}
+                      </span>
+                    </div>
+
+                    {/* Text content — pinned to bottom */}
                     <div
                       style={{
                         position: 'absolute',
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: '45%',
-                        zIndex: 1,
-                        padding: '10px 14px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
+                        padding: '14px',
+                        zIndex: 2,
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span
-                          style={{
-                            background: badge.bg,
-                            color: badge.color,
-                            fontSize: '10px',
-                            fontWeight: '600',
-                            padding: '3px 8px',
-                            borderRadius: '20px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                          }}
-                        >
-                          {capitalize(current.type)}
-                        </span>
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            background: 'rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            padding: '3px 8px',
-                            minWidth: '36px',
-                          }}
-                        >
-                          <span style={{ fontSize: '15px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
-                            {current.day}
-                          </span>
-                          <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
-                            {current.month}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p style={{ fontSize: '16px', fontWeight: '700', color: '#fff', marginBottom: '2px', lineHeight: 1.2 }}>
-                          {current.name}
-                        </p>
-                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>
-                          {current.time} · {current.location}
-                        </p>
-                      </div>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          background: badge.bg,
+                          color: badge.color,
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          padding: '3px 8px',
+                          borderRadius: '20px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        {capitalize(current.type)}
+                      </span>
+                      <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
+                        {current.name}
+                      </p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                        {current.time} · {current.location}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -411,7 +420,7 @@ export default function HomePage() {
           {/* 3. ANNOUNCEMENTS */}
           {recentNews.length > 0 && (
             <section style={{ marginBottom: '28px' }}>
-              <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
+              <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
                 Announcements
               </p>
               <div
@@ -452,7 +461,7 @@ export default function HomePage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p
                         style={{
-                          fontSize: '12px',
+                          fontSize: '15px',
                           fontWeight: '500',
                           color: '#ffffff',
                           overflow: 'hidden',
@@ -462,7 +471,7 @@ export default function HomePage() {
                       >
                         {item.title}
                       </p>
-                      <p style={{ fontSize: '10px', color: '#555', marginTop: '1px' }}>
+                      <p style={{ fontSize: '13px', color: '#555', marginTop: '1px' }}>
                         {formatShortDate(item.published_at)}
                       </p>
                     </div>
@@ -475,7 +484,7 @@ export default function HomePage() {
 
           {/* 4. QUICK ACCESS */}
           <section>
-            <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
+            <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
               Quick access
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>

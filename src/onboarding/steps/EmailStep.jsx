@@ -3,7 +3,7 @@ import TextField from '../components/TextField.jsx'
 export default function EmailStep({ formData, update }) {
   return (
     <div>
-      <h1 className="mb-6 text-[22px] text-primary">What's your email?</h1>
+      <h1 className="mb-6 text-[28px] font-bold text-primary">What's your email?</h1>
       <TextField
         type="email"
         placeholder="you@example.com"

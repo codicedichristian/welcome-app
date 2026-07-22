@@ -31,8 +31,8 @@ export default function NewsDetailPage() {
         <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
       </div>
 
-      <h1 className="mt-3 text-[24px] font-medium text-primary">{item.title}</h1>
-      <p className="mt-3 text-[14px] leading-[1.7] text-zinc-400">{item.body}</p>
+      <h1 className="mt-3 text-[26px] font-bold text-primary">{item.title}</h1>
+      <p className="mt-3 text-[15px] leading-[1.7] text-zinc-400">{item.body}</p>
     </div>
   )
 }

@@ -64,8 +64,8 @@ export default function NewsPage() {
                 </span>
                 <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
               </div>
-              <p className="mt-2 text-[16px] font-medium text-primary">{item.title}</p>
-              <p className="mt-1 line-clamp-3 text-[14px] leading-[1.5] text-zinc-500">{item.body}</p>
+              <p className="mt-2 text-[18px] font-semibold text-primary">{item.title}</p>
+              <p className="mt-1 line-clamp-3 text-[15px] leading-[1.5] text-zinc-500">{item.body}</p>
             </button>
           ))}
         </div>

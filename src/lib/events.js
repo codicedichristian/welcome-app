@@ -122,6 +122,7 @@ export function normalizeEvent(event, occurrenceDate) {
     location: event.location,
     audience: event.audience,
     description: event.description,
+    image_url: event.image_url ?? null,
   }
 }
 

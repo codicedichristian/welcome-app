@@ -90,7 +90,7 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      <p className="mt-3 text-[13px] text-zinc-500">
+      <p className="mt-3 text-[14px] text-zinc-500">
         Step {step} of {TOTAL_STEPS}
       </p>
 
@@ -106,7 +106,7 @@ export default function OnboardingPage() {
         type="button"
         onClick={handleContinue}
         disabled={!valid || saving}
-        className={`mt-4 w-full shrink-0 rounded-xl py-3.5 text-base font-medium transition-colors ${
+        className={`mt-4 w-full shrink-0 rounded-xl py-3.5 text-[17px] font-medium transition-colors ${
           isLastStep
             ? 'bg-accent-green text-bg'
             : valid

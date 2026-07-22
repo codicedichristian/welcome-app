@@ -82,7 +82,7 @@ export default function MyEventsPage() {
     <div className="min-h-dvh bg-bg px-4 pt-3 pb-8">
       <BackRow label="Home" />
 
-      <h1 className="mt-4 text-[24px] font-medium text-primary">My Events</h1>
+      <h1 className="mt-4 text-[26px] font-bold text-primary">My Events</h1>
       <p className="mt-1 text-[13px] text-zinc-500">Events you're going to</p>
 
       {loading ? (
@@ -90,7 +90,7 @@ export default function MyEventsPage() {
       ) : myEvents.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">
           <CalendarX size={36} className="text-zinc-600" />
-          <p className="mt-3 text-[16px] text-primary">No events yet</p>
+          <p className="mt-3 text-[18px] text-primary">No events yet</p>
           <p className="mt-1 text-[14px] text-zinc-500">Tap "I'll be there" on any event to save it here</p>
         </div>
       ) : (

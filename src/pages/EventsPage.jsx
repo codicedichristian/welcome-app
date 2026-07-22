@@ -177,7 +177,7 @@ export default function EventsPage() {
             <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month" className="text-zinc-500">
               <ChevronLeft size={22} />
             </button>
-            <p className="text-[20px] font-semibold text-primary">{monthLabel}</p>
+            <p className="text-[22px] font-semibold text-primary">{monthLabel}</p>
             <button type="button" onClick={() => changeMonth(1)} aria-label="Next month" className="text-zinc-500">
               <ChevronRight size={22} />
             </button>

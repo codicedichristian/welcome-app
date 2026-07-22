@@ -14,12 +14,13 @@
 }
 
 :root {
-  --text-xs: 13px;
+  --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;
   --text-md: 18px;
-  --text-lg: 20px;
-  --text-xl: 24px;
+  --text-lg: 22px;
+  --text-xl: 26px;
+  --text-2xl: 32px;
 }
 
 html,
