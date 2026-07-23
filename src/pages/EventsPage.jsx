@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, RefreshCw, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
 import BackRow from '../components/BackRow.jsx'
 import { events as fallbackEvents } from '../data/events.js'
@@ -17,7 +17,7 @@ const CAT_COLOR = {
   special: 'oklch(0.65 0.14 150)',
 }
 
-const DAY_NAMES = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const DAY_NAMES = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const TODAY = new Date()
 
@@ -47,14 +47,11 @@ export default function EventsPage() {
   const [selectedDate, setSelectedDate] = useState(TODAY)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
 
-  const loadEvents = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true)
+  const loadEvents = useCallback(async () => {
     const { data } = await getEvents()
     setEvents(data?.length ? data : fallbackEvents)
-    if (isRefresh) setRefreshing(false)
-    else setLoading(false)
+    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -64,7 +61,8 @@ export default function EventsPage() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  const firstDow = new Date(year, month, 1).getDay() // 0 = Sunday
+  // Monday-first: Mon=0 … Sun=6
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const prevMonthDays = new Date(year, month, 0).getDate()
   const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7
@@ -135,15 +133,8 @@ export default function EventsPage() {
           padding: '20px',
         }}
       >
-        {/* Header row */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '16px',
-          }}
-        >
+        {/* Header row — avatar only */}
+        <div style={{ marginBottom: '16px' }}>
           <div
             style={{
               width: '34px',
@@ -157,40 +148,9 @@ export default function EventsPage() {
               fontSize: '13px',
               fontWeight: '600',
               color: 'oklch(0.75 0.006 260)',
-              flexShrink: 0,
             }}
           >
             {initials || '?'}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <button
-              type="button"
-              onClick={() => loadEvents(true)}
-              aria-label="Refresh events"
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'flex',
-                opacity: refreshing ? 0.4 : 1,
-              }}
-            >
-              <RefreshCw size={18} color="oklch(0.55 0.01 260)" />
-            </button>
-            <button
-              type="button"
-              aria-label="Add event"
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'flex',
-              }}
-            >
-              <Plus size={18} color="oklch(0.55 0.01 260)" />
-            </button>
           </div>
         </div>
 
