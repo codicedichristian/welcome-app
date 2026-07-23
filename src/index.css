@@ -32,8 +32,12 @@ body,
 
 html,
 body {
+  overscroll-behavior: none;
   overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -43,6 +47,8 @@ body {
   color: var(--color-primary);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Prevent iOS auto-zoom on input focus */
@@ -50,6 +56,29 @@ input,
 textarea,
 select {
   font-size: var(--text-base) !important;
+}
+
+/* Re-enable text selection inside inputs */
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Disable double-tap zoom; remove tap highlight */
+* {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbars everywhere */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* Page transition: fade + slight slide up */

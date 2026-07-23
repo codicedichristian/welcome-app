@@ -94,20 +94,8 @@ export default function EventsPage() {
 
   const monthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long' })
 
-  // Events section data
+  // Events section: selected day only
   const selEvents = getEventsOnDate(events, selectedDate)
-  const nextDate = selectedDate
-    ? new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate() + 1,
-      )
-    : null
-  const nextEvents = getEventsOnDate(events, nextDate)
-
-  const dayGroups = []
-  if (selectedDate) dayGroups.push({ date: selectedDate, evs: selEvents })
-  if (nextDate && nextEvents.length > 0) dayGroups.push({ date: nextDate, evs: nextEvents })
 
   return (
     <div
@@ -369,137 +357,78 @@ export default function EventsPage() {
         }}
       >
         {loading ? (
-          <p
-            style={{
-              color: 'oklch(0.5 0.008 260)',
-              fontSize: '14px',
-              textAlign: 'center',
-            }}
-          >
+          <p style={{ color: 'oklch(0.5 0.008 260)', fontSize: '14px', textAlign: 'center' }}>
             Loading…
           </p>
-        ) : dayGroups.length === 0 || dayGroups.every((g) => g.evs.length === 0) ? (
-          <p
-            style={{
-              color: 'oklch(0.5 0.008 260)',
-              fontSize: '14px',
-              textAlign: 'center',
-            }}
-          >
-            No events on this day
+        ) : selEvents.length === 0 ? (
+          <p style={{ color: 'oklch(0.5 0.008 260)', fontSize: '14px', textAlign: 'center' }}>
+            No events today
           </p>
         ) : (
-          dayGroups.map((group, gi) => {
-            const dayName = group.date
-              .toLocaleDateString('en-US', { weekday: 'long' })
-              .toUpperCase()
-            const dayNum = group.date.getDate()
+          <>
+            {/* Day heading */}
+            <p
+              style={{
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'oklch(0.5 0.008 260)',
+                margin: '0 0 12px',
+              }}
+            >
+              {selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()}{' '}
+              {selectedDate.getDate()}
+            </p>
 
-            return (
-              <div key={gi} style={{ marginTop: gi > 0 ? '20px' : 0 }}>
-                {/* Day heading */}
-                <p
+            {selEvents.map((ev, ei) => {
+              const startTime = formatTime12h(ev.start_time)
+              const endTime = formatTime12h(ev.end_time)
+              const catColor = CAT_COLOR[ev.type] ?? 'oklch(0.55 0.01 260)'
+
+              return (
+                <div
+                  key={`${ev.id}-${ei}`}
                   style={{
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    color: 'oklch(0.5 0.008 260)',
-                    margin: '0 0 12px',
+                    display: 'grid',
+                    gridTemplateColumns: '52px 10px 1fr',
+                    columnGap: '10px',
+                    alignItems: 'start',
+                    marginTop: ei > 0 ? '12px' : 0,
                   }}
                 >
-                  {dayName} {dayNum}
-                </p>
+                  {/* Time */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.4 }}>
+                      {startTime || '—'}
+                    </span>
+                    {endTime && (
+                      <span style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.4 }}>
+                        {endTime}
+                      </span>
+                    )}
+                  </div>
 
-                {group.evs.length === 0 ? (
-                  <p style={{ fontSize: '13px', color: 'oklch(0.45 0.008 260)' }}>
-                    No events
-                  </p>
-                ) : (
-                  group.evs.map((ev, ei) => {
-                    const startTime = formatTime12h(ev.start_time)
-                    const endTime = formatTime12h(ev.end_time)
-                    const catColor = CAT_COLOR[ev.type] ?? 'oklch(0.55 0.01 260)'
+                  {/* Dot */}
+                  <div style={{ paddingTop: '4px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: catColor }} />
+                  </div>
 
-                    return (
-                      <div
-                        key={`${ev.id}-${ei}`}
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: '52px 10px 1fr',
-                          columnGap: '10px',
-                          alignItems: 'start',
-                          marginTop: ei > 0 ? '12px' : 0,
-                        }}
-                      >
-                        {/* Time */}
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span
-                            style={{
-                              fontSize: '12px',
-                              color: 'oklch(0.55 0.008 260)',
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {startTime || '—'}
-                          </span>
-                          {endTime && (
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                color: 'oklch(0.55 0.008 260)',
-                                lineHeight: 1.4,
-                              }}
-                            >
-                              {endTime}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Dot */}
-                        <div style={{ paddingTop: '4px' }}>
-                          <div
-                            style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              background: catColor,
-                            }}
-                          />
-                        </div>
-
-                        {/* Title + description */}
-                        <div>
-                          <p
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              color: 'oklch(0.94 0.005 260)',
-                              margin: '0 0 2px',
-                            }}
-                          >
-                            {ev.title}
-                          </p>
-                          {ev.description && (
-                            <p
-                              style={{
-                                fontSize: '12px',
-                                color: 'oklch(0.55 0.008 260)',
-                                lineHeight: 1.5,
-                                margin: 0,
-                              }}
-                            >
-                              {ev.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            )
-          })
+                  {/* Title + description */}
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: '600', color: 'oklch(0.94 0.005 260)', margin: '0 0 2px' }}>
+                      {ev.title}
+                    </p>
+                    {ev.description && (
+                      <p style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.5, margin: 0 }}>
+                        {ev.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </>
         )}
       </div>
     </div>

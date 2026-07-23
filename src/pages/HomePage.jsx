@@ -380,7 +380,6 @@ export default function HomePage() {
                   onTouchEnd={handleTouchEnd}
                   onMouseDown={handleMouseDown}
                   style={{
-                    width: '100%',
                     overflow: 'hidden',
                     margin: '0 -8px',
                     cursor: isDragging ? 'grabbing' : 'grab',
