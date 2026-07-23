@@ -382,6 +382,7 @@ export default function HomePage() {
                   style={{
                     width: '100%',
                     overflow: 'hidden',
+                    margin: '0 -8px',
                     cursor: isDragging ? 'grabbing' : 'grab',
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
@@ -409,6 +410,7 @@ export default function HomePage() {
                             flex: '0 0 100%',
                             width: '100%',
                             minWidth: '100%',
+                            padding: '0 8px',
                           }}
                           onClick={() => {
                             if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
