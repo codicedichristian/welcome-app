@@ -21,6 +21,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-dvh bg-bg text-primary">
+      <div className="safe-top" />
       {!isHome && (
         <header
           className="flex items-center justify-between px-4 pb-3"

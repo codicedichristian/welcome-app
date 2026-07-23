@@ -143,6 +143,7 @@ export default function HomePage() {
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [showDonate, setShowDonate] = useState(false)
+  const [showScrollBar, setShowScrollBar] = useState(false)
 
   // Drag tracking refs
   const cardContainerRef = useRef(null)
@@ -166,6 +167,12 @@ export default function HomePage() {
     }
     load()
     return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollBar(window.scrollY > 60)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   const upcoming = events
@@ -305,10 +312,36 @@ export default function HomePage() {
   }
 
   return (
-    <div
-      className="px-4 pb-8"
-      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
-    >
+    <>
+      {/* Scroll-aware "Welcome" bar — appears below safe-area cover when scrollY > 60 */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 'env(safe-area-inset-top)',
+          left: 0,
+          right: 0,
+          height: '44px',
+          background: 'rgba(15,15,15,0.95)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '0.5px solid #1e1e1e',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 998,
+          opacity: showScrollBar ? 1 : 0,
+          transform: showScrollBar ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'opacity 200ms ease-out, transform 200ms ease-out',
+          pointerEvents: showScrollBar ? 'auto' : 'none',
+        }}
+      >
+        <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>Welcome</span>
+      </div>
+
+      <div
+        className="px-4 pb-8"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
+      >
       {/* 1. HEADER */}
       <div className="flex items-center justify-between mb-6">
         <button type="button" onClick={openRightPanel} className="text-left" style={{ cursor: 'pointer' }}>
@@ -655,6 +688,7 @@ export default function HomePage() {
       )}
 
       {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
-    </div>
+      </div>
+    </>
   )
 }
