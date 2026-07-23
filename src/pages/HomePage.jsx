@@ -304,8 +304,6 @@ export default function HomePage() {
     else if (dragOffset > (cw * 0.5) && activeIndex > 0) activeDotIndex = activeIndex - 1
   }
 
-  const n = upcoming.length
-
   return (
     <div
       className="px-4 pb-8"
@@ -375,29 +373,27 @@ export default function HomePage() {
 
             {upcoming.length > 0 ? (
               <>
-                {/* Outer clipping container */}
+                {/* carousel-outer: transparent clipper only — no border-radius, no height */}
                 <div
                   ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
                   onMouseDown={handleMouseDown}
                   style={{
-                    borderRadius: '20px',
+                    width: '100%',
                     overflow: 'hidden',
-                    height: '170px',
-                    position: 'relative',
                     cursor: isDragging ? 'grabbing' : 'grab',
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
                   }}
                 >
-                  {/* Inner sliding track — all cards side by side */}
+                  {/* carousel-track: slides side by side, width:100% so 100% in translateX = one slide */}
                   <div
                     style={{
                       display: 'flex',
-                      width: `${n * 100}%`,
-                      height: '100%',
-                      transform: `translateX(calc(${-activeIndex * 100 / n}% + ${dragOffset}px))`,
+                      flexDirection: 'row',
+                      width: '100%',
+                      transform: `translateX(calc(${-activeIndex * 100}% + ${dragOffset}px))`,
                       transition: isDragging ? 'none' : 'transform 280ms ease-out',
                       willChange: 'transform',
                     }}
@@ -406,100 +402,112 @@ export default function HomePage() {
                       const grad = GRADIENTS[ev.type] ?? GRADIENTS.special
                       const bdg = BADGE[ev.type] ?? BADGE.special
                       return (
+                        /* carousel-slide: full-width slot, no overflow clipping here */
                         <div
                           key={ev.id}
                           style={{
-                            flex: `0 0 ${100 / n}%`,
-                            height: '100%',
-                            position: 'relative',
+                            flex: '0 0 100%',
+                            width: '100%',
+                            minWidth: '100%',
                           }}
                           onClick={() => {
                             if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
                           }}
                         >
-                          {/* Background */}
-                          {ev.image_url ? (
-                            <img
-                              src={ev.image_url}
-                              alt=""
-                              draggable={false}
+                          {/* event-card: the actual visible card — border-radius and overflow:hidden live HERE */}
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '170px',
+                              borderRadius: '20px',
+                              overflow: 'hidden',
+                              position: 'relative',
+                            }}
+                          >
+                            {/* Background */}
+                            {ev.image_url ? (
+                              <img
+                                src={ev.image_url}
+                                alt=""
+                                draggable={false}
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                  objectPosition: 'center',
+                                }}
+                              />
+                            ) : (
+                              <div style={{ position: 'absolute', inset: 0, background: grad }} />
+                            )}
+
+                            {/* Gradient overlay */}
+                            <div
                               style={{
                                 position: 'absolute',
                                 inset: 0,
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                objectPosition: 'center',
+                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
                               }}
                             />
-                          ) : (
-                            <div style={{ position: 'absolute', inset: 0, background: grad }} />
-                          )}
 
-                          {/* Gradient overlay */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              inset: 0,
-                              background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
-                            }}
-                          />
-
-                          {/* Date badge — top right */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: '12px',
-                              right: '12px',
-                              background: 'rgba(0,0,0,0.5)',
-                              borderRadius: '8px',
-                              padding: '4px 10px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              zIndex: 2,
-                            }}
-                          >
-                            <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
-                              {ev.day}
-                            </span>
-                            <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
-                              {ev.month}
-                            </span>
-                          </div>
-
-                          {/* Text content — pinned to bottom */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              padding: '14px',
-                              zIndex: 2,
-                            }}
-                          >
-                            <span
+                            {/* Date badge — top right */}
+                            <div
                               style={{
-                                display: 'inline-block',
-                                background: bdg.bg,
-                                color: bdg.color,
-                                fontSize: '10px',
-                                fontWeight: '600',
-                                padding: '3px 8px',
-                                borderRadius: '20px',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                background: 'rgba(0,0,0,0.5)',
+                                borderRadius: '8px',
+                                padding: '4px 10px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                zIndex: 2,
                               }}
                             >
-                              {capitalize(ev.type)}
-                            </span>
-                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
-                              {ev.name}
-                            </p>
-                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
-                              {ev.time} · {ev.location}
-                            </p>
+                              <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
+                                {ev.day}
+                              </span>
+                              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
+                                {ev.month}
+                              </span>
+                            </div>
+
+                            {/* Text content — pinned to bottom */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                padding: '14px',
+                                zIndex: 2,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  background: bdg.bg,
+                                  color: bdg.color,
+                                  fontSize: '10px',
+                                  fontWeight: '600',
+                                  padding: '3px 8px',
+                                  borderRadius: '20px',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                }}
+                              >
+                                {capitalize(ev.type)}
+                              </span>
+                              <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
+                                {ev.name}
+                              </p>
+                              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                                {ev.time} · {ev.location}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       )
