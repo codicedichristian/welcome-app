@@ -140,12 +140,20 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
-  const [slideDir, setSlideDir] = useState(null) // 'right' | 'left' | null
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const [showDonate, setShowDonate] = useState(false)
 
+  // Drag tracking refs
+  const cardContainerRef = useRef(null)
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
-  const cardContainerRef = useRef(null)
+  const isHorizontalDrag = useRef(null) // null=undecided, true=horizontal, false=vertical
+  const velocityPoints = useRef([])
+  const isDraggingRef = useRef(false)
+  const cardWidthRef = useRef(0)
+  const didDrag = useRef(false)
+  const dragStartX = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -160,19 +168,6 @@ export default function HomePage() {
     return () => { cancelled = true }
   }, [])
 
-  // Attach non-passive touchmove to card so preventDefault can block Safari's page-back gesture
-  useEffect(() => {
-    const el = cardContainerRef.current
-    if (!el) return
-    const handleMove = (e) => {
-      const diffX = e.touches[0].clientX - touchStartX.current
-      const diffY = e.touches[0].clientY - touchStartY.current
-      if (Math.abs(diffX) > Math.abs(diffY)) e.preventDefault()
-    }
-    el.addEventListener('touchmove', handleMove, { passive: false })
-    return () => el.removeEventListener('touchmove', handleMove)
-  }, [])
-
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
     .filter((item) => item.date)
@@ -182,33 +177,134 @@ export default function HomePage() {
 
   const recentNews = news.slice(0, 3)
 
-  const changeCard = (newIndex) => {
-    if (newIndex < 0 || newIndex >= upcoming.length) return
-    setSlideDir(newIndex > activeIndex ? 'right' : 'left')
-    setActiveIndex(newIndex)
+  // Non-passive touchmove so we can preventDefault for horizontal swipes
+  useEffect(() => {
+    const el = cardContainerRef.current
+    if (!el) return
+    const onMove = (e) => {
+      const dx = e.touches[0].clientX - touchStartX.current
+      const dy = e.touches[0].clientY - touchStartY.current
+
+      if (isHorizontalDrag.current === null) {
+        const absDx = Math.abs(dx)
+        const absDy = Math.abs(dy)
+        if (absDx > 5 || absDy > 5) {
+          isHorizontalDrag.current = absDx > absDy
+        }
+        return
+      }
+
+      if (!isHorizontalDrag.current) return
+
+      e.preventDefault()
+      setDragOffset(dx)
+
+      velocityPoints.current.push({ x: e.touches[0].clientX, t: Date.now() })
+      if (velocityPoints.current.length > 5) velocityPoints.current.shift()
+    }
+    el.addEventListener('touchmove', onMove, { passive: false })
+    return () => el.removeEventListener('touchmove', onMove)
+  }, [upcoming.length])
+
+  // Mouse drag support for desktop testing
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (!isDraggingRef.current) return
+      const dx = e.clientX - dragStartX.current
+      setDragOffset(dx)
+      velocityPoints.current.push({ x: e.clientX, t: Date.now() })
+      if (velocityPoints.current.length > 5) velocityPoints.current.shift()
+    }
+
+    const onMouseUp = (e) => {
+      if (!isDraggingRef.current) return
+      isDraggingRef.current = false
+      const dx = e.clientX - dragStartX.current
+      didDrag.current = Math.abs(dx) >= 10
+
+      const velocity = calcVelocity()
+      let newIndex = activeIndex
+      if ((dx < -50 || velocity < -0.3) && activeIndex < upcoming.length - 1) newIndex = activeIndex + 1
+      else if ((dx > 50 || velocity > 0.3) && activeIndex > 0) newIndex = activeIndex - 1
+
+      setActiveIndex(newIndex)
+      setIsDragging(false)
+      setDragOffset(0)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [activeIndex, upcoming.length])
+
+  function calcVelocity() {
+    const track = velocityPoints.current
+    if (track.length < 2) return 0
+    const last = track[track.length - 1]
+    const first = track[0]
+    const dt = last.t - first.t
+    return dt > 0 ? (last.x - first.x) / dt : 0
   }
 
   const handleTouchStart = (e) => {
+    cardWidthRef.current = cardContainerRef.current?.offsetWidth ?? 0
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
+    isHorizontalDrag.current = null
+    velocityPoints.current = [{ x: e.touches[0].clientX, t: Date.now() }]
+    isDraggingRef.current = true
+    didDrag.current = false
+    setIsDragging(true)
   }
 
   const handleTouchEnd = (e) => {
-    const diffX = e.changedTouches[0].clientX - touchStartX.current
-    const diffY = e.changedTouches[0].clientY - touchStartY.current
-    if (Math.abs(diffX) < Math.abs(diffY)) return
-    if (Math.abs(diffX) >= 40) {
-      diffX < 0 ? changeCard(activeIndex + 1) : changeCard(activeIndex - 1)
-    } else if (upcoming[activeIndex]) {
-      const ev = upcoming[activeIndex]
-      navigate(`/events/${ev.id}`, { state: { event: ev } })
+    isDraggingRef.current = false
+    const endX = e.changedTouches[0].clientX
+    const endY = e.changedTouches[0].clientY
+    const dx = endX - touchStartX.current
+    const dy = endY - touchStartY.current
+
+    // If touchmove never fired or didn't determine direction, compute it here
+    const horizontal = isHorizontalDrag.current ?? (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5)
+
+    if (!horizontal) {
+      setIsDragging(false)
+      setDragOffset(0)
+      return
     }
+
+    didDrag.current = Math.abs(dx) >= 10
+    const velocity = calcVelocity()
+    let newIndex = activeIndex
+    if ((dx < -50 || velocity < -0.3) && activeIndex < upcoming.length - 1) newIndex = activeIndex + 1
+    else if ((dx > 50 || velocity > 0.3) && activeIndex > 0) newIndex = activeIndex - 1
+
+    setActiveIndex(newIndex)
+    setIsDragging(false)
+    setDragOffset(0)
   }
 
-  const current    = upcoming[activeIndex]
-  const gradient   = current ? (GRADIENTS[current.type] ?? GRADIENTS.special) : GRADIENTS.special
-  const badge      = current ? (BADGE[current.type]     ?? BADGE.special)     : BADGE.special
-  const slideClass = slideDir === 'right' ? 'card-enter-right' : slideDir === 'left' ? 'card-enter-left' : ''
+  const handleMouseDown = (e) => {
+    e.preventDefault()
+    dragStartX.current = e.clientX
+    isDraggingRef.current = true
+    didDrag.current = false
+    velocityPoints.current = [{ x: e.clientX, t: Date.now() }]
+    setIsDragging(true)
+  }
+
+  // Dot index updates in real time as drag crosses 50% of card width
+  const cw = cardWidthRef.current || 1
+  let activeDotIndex = activeIndex
+  if (isDragging) {
+    if (dragOffset < -(cw * 0.5) && activeIndex < upcoming.length - 1) activeDotIndex = activeIndex + 1
+    else if (dragOffset > (cw * 0.5) && activeIndex > 0) activeDotIndex = activeIndex - 1
+  }
+
+  const n = upcoming.length
 
   return (
     <div
@@ -279,106 +375,135 @@ export default function HomePage() {
 
             {upcoming.length > 0 ? (
               <>
-                {/* Clipping container — 170px tall, overflow hidden so slide animation is clipped */}
+                {/* Outer clipping container */}
                 <div
                   ref={cardContainerRef}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
+                  onMouseDown={handleMouseDown}
                   style={{
                     borderRadius: '20px',
                     overflow: 'hidden',
                     height: '170px',
                     position: 'relative',
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
                   }}
                 >
+                  {/* Inner sliding track — all cards side by side */}
                   <div
-                    key={activeIndex}
-                    className={slideClass}
-                    style={{ position: 'absolute', inset: 0, cursor: 'pointer' }}
+                    style={{
+                      display: 'flex',
+                      width: `${n * 100}%`,
+                      height: '100%',
+                      transform: `translateX(calc(${-activeIndex * 100 / n}% + ${dragOffset}px))`,
+                      transition: isDragging ? 'none' : 'transform 280ms ease-out',
+                      willChange: 'transform',
+                    }}
                   >
-                    {/* Background: full-cover image or gradient */}
-                    {current.image_url ? (
-                      <img
-                        src={current.image_url}
-                        alt=""
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          objectPosition: 'center',
-                        }}
-                      />
-                    ) : (
-                      <div style={{ position: 'absolute', inset: 0, background: gradient }} />
-                    )}
+                    {upcoming.map((ev) => {
+                      const grad = GRADIENTS[ev.type] ?? GRADIENTS.special
+                      const bdg = BADGE[ev.type] ?? BADGE.special
+                      return (
+                        <div
+                          key={ev.id}
+                          style={{
+                            flex: `0 0 ${100 / n}%`,
+                            height: '100%',
+                            position: 'relative',
+                          }}
+                          onClick={() => {
+                            if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
+                          }}
+                        >
+                          {/* Background */}
+                          {ev.image_url ? (
+                            <img
+                              src={ev.image_url}
+                              alt=""
+                              draggable={false}
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                objectPosition: 'center',
+                              }}
+                            />
+                          ) : (
+                            <div style={{ position: 'absolute', inset: 0, background: grad }} />
+                          )}
 
-                    {/* Gradient overlay — ensures text is always readable */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
-                      }}
-                    />
+                          {/* Gradient overlay */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
+                            }}
+                          />
 
-                    {/* Date badge — top right */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        background: 'rgba(0,0,0,0.5)',
-                        borderRadius: '8px',
-                        padding: '4px 10px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        zIndex: 2,
-                      }}
-                    >
-                      <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
-                        {current.day}
-                      </span>
-                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
-                        {current.month}
-                      </span>
-                    </div>
+                          {/* Date badge — top right */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '12px',
+                              right: '12px',
+                              background: 'rgba(0,0,0,0.5)',
+                              borderRadius: '8px',
+                              padding: '4px 10px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              zIndex: 2,
+                            }}
+                          >
+                            <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
+                              {ev.day}
+                            </span>
+                            <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
+                              {ev.month}
+                            </span>
+                          </div>
 
-                    {/* Text content — pinned to bottom */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        padding: '14px',
-                        zIndex: 2,
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          background: badge.bg,
-                          color: badge.color,
-                          fontSize: '10px',
-                          fontWeight: '600',
-                          padding: '3px 8px',
-                          borderRadius: '20px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        {capitalize(current.type)}
-                      </span>
-                      <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
-                        {current.name}
-                      </p>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
-                        {current.time} · {current.location}
-                      </p>
-                    </div>
+                          {/* Text content — pinned to bottom */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              padding: '14px',
+                              zIndex: 2,
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                background: bdg.bg,
+                                color: bdg.color,
+                                fontSize: '10px',
+                                fontWeight: '600',
+                                padding: '3px 8px',
+                                borderRadius: '20px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                              }}
+                            >
+                              {capitalize(ev.type)}
+                            </span>
+                            <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
+                              {ev.name}
+                            </p>
+                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
+                              {ev.time} · {ev.location}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -396,12 +521,15 @@ export default function HomePage() {
                       <button
                         key={i}
                         type="button"
-                        onClick={() => changeCard(i)}
+                        onClick={() => {
+                          setActiveIndex(i)
+                          setDragOffset(0)
+                        }}
                         style={{
                           height: '5px',
-                          width: i === activeIndex ? '14px' : '5px',
+                          width: i === activeDotIndex ? '14px' : '5px',
                           borderRadius: '50px',
-                          background: i === activeIndex ? '#ffffff' : '#333333',
+                          background: i === activeDotIndex ? '#ffffff' : '#333333',
                           border: 'none',
                           padding: 0,
                           cursor: 'pointer',
