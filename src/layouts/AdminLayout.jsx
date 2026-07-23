@@ -29,7 +29,11 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-bg text-primary">
-      <header className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="safe-top" />
+      <header
+        className="flex items-center justify-between border-b border-border px-4 py-3"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+      >
         <p className="text-sm font-medium text-primary">Welcome Admin</p>
         <div className="flex items-center gap-3">
           <span className="text-xs text-zinc-400">{fullName}</span>

@@ -25,7 +25,7 @@ export default function AppLayout() {
       {!isHome && (
         <header
           className="flex items-center justify-between px-4 pb-3"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}
         >
           <div className="flex items-center gap-2">
             <Cross size={20} className="text-primary" />

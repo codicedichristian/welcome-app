@@ -339,8 +339,8 @@ export default function HomePage() {
       </div>
 
       <div
-        className="px-4 pb-8"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
+        className="pb-8"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingLeft: '15px', paddingRight: '15px' }}
       >
       {/* 1. HEADER */}
       <div className="flex items-center justify-between mb-6">
@@ -414,7 +414,7 @@ export default function HomePage() {
                   onMouseDown={handleMouseDown}
                   style={{
                     overflow: 'hidden',
-                    margin: '0 -8px',
+                    margin: '0 -15px',
                     cursor: isDragging ? 'grabbing' : 'grab',
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
