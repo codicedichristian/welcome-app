@@ -340,7 +340,7 @@ export default function HomePage() {
 
       <div
         className="pb-8"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingLeft: '15px', paddingRight: '15px' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)', paddingLeft: '15px', paddingRight: '15px' }}
       >
       {/* 1. HEADER */}
       <div className="flex items-center justify-between mb-6">

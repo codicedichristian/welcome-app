@@ -10,7 +10,7 @@ export default function NewsDetailPage() {
 
   if (!item) {
     return (
-      <div className="px-4 pt-3">
+      <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
         <BackRow label="News" />
         <p className="mt-4 text-[14px] text-zinc-500">News item not found.</p>
       </div>
@@ -18,7 +18,7 @@ export default function NewsDetailPage() {
   }
 
   return (
-    <div className="px-4 pt-3 pb-8">
+    <div className="px-4 pb-8">
       <BackRow label="News" />
 
       <div className="mt-4 flex items-center justify-between">

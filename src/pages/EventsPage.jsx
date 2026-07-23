@@ -102,7 +102,7 @@ export default function EventsPage() {
       style={{
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-        paddingTop: '8px',
+        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
       }}
     >
       {/* Back button */}

@@ -36,7 +36,7 @@ export default function NewsPage() {
   }, [])
 
   return (
-    <div className="px-4 pb-8">
+    <div className="px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
       {loading ? (
         <Spinner />
       ) : error ? (
