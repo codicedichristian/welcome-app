@@ -1,27 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ChevronRight, CalendarDays, Play, MapPin, Heart, Bookmark } from 'lucide-react'
 import { getEvents, getNews } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
 import { getNextOccurrence, normalizeEvent } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
-import { capitalize, formatShortDate } from '../lib/format.js'
+import { formatShortDate } from '../lib/format.js'
 
-const GRADIENTS = {
-  sunday:  'linear-gradient(135deg, #1a1a2e, #0f0f1a)',
-  youth:   'linear-gradient(135deg, #1a3d2b, #0f2419)',
-  midweek: 'linear-gradient(135deg, #1a2340, #0f1628)',
-  prayer:  'linear-gradient(135deg, #2a1a40, #180f28)',
-  special: 'linear-gradient(135deg, #3d2010, #281508)',
+// Event card category pill styles
+const CAT_PILL = {
+  sunday:  { bg: 'rgba(255,255,255,0.15)', border: 'rgba(255,255,255,0.4)',   text: '#ffffff' },
+  youth:   { bg: 'rgba(52,211,153,0.18)',  border: 'rgba(110,231,183,0.5)',   text: '#7ee9bb' },
+  midweek: { bg: 'rgba(91,140,255,0.18)',  border: 'rgba(91,140,255,0.5)',    text: '#8bb4ff' },
+  prayer:  { bg: 'rgba(167,139,250,0.18)', border: 'rgba(167,139,250,0.5)',   text: '#c4b0ff' },
+  special: { bg: 'rgba(249,115,22,0.18)',  border: 'rgba(249,115,22,0.5)',    text: '#ffb088' },
 }
 
-const BADGE = {
-  sunday:  { bg: 'rgba(91,140,255,0.2)',  color: '#5b8cff' },
-  youth:   { bg: 'rgba(76,175,125,0.2)',  color: '#4caf7d' },
-  midweek: { bg: 'rgba(91,140,255,0.2)',  color: '#5b8cff' },
-  prayer:  { bg: 'rgba(167,139,250,0.2)', color: '#a78bfa' },
-  special: { bg: 'rgba(249,115,22,0.2)',  color: '#f97316' },
+// News card status dot colours
+const NEWS_DOT = {
+  Announcement: { color: '#5b8cff', glow: 'rgba(91,140,255,0.25)' },
+  Event:        { color: '#3ddc97', glow: 'rgba(61,220,151,0.25)' },
+  General:      { color: '#8a8a86', glow: 'rgba(138,138,134,0.25)' },
 }
 
 function getGreeting() {
@@ -31,28 +30,59 @@ function getGreeting() {
   return 'Good evening!'
 }
 
+// ─── Inline SVG icons (36×36, stroke-based, fill none) ───────────────────────
+
+const CalendarIcon = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b8cff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+)
+
+const PlayIcon = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#141412" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M10 9l5 3-5 3V9z" fill="#141412" stroke="none" />
+  </svg>
+)
+
+const PinIcon = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5b8cff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" />
+    <circle cx="12" cy="9" r="2.5" />
+  </svg>
+)
+
+const HeartIcon = () => (
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#3ddc97" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 21s-7.5-4.9-10-9.4C.5 8 2 4 6 4c2.2 0 3.8 1.3 6 4 2.2-2.7 3.8-4 6-4 4 0 5.5 4 4 7.6C19.5 16.1 12 21 12 21z" />
+  </svg>
+)
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 function QuickCard({ icon, label, sub, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
       style={{
-        background: '#1c1c1c',
-        border: '0.5px solid #2a2a2a',
-        borderRadius: '16px',
-        padding: '14px 12px',
+        background: '#f2f1ee',
+        borderRadius: '24px',
+        padding: '20px',
         display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
+        flexDirection: 'column',
+        gap: '14px',
         cursor: 'pointer',
         textAlign: 'left',
         width: '100%',
+        border: 'none',
       }}
     >
       {icon}
       <div>
-        <p style={{ fontSize: '15px', fontWeight: '500', color: '#ffffff' }}>{label}</p>
-        <p style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>{sub}</p>
+        <p style={{ fontSize: '17px', fontWeight: '700', color: '#141412', marginBottom: '2px', lineHeight: 1.2 }}>{label}</p>
+        <p style={{ fontSize: '13px', color: '#7a7a76' }}>{sub}</p>
       </div>
     </button>
   )
@@ -67,7 +97,7 @@ function DonateModal({ onClose }) {
         inset: 0,
         background: 'rgba(0,0,0,0.7)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'center',
         zIndex: 300,
       }}
@@ -76,31 +106,31 @@ function DonateModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: '#1a1a1a',
-          borderRadius: '20px',
-          padding: '24px',
-          width: '85%',
-          maxWidth: '340px',
+          borderRadius: '28px 28px 0 0',
+          padding: '28px 24px calc(32px + env(safe-area-inset-bottom))',
+          width: '100%',
+          maxWidth: '480px',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-          <Heart size={32} color="#4caf7d" fill="#4caf7d" />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
+          <HeartIcon />
         </div>
-        <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
+        <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
           Support the church
         </p>
-        <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', marginBottom: '16px' }}>
+        <p style={{ fontSize: '14px', color: '#888', textAlign: 'center', marginBottom: '20px' }}>
           Your generosity makes everything possible.
         </p>
         <div
           style={{
             background: '#111',
-            borderRadius: '12px',
-            padding: '14px',
+            borderRadius: '14px',
+            padding: '16px',
             fontFamily: 'monospace',
             fontSize: '14px',
             color: '#ffffff',
-            lineHeight: '1.7',
-            marginBottom: '16px',
+            lineHeight: '1.8',
+            marginBottom: '20px',
           }}
         >
           <p>Bank: Banco Santander</p>
@@ -109,15 +139,16 @@ function DonateModal({ onClose }) {
         </div>
         <button
           type="button"
+          aria-label="close"
           onClick={onClose}
           style={{
             width: '100%',
-            borderRadius: '12px',
+            borderRadius: '14px',
             background: '#ffffff',
             color: '#0f0f0f',
             fontSize: '17px',
-            fontWeight: '500',
-            padding: '12px',
+            fontWeight: '600',
+            padding: '15px',
             border: 'none',
             cursor: 'pointer',
           }}
@@ -128,6 +159,8 @@ function DonateModal({ onClose }) {
     </div>
   )
 }
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -149,7 +182,7 @@ export default function HomePage() {
   const cardContainerRef = useRef(null)
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
-  const isHorizontalDrag = useRef(null) // null=undecided, true=horizontal, false=vertical
+  const isHorizontalDrag = useRef(null) // null=undecided, true=horiz, false=vert
   const velocityPoints = useRef([])
   const isDraggingRef = useRef(false)
   const cardWidthRef = useRef(0)
@@ -184,7 +217,8 @@ export default function HomePage() {
 
   const recentNews = news.slice(0, 3)
 
-  // Non-passive touchmove so we can preventDefault for horizontal swipes
+  // Non-passive touchmove — lets us preventDefault on horizontal swipes to
+  // block Safari's page-back gesture while the carousel is active.
   useEffect(() => {
     const el = cardContainerRef.current
     if (!el) return
@@ -195,14 +229,11 @@ export default function HomePage() {
       if (isHorizontalDrag.current === null) {
         const absDx = Math.abs(dx)
         const absDy = Math.abs(dy)
-        if (absDx > 5 || absDy > 5) {
-          isHorizontalDrag.current = absDx > absDy
-        }
+        if (absDx > 5 || absDy > 5) isHorizontalDrag.current = absDx > absDy
         return
       }
 
       if (!isHorizontalDrag.current) return
-
       e.preventDefault()
       setDragOffset(dx)
 
@@ -213,7 +244,7 @@ export default function HomePage() {
     return () => el.removeEventListener('touchmove', onMove)
   }, [upcoming.length])
 
-  // Mouse drag support for desktop testing
+  // Mouse drag (desktop testing)
   useEffect(() => {
     const onMouseMove = (e) => {
       if (!isDraggingRef.current) return
@@ -274,7 +305,6 @@ export default function HomePage() {
     const dx = endX - touchStartX.current
     const dy = endY - touchStartY.current
 
-    // If touchmove never fired or didn't determine direction, compute it here
     const horizontal = isHorizontalDrag.current ?? (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5)
 
     if (!horizontal) {
@@ -303,7 +333,6 @@ export default function HomePage() {
     setIsDragging(true)
   }
 
-  // Dot index updates in real time as drag crosses 50% of card width
   const cw = cardWidthRef.current || 1
   let activeDotIndex = activeIndex
   if (isDragging) {
@@ -313,7 +342,7 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Scroll-aware "Welcome" bar — appears below safe-area cover when scrollY > 60 */}
+      {/* Scroll-aware sticky title bar */}
       <div
         style={{
           position: 'fixed',
@@ -321,10 +350,10 @@ export default function HomePage() {
           left: 0,
           right: 0,
           height: '44px',
-          background: 'rgba(15,15,15,0.95)',
+          background: 'rgba(10,11,10,0.95)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '0.5px solid #1e1e1e',
+          borderBottom: '0.5px solid rgba(255,255,255,0.06)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -338,356 +367,323 @@ export default function HomePage() {
         <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>Welcome</span>
       </div>
 
+      {/* Page wrapper */}
       <div
-        className="pb-8"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)', paddingLeft: '15px', paddingRight: '15px' }}
+        style={{
+          background: '#0a0b0a',
+          minHeight: '100dvh',
+          paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
+          paddingLeft: '22px',
+          paddingRight: '22px',
+          paddingBottom: '120px',
+        }}
       >
-      {/* 1. HEADER */}
-      <div className="flex items-center justify-between mb-6">
-        <button type="button" onClick={openRightPanel} className="text-left" style={{ cursor: 'pointer' }}>
-          <p style={{ fontSize: '14px', color: '#666' }}>{getGreeting()}</p>
-          <p style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', lineHeight: 1.2 }}>
-            {user.firstName || 'Friend'}
-          </p>
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            type="button"
-            onClick={() => navigate('/my-events')}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '2px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-          >
-            <Bookmark size={20} color="#ffffff" />
-            <span style={{ fontSize: '13px', color: '#ffffff' }}>My Events</span>
-          </button>
+        {/* ── HEADER ── */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '34px' }}>
+          {/* Greeting + name (tappable — opens profile panel) */}
           <button
             type="button"
             onClick={openRightPanel}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: '1.5px solid #ffffff',
-              background: '#1a1a1a',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#ffffff',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
           >
-            {initials}
-          </button>
-        </div>
-      </div>
-
-      {loading ? (
-        <div style={{ paddingTop: '40px', textAlign: 'center' }}>
-          <p style={{ color: '#555', fontSize: '14px' }}>Loading…</p>
-        </div>
-      ) : (
-        <>
-          {/* 2. UPCOMING EVENTS */}
-          <section style={{ marginBottom: '28px' }}>
-            <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
-              Upcoming events
+            <p style={{ fontSize: '16px', fontWeight: '400', color: '#9a9a97', marginBottom: '4px' }}>
+              {getGreeting()}
             </p>
+            <p style={{ fontSize: '32px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              {(user.firstName || 'friend').toLowerCase()}
+            </p>
+          </button>
 
-            {upcoming.length > 0 ? (
-              <>
-                {/* carousel-outer: transparent clipper only — no border-radius, no height */}
-                <div
-                  ref={cardContainerRef}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  onMouseDown={handleMouseDown}
-                  style={{
-                    overflow: 'hidden',
-                    margin: '0 -15px',
-                    cursor: isDragging ? 'grabbing' : 'grab',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                  }}
-                >
-                  {/* carousel-track: slides side by side, width:100% so 100% in translateX = one slide */}
+          {/* Bookmark + avatar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/my-events')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+              <span style={{ fontSize: '13px', color: '#c9c9c6' }}>My Events</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={openRightPanel}
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                border: '1.5px solid #e8e8e5',
+                background: '#1e1e1e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '15px',
+                fontWeight: '700',
+                color: '#ffffff',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              {initials}
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
+            <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
+          </div>
+        ) : (
+          <>
+            {/* ── UPCOMING EVENTS ── */}
+            <section style={{ marginBottom: '34px' }}>
+              <p style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '16px', letterSpacing: '-0.01em' }}>
+                Upcoming events
+              </p>
+
+              {upcoming.length > 0 ? (
+                <>
+                  {/* Carousel outer — extends edge-to-edge, clips overflow */}
                   <div
+                    ref={cardContainerRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onMouseDown={handleMouseDown}
                     style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      width: '100%',
-                      transform: `translateX(calc(${-activeIndex * 100}% + ${dragOffset}px))`,
-                      transition: isDragging ? 'none' : 'transform 280ms ease-out',
-                      willChange: 'transform',
+                      overflow: 'hidden',
+                      margin: '0 -22px',
+                      cursor: isDragging ? 'grabbing' : 'grab',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
                     }}
                   >
-                    {upcoming.map((ev) => {
-                      const grad = GRADIENTS[ev.type] ?? GRADIENTS.special
-                      const bdg = BADGE[ev.type] ?? BADGE.special
-                      return (
-                        /* carousel-slide: full-width slot, no overflow clipping here */
-                        <div
-                          key={ev.id}
-                          style={{
-                            flex: '0 0 100%',
-                            width: '100%',
-                            minWidth: '100%',
-                            padding: '0 8px',
-                          }}
-                          onClick={() => {
-                            if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
-                          }}
-                        >
-                          {/* event-card: the actual visible card — border-radius and overflow:hidden live HERE */}
+                    {/* Carousel track */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        transform: `translateX(calc(${-activeIndex * 100}% + ${dragOffset}px))`,
+                        transition: isDragging ? 'none' : 'transform 280ms ease-out',
+                        willChange: 'transform',
+                      }}
+                    >
+                      {upcoming.map((ev) => {
+                        const pill = CAT_PILL[ev.type] ?? CAT_PILL.special
+                        const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/800/580`
+                        return (
                           <div
-                            style={{
-                              width: '100%',
-                              height: '170px',
-                              borderRadius: '20px',
-                              overflow: 'hidden',
-                              position: 'relative',
+                            key={ev.id}
+                            style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: '0 22px' }}
+                            onClick={() => {
+                              if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
                             }}
                           >
-                            {/* Background */}
-                            {ev.image_url ? (
+                            {/* Event card */}
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '290px',
+                                borderRadius: '24px',
+                                overflow: 'hidden',
+                                position: 'relative',
+                              }}
+                            >
                               <img
-                                src={ev.image_url}
+                                src={imgSrc}
                                 alt=""
                                 draggable={false}
+                                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                              <div
                                 style={{
                                   position: 'absolute',
                                   inset: 0,
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  objectPosition: 'center',
+                                  background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.88) 100%)',
                                 }}
                               />
-                            ) : (
-                              <div style={{ position: 'absolute', inset: 0, background: grad }} />
-                            )}
 
-                            {/* Gradient overlay */}
-                            <div
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)',
-                              }}
-                            />
-
-                            {/* Date badge — top right */}
-                            <div
-                              style={{
-                                position: 'absolute',
-                                top: '12px',
-                                right: '12px',
-                                background: 'rgba(0,0,0,0.5)',
-                                borderRadius: '8px',
-                                padding: '4px 10px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                zIndex: 2,
-                              }}
-                            >
-                              <span style={{ fontSize: '18px', fontWeight: '700', color: '#fff', lineHeight: 1 }}>
-                                {ev.day}
-                              </span>
-                              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', marginTop: '1px' }}>
-                                {ev.month}
-                              </span>
-                            </div>
-
-                            {/* Text content — pinned to bottom */}
-                            <div
-                              style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                padding: '14px',
-                                zIndex: 2,
-                              }}
-                            >
-                              <span
+                              {/* Date badge — top right */}
+                              <div
                                 style={{
-                                  display: 'inline-block',
-                                  background: bdg.bg,
-                                  color: bdg.color,
-                                  fontSize: '10px',
-                                  fontWeight: '600',
-                                  padding: '3px 8px',
-                                  borderRadius: '20px',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px',
+                                  position: 'absolute',
+                                  top: '14px',
+                                  right: '14px',
+                                  background: '#ffffff',
+                                  borderRadius: '14px',
+                                  padding: '8px 14px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  zIndex: 2,
                                 }}
                               >
-                                {capitalize(ev.type)}
-                              </span>
-                              <p style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginTop: '4px', lineHeight: 1.2 }}>
-                                {ev.name}
-                              </p>
-                              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginTop: '4px' }}>
-                                {ev.time} · {ev.location}
-                              </p>
+                                <span style={{ fontSize: '20px', fontWeight: '800', color: '#111111', lineHeight: 1 }}>
+                                  {ev.day}
+                                </span>
+                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#7a7a76', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>
+                                  {ev.month}
+                                </span>
+                              </div>
+
+                              {/* Bottom content */}
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  left: '20px',
+                                  bottom: '20px',
+                                  right: '20px',
+                                  zIndex: 2,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    display: 'inline-block',
+                                    background: pill.bg,
+                                    border: `1px solid ${pill.border}`,
+                                    color: pill.text,
+                                    fontSize: '12px',
+                                    fontWeight: '700',
+                                    letterSpacing: '0.04em',
+                                    padding: '5px 11px',
+                                    borderRadius: '8px',
+                                    marginBottom: '10px',
+                                    textTransform: 'uppercase',
+                                  }}
+                                >
+                                  {ev.type}
+                                </span>
+                                <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', marginBottom: '4px', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
+                                  {ev.name}
+                                </p>
+                                <p style={{ fontSize: '15px', color: '#d8d8d5', lineHeight: 1.4 }}>
+                                  {ev.time ? `${ev.time} · ` : ''}{ev.location}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {upcoming.length > 1 && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      gap: '5px',
-                      marginTop: '10px',
-                    }}
-                  >
-                    {upcoming.map((_, i) => (
+                  {/* Dot indicators */}
+                  {upcoming.length > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', marginTop: '14px' }}>
+                      {upcoming.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => { setActiveIndex(i); setDragOffset(0) }}
+                          style={{
+                            height: '6px',
+                            width: i === activeDotIndex ? '20px' : '6px',
+                            borderRadius: i === activeDotIndex ? '3px' : '50%',
+                            background: i === activeDotIndex ? '#ffffff' : '#4a4a47',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer',
+                            transition: 'all 200ms ease',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p style={{ fontSize: '15px', color: '#4a4a47' }}>No upcoming events</p>
+              )}
+            </section>
+
+            {/* ── ANNOUNCEMENTS ── */}
+            {recentNews.length > 0 && (
+              <section style={{ marginBottom: '34px' }}>
+                <p style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '16px', letterSpacing: '-0.01em' }}>
+                  Announcements
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {recentNews.map((item, idx) => {
+                    const dot = NEWS_DOT[item.category] ?? NEWS_DOT.General
+                    const isLast = idx === recentNews.length - 1
+                    const isOdd = recentNews.length % 2 !== 0
+                    const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/400/280`
+                    return (
                       <button
-                        key={i}
+                        key={item.id}
                         type="button"
-                        onClick={() => {
-                          setActiveIndex(i)
-                          setDragOffset(0)
-                        }}
+                        onClick={() => navigate(`/news/${item.id}`, { state: { item } })}
                         style={{
-                          height: '5px',
-                          width: i === activeDotIndex ? '14px' : '5px',
-                          borderRadius: '50px',
-                          background: i === activeDotIndex ? '#ffffff' : '#333333',
-                          border: 'none',
-                          padding: 0,
-                          cursor: 'pointer',
-                          transition: 'all 200ms ease',
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <p style={{ fontSize: '14px', color: '#555' }}>No upcoming events</p>
-            )}
-          </section>
-
-          {/* 3. ANNOUNCEMENTS */}
-          {recentNews.length > 0 && (
-            <section style={{ marginBottom: '28px' }}>
-              <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
-                Announcements
-              </p>
-              <div
-                style={{
-                  background: '#1a1a1a',
-                  border: '0.5px solid #2e2e2e',
-                  borderRadius: '14px',
-                  padding: '0 14px',
-                }}
-              >
-                {recentNews.map((item, index) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => navigate(`/news/${item.id}`, { state: { item } })}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      width: '100%',
-                      padding: '12px 0',
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: index < recentNews.length - 1 ? '0.5px solid #1e1e1e' : 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: '7px',
-                        height: '7px',
-                        borderRadius: '50%',
-                        background: item.color ?? '#5b8cff',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p
-                        style={{
-                          fontSize: '15px',
-                          fontWeight: '500',
-                          color: '#ffffff',
+                          gridColumn: isOdd && isLast ? '1 / -1' : undefined,
+                          height: '140px',
+                          borderRadius: '24px',
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          position: 'relative',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          padding: 0,
                         }}
                       >
-                        {item.title}
-                      </p>
-                      <p style={{ fontSize: '13px', color: '#555', marginTop: '1px' }}>
-                        {formatShortDate(item.published_at)}
-                      </p>
-                    </div>
-                    <ChevronRight size={14} color="#333" style={{ flexShrink: 0 }} />
-                  </button>
-                ))}
+                        <img
+                          src={imgSrc}
+                          alt=""
+                          draggable={false}
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(90deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%)',
+                          }}
+                        />
+                        {/* Status dot */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '12px',
+                            left: '12px',
+                            width: '9px',
+                            height: '9px',
+                            borderRadius: '50%',
+                            background: dot.color,
+                            boxShadow: `0 0 0 3px ${dot.glow}`,
+                            zIndex: 2,
+                          }}
+                        />
+                        {/* Title + date */}
+                        <div style={{ position: 'absolute', left: '14px', right: '14px', bottom: '12px', zIndex: 2 }}>
+                          <p style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', lineHeight: 1.25, marginBottom: '3px' }}>
+                            {item.title}
+                          </p>
+                          <p style={{ fontSize: '12px', color: '#c9c9c6' }}>
+                            {formatShortDate(item.published_at)}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ── QUICK ACCESS ── */}
+            <section>
+              <p style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '16px', letterSpacing: '-0.01em' }}>
+                Quick access
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <QuickCard icon={<CalendarIcon />} label="Events calendar" sub="All events"  onClick={() => navigate('/events')} />
+                <QuickCard icon={<PlayIcon />}     label="Last Sunday"     sub="Sermon"      onClick={() => navigate('/last-sunday')} />
+                <QuickCard icon={<PinIcon />}      label="Find Midweek"    sub="Near you"    onClick={() => navigate('/midweek')} />
+                <QuickCard icon={<HeartIcon />}    label="Donate"          sub="Give online" onClick={() => setShowDonate(true)} />
               </div>
             </section>
-          )}
+          </>
+        )}
 
-          {/* 4. QUICK ACCESS */}
-          <section>
-            <p style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff', marginBottom: '12px' }}>
-              Quick access
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <QuickCard
-                icon={<CalendarDays size={24} color="#5b8cff" />}
-                label="Events calendar"
-                sub="All events"
-                onClick={() => navigate('/events')}
-              />
-              <QuickCard
-                icon={<Play size={24} color="#ffffff" />}
-                label="Last Sunday"
-                sub="Sermon"
-                onClick={() => navigate('/last-sunday')}
-              />
-              <QuickCard
-                icon={<MapPin size={24} color="#5b8cff" />}
-                label="Find Midweek"
-                sub="Near you"
-                onClick={() => navigate('/midweek')}
-              />
-              <QuickCard
-                icon={<Heart size={24} color="#4caf7d" />}
-                label="Donate"
-                sub="Support us"
-                onClick={() => setShowDonate(true)}
-              />
-            </div>
-          </section>
-        </>
-      )}
-
-      {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
+        {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
       </div>
     </>
   )

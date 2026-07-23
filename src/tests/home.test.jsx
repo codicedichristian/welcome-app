@@ -77,7 +77,8 @@ afterEach(() => {
 describe('HomePage', () => {
   test('Header shows user first name from localStorage', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getByText('Alice')).toBeInTheDocument())
+    // Name is displayed lowercase per design spec
+    await waitFor(() => expect(screen.getByText('alice')).toBeInTheDocument())
   })
 
   test('Header shows time-based greeting', async () => {
@@ -93,8 +94,8 @@ describe('HomePage', () => {
     const user = userEvent.setup()
     renderHome()
 
-    await waitFor(() => expect(screen.getByText('Alice')).toBeInTheDocument())
-    await user.click(screen.getByText('Alice').closest('button'))
+    await waitFor(() => expect(screen.getByText('alice')).toBeInTheDocument())
+    await user.click(screen.getByText('alice').closest('button'))
     expect(mockOpenRightPanel).toHaveBeenCalledTimes(1)
   })
 
@@ -110,9 +111,9 @@ describe('HomePage', () => {
   test('Upcoming events section renders with at least one event card', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
-    // The card container is 160px tall
+    // Cards are now 290px tall
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 170px"]')
+      const card = document.querySelector('[style*="height: 290px"]')
       expect(card).not.toBeNull()
     })
   })
@@ -120,12 +121,12 @@ describe('HomePage', () => {
   test('Dot indicators count matches upcoming events', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 170px"]')
+      const card = document.querySelector('[style*="height: 290px"]')
       expect(card).not.toBeNull()
     })
 
-    // Dot buttons have height: 5px and border-radius: 50px
-    const dots = document.querySelectorAll('button[style*="height: 5px"]')
+    // Dot buttons are 6px tall
+    const dots = document.querySelectorAll('button[style*="height: 6px"]')
     expect(dots.length).toBeGreaterThan(0)
   })
 
@@ -135,9 +136,10 @@ describe('HomePage', () => {
 
     // Fallback news first item is 'Summer camp — sign up open'
     await waitFor(() => expect(screen.getByText('Summer camp — sign up open')).toBeInTheDocument())
-    // Component slices to max 3 items
-    const card = screen.getByText('Summer camp — sign up open').closest('[style*="background: rgb(26, 26, 26)"]')
-    const items = card.querySelectorAll('button')
+
+    // Each news card is a <button> inside the announcements <section>
+    const section = screen.getByText('Announcements').closest('section')
+    const items = section.querySelectorAll('button')
     expect(items.length).toBeLessThanOrEqual(3)
     expect(items.length).toBeGreaterThan(0)
   })
@@ -203,28 +205,24 @@ describe('HomePage', () => {
   test('Swiping left on card advances to next event', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 170px"]')
+      const card = document.querySelector('[style*="height: 290px"]')
       expect(card).not.toBeNull()
     })
 
-    // Capture the name on the first card (16px bold)
-    const firstEventName = document.querySelector('[style*="font-size: 20px"][style*="font-weight: 700"]')?.textContent
-
-    const container = document.querySelector('[style*="border-radius: 20px"][style*="overflow: hidden"]')
-    expect(container).toBeTruthy()
+    // Fire touch events on the card — they bubble up to the carousel outer handler
+    const card = document.querySelector('[style*="height: 290px"]')
+    expect(card).toBeTruthy()
 
     // Simulate a clear left swipe (diffX = -100, diffY = 5 — horizontal dominant)
-    fireEvent.touchStart(container, { touches: [{ clientX: 200, clientY: 100 }] })
-    fireEvent.touchEnd(container, { changedTouches: [{ clientX: 100, clientY: 105 }] })
+    fireEvent.touchStart(card, { touches: [{ clientX: 200, clientY: 100 }] })
+    fireEvent.touchEnd(card, { changedTouches: [{ clientX: 100, clientY: 105 }] })
 
-    // Active dot index should advance — the first dot (active=0) becomes inactive
+    // Active dot should advance — the first dot (index 0) should no longer be the wide one
     await waitFor(() => {
-      const activeDot = document.querySelector('button[style*="width: 14px"]')
-      // After swipe, the active dot (wider) should not be the first button anymore
-      const dots = [...document.querySelectorAll('button[style*="height: 5px"]')]
+      const dots = [...document.querySelectorAll('button[style*="height: 6px"]')]
       if (dots.length > 1) {
-        // The wide dot moved from position 0 to position 1
-        expect(dots[0]).not.toHaveStyle({ width: '14px' })
+        // The wide dot (width: 20px) moved from position 0 to position 1
+        expect(dots[0]).not.toHaveStyle({ width: '20px' })
       }
     })
   })
