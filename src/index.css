@@ -81,17 +81,6 @@ textarea {
   display: none;
 }
 
-/* Safe-area top cover — prevents content bleeding under iPhone status bar */
-.safe-top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: #0f0f0f;
-  z-index: 999;
-}
-
 /* Page transition: fade + slight slide up */
 @keyframes page-enter {
   from {

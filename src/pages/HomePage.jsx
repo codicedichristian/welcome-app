@@ -328,7 +328,7 @@ export default function HomePage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 998,
+          zIndex: 99,
           opacity: showScrollBar ? 1 : 0,
           transform: showScrollBar ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'opacity 200ms ease-out, transform 200ms ease-out',

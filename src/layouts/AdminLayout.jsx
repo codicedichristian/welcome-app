@@ -29,7 +29,6 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-bg text-primary">
-      <div className="safe-top" />
       <header
         className="flex items-center justify-between border-b border-border px-4 py-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
