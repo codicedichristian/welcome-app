@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
-import { adminGetMessages, adminCreateMessage, adminDeleteMessage } from '../../lib/api.js'
+import {
+  adminGetMessages,
+  adminCreateMessage,
+  adminDeleteMessage,
+  adminGetServiceAreas,
+  adminGetMidweekGroups,
+} from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
@@ -8,12 +14,35 @@ import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 
-const AUDIENCE_OPTIONS = ['All members', 'Sunday team', 'Leaders']
+const AUDIENCE_TYPE = ['All members', 'Service area', 'Midweek group']
+const EMPTY_FORM = { title: '', body: '', audienceType: 'All members', audienceId: '', send_push: true }
 
-const EMPTY_FORM = { title: '', body: '', audience: 'All members', push: false }
+function formatAudience(audience, serviceAreas, midweekGroups) {
+  if (!audience || audience === 'all_members') return 'All members'
+  if (audience.startsWith('area:')) {
+    const id = audience.slice(5)
+    const area = serviceAreas.find((a) => a.id === id)
+    return area ? `${area.name} team` : 'Service area'
+  }
+  if (audience.startsWith('group:')) {
+    const id = audience.slice(6)
+    const group = midweekGroups.find((g) => g.id === id)
+    return group ? `${group.host ?? group.zone} group` : 'Midweek group'
+  }
+  return audience
+}
+
+function buildAudienceValue(type, id) {
+  if (type === 'All members') return 'all_members'
+  if (type === 'Service area' && id) return `area:${id}`
+  if (type === 'Midweek group' && id) return `group:${id}`
+  return 'all_members'
+}
 
 export default function AdminMessages() {
   const [messages, setMessages] = useState([])
+  const [serviceAreas, setServiceAreas] = useState([])
+  const [midweekGroups, setMidweekGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -28,14 +57,27 @@ export default function AdminMessages() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    Promise.all([load(), adminGetServiceAreas(), adminGetMidweekGroups()]).then(
+      ([, { data: areas }, { data: groups }]) => {
+        setServiceAreas(areas ?? [])
+        setMidweekGroups(groups ?? [])
+      },
+    )
+  }, [])
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }))
 
   const handleCreate = async (e) => {
     e.preventDefault()
     setSaving(true)
-    await adminCreateMessage({ title: form.title, body: form.body, audience: form.audience, push: form.push })
+    const audience = buildAudienceValue(form.audienceType, form.audienceId)
+    await adminCreateMessage({
+      title: form.title,
+      body: form.body,
+      audience,
+      send_push: form.send_push,
+    })
     setSaving(false)
     setShowModal(false)
     setForm(EMPTY_FORM)
@@ -47,6 +89,8 @@ export default function AdminMessages() {
     setDeleteTarget(null)
     load()
   }
+
+  const needsSecondary = form.audienceType !== 'All members'
 
   return (
     <div>
@@ -72,10 +116,10 @@ export default function AdminMessages() {
             <thead>
               <tr className="border-b border-border text-xs text-zinc-500">
                 <th className="px-4 py-3 font-normal">Title</th>
-                <th className="px-4 py-3 font-normal">Body</th>
+                <th className="px-4 py-3 font-normal">Author</th>
                 <th className="px-4 py-3 font-normal">Audience</th>
                 <th className="px-4 py-3 font-normal">Push</th>
-                <th className="px-4 py-3 font-normal">Sent</th>
+                <th className="px-4 py-3 font-normal">Date</th>
                 <th className="px-4 py-3 font-normal">Actions</th>
               </tr>
             </thead>
@@ -90,9 +134,13 @@ export default function AdminMessages() {
                 messages.map((msg) => (
                   <tr key={msg.id} className="border-b border-border last:border-b-0">
                     <td className="px-4 py-3 text-primary">{msg.title}</td>
-                    <td className="max-w-[200px] truncate px-4 py-3 text-zinc-400">{msg.body}</td>
-                    <td className="px-4 py-3 text-zinc-400">{msg.audience}</td>
-                    <td className="px-4 py-3 text-zinc-400">{msg.push ? 'Yes' : 'No'}</td>
+                    <td className="px-4 py-3 text-zinc-400">
+                      {msg.author ? `${msg.author.first_name} ${msg.author.last_name}` : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-400">
+                      {formatAudience(msg.audience, serviceAreas, midweekGroups)}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-400">{msg.send_push ? 'Yes' : 'No'}</td>
                     <td className="px-4 py-3 text-zinc-400">{formatShortDate(msg.created_at?.slice(0, 10))}</td>
                     <td className="px-4 py-3">
                       <button
@@ -122,23 +170,44 @@ export default function AdminMessages() {
               <Textarea rows={4} value={form.body} onChange={(e) => update({ body: e.target.value })} required />
             </Field>
             <Field label="Audience">
-              <Select value={form.audience} onChange={(e) => update({ audience: e.target.value })}>
-                {AUDIENCE_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
+              <Select
+                value={form.audienceType}
+                onChange={(e) => update({ audienceType: e.target.value, audienceId: '' })}
+              >
+                {AUDIENCE_TYPE.map((t) => <option key={t} value={t}>{t}</option>)}
               </Select>
             </Field>
+
+            {form.audienceType === 'Service area' && (
+              <Field label="Select area">
+                <Select value={form.audienceId} onChange={(e) => update({ audienceId: e.target.value })} required>
+                  <option value="">Choose…</option>
+                  {serviceAreas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </Select>
+              </Field>
+            )}
+
+            {form.audienceType === 'Midweek group' && (
+              <Field label="Select group">
+                <Select value={form.audienceId} onChange={(e) => update({ audienceId: e.target.value })} required>
+                  <option value="">Choose…</option>
+                  {midweekGroups.map((g) => (
+                    <option key={g.id} value={g.id}>{g.host ?? g.zone}</option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+
             <label className="flex cursor-pointer items-center gap-3">
               <input
                 type="checkbox"
-                checked={form.push}
-                onChange={(e) => update({ push: e.target.checked })}
+                checked={form.send_push}
+                onChange={(e) => update({ send_push: e.target.checked })}
                 className="accent-primary"
               />
               <span className="text-sm text-primary">Send as push notification</span>
             </label>
+
             <div className="mt-2 flex gap-3">
               <button
                 type="button"
@@ -149,10 +218,10 @@ export default function AdminMessages() {
               </button>
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || (needsSecondary && !form.audienceId)}
                 className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-medium text-bg disabled:opacity-60"
               >
-                {saving ? 'Sending...' : 'Send Message'}
+                {saving ? 'Publishing…' : 'Publish'}
               </button>
             </div>
           </form>

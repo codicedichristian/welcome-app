@@ -365,14 +365,48 @@ export async function adminDeleteMidweekGroup(id) {
   }
 }
 
-// ADMIN: MEMBERS & DASHBOARD
+// ADMIN: MEMBERS
 
 export async function adminGetMembers() {
   try {
-    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false })
+    const [
+      { data: users, error: usersError },
+      { data: assignments },
+      { data: leaders },
+      { data: midweekLeaders },
+    ] = await Promise.all([
+      supabase.from('users').select('*').order('created_at', { ascending: false }),
+      supabase.from('service_assignments').select('user_id, area_id, service_areas(id, name, is_macro, parent_id)'),
+      supabase.from('area_leaders').select('user_id, area_id, service_areas(id, name, is_macro)'),
+      supabase.from('midweek_leaders').select('user_id, group_id, midweek_groups(id, host, zone)'),
+    ])
 
-    if (error) throw error
-    return { data, error: null }
+    if (usersError) throw usersError
+
+    const map = new Map(
+      (users ?? []).map((u) => [
+        u.id,
+        { ...u, serviceAreas: [], leadingAreas: [], midweekGroup: null, isMidweekLeader: false },
+      ]),
+    )
+
+    for (const a of assignments ?? []) {
+      const u = map.get(a.user_id)
+      if (u && a.service_areas) u.serviceAreas.push(a.service_areas)
+    }
+    for (const l of leaders ?? []) {
+      const u = map.get(l.user_id)
+      if (u && l.service_areas) u.leadingAreas.push(l.service_areas)
+    }
+    for (const ml of midweekLeaders ?? []) {
+      const u = map.get(ml.user_id)
+      if (u && ml.midweek_groups) {
+        u.midweekGroup = ml.midweek_groups
+        u.isMidweekLeader = true
+      }
+    }
+
+    return { data: [...map.values()], error: null }
   } catch (error) {
     return { data: null, error }
   }
@@ -380,13 +414,7 @@ export async function adminGetMembers() {
 
 export async function adminUpdateUserRole(userId, role) {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .update({ role })
-      .eq('id', userId)
-      .select()
-      .single()
-
+    const { data, error } = await supabase.from('users').update({ role }).eq('id', userId).select().single()
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -397,21 +425,6 @@ export async function adminUpdateUserRole(userId, role) {
 export async function adminGetServiceAreas() {
   try {
     const { data, error } = await supabase.from('service_areas').select('*').order('name')
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    return { data: null, error }
-  }
-}
-
-export async function adminGetUserServiceAssignments(userId) {
-  try {
-    const { data, error } = await supabase
-      .from('service_assignments')
-      .select('*, service_areas(id, name)')
-      .eq('user_id', userId)
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -421,16 +434,13 @@ export async function adminGetUserServiceAssignments(userId) {
 
 export async function adminAssignServiceArea(userId, areaId) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('service_assignments')
       .insert({ user_id: userId, area_id: areaId })
-      .select('*, service_areas(id, name)')
-      .single()
-
     if (error) throw error
-    return { data, error: null }
+    return { error: null }
   } catch (error) {
-    return { data: null, error }
+    return { error }
   }
 }
 
@@ -441,7 +451,6 @@ export async function adminRemoveServiceArea(userId, areaId) {
       .delete()
       .eq('user_id', userId)
       .eq('area_id', areaId)
-
     if (error) throw error
     return { error: null }
   } catch (error) {
@@ -449,44 +458,21 @@ export async function adminRemoveServiceArea(userId, areaId) {
   }
 }
 
-export async function adminGetUserLeadingAreas(userId) {
+export async function adminToggleAreaLeader(userId, areaId, isLeader) {
   try {
-    const { data, error } = await supabase
-      .from('area_leaders')
-      .select('area_id, service_areas(id, name)')
-      .eq('user_id', userId)
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    return { data: null, error }
-  }
-}
-
-export async function adminAssignAreaLeader(userId, areaId) {
-  try {
-    const { data, error } = await supabase
-      .from('area_leaders')
-      .upsert({ user_id: userId, area_id: areaId }, { onConflict: 'user_id,area_id' })
-      .select()
-      .single()
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    return { data: null, error }
-  }
-}
-
-export async function adminRemoveAreaLeader(userId, areaId) {
-  try {
-    const { error } = await supabase
-      .from('area_leaders')
-      .delete()
-      .eq('user_id', userId)
-      .eq('area_id', areaId)
-
-    if (error) throw error
+    if (isLeader) {
+      const { error } = await supabase
+        .from('area_leaders')
+        .upsert({ user_id: userId, area_id: areaId }, { onConflict: 'user_id,area_id' })
+      if (error) throw error
+    } else {
+      const { error } = await supabase
+        .from('area_leaders')
+        .delete()
+        .eq('user_id', userId)
+        .eq('area_id', areaId)
+      if (error) throw error
+    }
     return { error: null }
   } catch (error) {
     return { error }
@@ -495,17 +481,23 @@ export async function adminRemoveAreaLeader(userId, areaId) {
 
 export async function adminAssignMidweekLeader(userId, groupId) {
   try {
-    const { data, error } = await supabase
-      .from('midweek_groups')
-      .update({ leader_id: userId })
-      .eq('id', groupId)
-      .select()
-      .single()
-
+    const { error } = await supabase
+      .from('midweek_leaders')
+      .upsert({ user_id: userId, group_id: groupId }, { onConflict: 'group_id' })
     if (error) throw error
-    return { data, error: null }
+    return { error: null }
   } catch (error) {
-    return { data: null, error }
+    return { error }
+  }
+}
+
+export async function adminRemoveMidweekLeader(groupId) {
+  try {
+    const { error } = await supabase.from('midweek_leaders').delete().eq('group_id', groupId)
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
   }
 }
 
@@ -514,10 +506,9 @@ export async function adminAssignMidweekLeader(userId, groupId) {
 export async function adminGetSchedules() {
   try {
     const { data, error } = await supabase
-      .from('schedules')
-      .select('*, schedule_summaries(title, speaker)')
+      .from('sunday_schedules')
+      .select('*, sunday_summaries(title, speaker), service_responses(status)')
       .order('date', { ascending: false })
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -527,13 +518,27 @@ export async function adminGetSchedules() {
 
 export async function adminCreateSchedules(dates) {
   try {
-    const { data, error } = await supabase
-      .from('schedules')
+    const { data: schedules, error: scheduleError } = await supabase
+      .from('sunday_schedules')
       .insert(dates.map((date) => ({ date })))
       .select()
+    if (scheduleError) throw scheduleError
 
-    if (error) throw error
-    return { data, error: null }
+    const { data: assignments } = await supabase.from('service_assignments').select('user_id, area_id')
+
+    if (schedules?.length && assignments?.length) {
+      const responses = schedules.flatMap((s) =>
+        assignments.map((a) => ({
+          schedule_id: s.id,
+          user_id: a.user_id,
+          area_id: a.area_id,
+          status: 'pending',
+        })),
+      )
+      await supabase.from('service_responses').insert(responses)
+    }
+
+    return { data: schedules, assignmentCount: assignments?.length ?? 0, error: null }
   } catch (error) {
     return { data: null, error }
   }
@@ -541,8 +546,7 @@ export async function adminCreateSchedules(dates) {
 
 export async function adminDeleteSchedule(id) {
   try {
-    const { error } = await supabase.from('schedules').delete().eq('id', id)
-
+    const { error } = await supabase.from('sunday_schedules').delete().eq('id', id)
     if (error) throw error
     return { error: null }
   } catch (error) {
@@ -553,11 +557,10 @@ export async function adminDeleteSchedule(id) {
 export async function adminGetSummary(scheduleId) {
   try {
     const { data, error } = await supabase
-      .from('schedule_summaries')
+      .from('sunday_summaries')
       .select('*')
       .eq('schedule_id', scheduleId)
       .maybeSingle()
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -568,11 +571,10 @@ export async function adminGetSummary(scheduleId) {
 export async function adminUpsertSummary(scheduleId, summaryData) {
   try {
     const { data, error } = await supabase
-      .from('schedule_summaries')
+      .from('sunday_summaries')
       .upsert({ schedule_id: scheduleId, ...summaryData }, { onConflict: 'schedule_id' })
       .select()
       .single()
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -583,11 +585,10 @@ export async function adminUpsertSummary(scheduleId, summaryData) {
 export async function getScheduleRoster(scheduleId, areaId) {
   try {
     const { data, error } = await supabase
-      .from('schedule_roster')
+      .from('service_responses')
       .select('*, users(id, first_name, last_name, role)')
       .eq('schedule_id', scheduleId)
       .eq('area_id', areaId)
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -600,10 +601,9 @@ export async function getScheduleRoster(scheduleId, areaId) {
 export async function adminGetMessages() {
   try {
     const { data, error } = await supabase
-      .from('messages')
-      .select('*')
+      .from('member_messages')
+      .select('*, author:users!author_id(first_name, last_name)')
       .order('created_at', { ascending: false })
-
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -613,8 +613,7 @@ export async function adminGetMessages() {
 
 export async function adminCreateMessage(messageData) {
   try {
-    const { data, error } = await supabase.from('messages').insert(messageData).select().single()
-
+    const { data, error } = await supabase.from('member_messages').insert(messageData).select().single()
     if (error) throw error
     return { data, error: null }
   } catch (error) {
@@ -624,8 +623,7 @@ export async function adminCreateMessage(messageData) {
 
 export async function adminDeleteMessage(id) {
   try {
-    const { error } = await supabase.from('messages').delete().eq('id', id)
-
+    const { error } = await supabase.from('member_messages').delete().eq('id', id)
     if (error) throw error
     return { error: null }
   } catch (error) {

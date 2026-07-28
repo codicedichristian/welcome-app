@@ -509,8 +509,8 @@ describe('Admin Members', () => {
 
     const row = screen.getByText('Alice Johnson').closest('tr')
     expect(within(row).getByText('alice@example.com')).toBeInTheDocument()
-    // Role is now an inline dropdown (replaces phone/age_range columns)
-    expect(within(row).getByRole('combobox')).toBeInTheDocument()
+    // Role is an inline dropdown with aria-label="Member role"
+    expect(within(row).getByRole('combobox', { name: /member role/i })).toBeInTheDocument()
   })
 
   test('filters members by name using search bar', async () => {
