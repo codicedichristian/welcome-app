@@ -5,6 +5,7 @@ import { INTERESTS_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
+import { useUser } from '../lib/UserContext.js'
 
 function getStoredUser() {
   try {
@@ -24,6 +25,7 @@ function formatMemberSince(isoDate) {
 export default function ProfilePage() {
   const navigate = useNavigate()
   const [user, setUser] = useState(getStoredUser)
+  const liveUser = useUser()
 
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
@@ -81,7 +83,7 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 pt-6 pb-8">
-      {user.role === 'admin' && (
+      {liveUser.role === 'admin' && (
         <button
           type="button"
           onClick={() => navigate('/admin')}

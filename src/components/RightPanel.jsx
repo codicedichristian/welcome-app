@@ -5,6 +5,7 @@ import { INTERESTS_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
+import { useUser } from '../lib/UserContext.js'
 
 function getStoredUser() {
   try {
@@ -25,6 +26,7 @@ export default function RightPanel({ isOpen, onClose }) {
   const panelRef = useRef(null)
   const touchStartY = useRef(0)
   const [user, setUser] = useState(getStoredUser)
+  const liveUser = useUser()
 
   useEffect(() => {
     if (isOpen) setUser(getStoredUser())
@@ -145,7 +147,7 @@ export default function RightPanel({ isOpen, onClose }) {
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)',
           }}
         >
-          {user.role === 'admin' && (
+          {liveUser.role === 'admin' && (
             <button
               type="button"
               onClick={handleAdmin}

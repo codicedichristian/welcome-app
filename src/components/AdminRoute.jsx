@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { getUserByAuthId } from '../lib/api.js'
-import { getStoredUser, toStoredUser } from '../lib/user.js'
+import { toStoredUser } from '../lib/user.js'
 import Spinner from './Spinner.jsx'
 
 export default function AdminRoute() {
@@ -12,18 +12,11 @@ export default function AdminRoute() {
     let cancelled = false
 
     async function check() {
-      const storedUser = getStoredUser()
-
       const { data: { session } } = await supabase.auth.getSession()
       if (cancelled) return
 
       if (!session) {
         setStatus('unauthenticated')
-        return
-      }
-
-      if (storedUser.role === 'admin') {
-        setStatus('admin')
         return
       }
 
@@ -36,7 +29,6 @@ export default function AdminRoute() {
       }
 
       localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(profile, session.user.id)))
-
       setStatus(profile.role === 'admin' ? 'admin' : 'not-admin')
     }
 

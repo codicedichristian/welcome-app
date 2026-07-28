@@ -7,6 +7,18 @@ export function getCurrentUser() {
   return supabase.auth.getUser()
 }
 
+// Fetches the current user from the DB and returns the stored shape.
+// Always uses Supabase as source of truth for role. Also updates localStorage cache.
+export async function getCurrentUserWithRole() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return null
+  const { data: profile, error } = await getUserByAuthId(session.user.id)
+  if (error || !profile) return null
+  const stored = toStoredUser(profile, session.user.id)
+  localStorage.setItem('welcome_user', JSON.stringify(stored))
+  return stored
+}
+
 export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange(callback)
 }

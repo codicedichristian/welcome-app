@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { UserContext } from './lib/UserContext.js'
+import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
 import AppLayout from './layouts/AppLayout.jsx'
 import AdminLayout from './layouts/AdminLayout.jsx'
@@ -38,6 +40,14 @@ const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 export default function App() {
   const [showSplash, setShowSplash] = useState(true)
   const [splashVisible, setSplashVisible] = useState(true)
+  const [user, setUser] = useState(() => getStoredUser())
+
+  // Always refresh role from Supabase on mount — localStorage is cache only.
+  useEffect(() => {
+    getCurrentUserWithRole().then((freshUser) => {
+      if (freshUser) setUser(freshUser)
+    })
+  }, [])
 
   useEffect(() => {
     const hideTimer = setTimeout(() => setSplashVisible(false), 1500)
@@ -74,6 +84,7 @@ export default function App() {
   }, [])
 
   return (
+    <UserContext.Provider value={user}>
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
       <ScrollToTop />
@@ -120,5 +131,6 @@ export default function App() {
         </Route>
       </Routes>
     </>
+    </UserContext.Provider>
   )
 }

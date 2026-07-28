@@ -66,12 +66,12 @@ afterEach(() => {
 })
 
 describe('FloatingNav', () => {
-  test('Renders Home, Events, News, and My Events tab buttons', () => {
+  test('Renders Home, Events, News, and My Church tab buttons', () => {
     renderFloatingNav('/')
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my church/i })).toBeInTheDocument()
   })
 
   test('Home tab is visually active when at /', () => {
@@ -138,7 +138,8 @@ describe('FloatingNav', () => {
     expect(screen.getByText('News Page')).toBeInTheDocument()
   })
 
-  test('Tapping My Events tab navigates to /my-events', async () => {
+  test('Tapping My Church tab navigates to /my-events for members', async () => {
+    localStorage.setItem('welcome_user', JSON.stringify(MEMBER_USER))
     const user = userEvent.setup()
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -149,13 +150,13 @@ describe('FloatingNav', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /my events/i }))
+    await user.click(screen.getByRole('button', { name: /my church/i }))
     expect(screen.getByText('My Events Page')).toBeInTheDocument()
   })
 
-  test('My Events tab is visually active when at /my-events', () => {
+  test('My Church tab is visually active when at /my-events', () => {
     renderFloatingNav('/my-events')
-    const btn = screen.getByRole('button', { name: /my events/i })
+    const btn = screen.getByRole('button', { name: /my church/i })
     expect(btn).toHaveStyle({ background: '#2e2e2e' })
   })
 })
@@ -195,6 +196,6 @@ describe('AppLayout FloatingNav visibility', () => {
 
   test('FloatingNav is visible on /my-events', () => {
     renderLayout('/my-events')
-    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my church/i })).toBeInTheDocument()
   })
 })
