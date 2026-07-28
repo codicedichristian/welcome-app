@@ -22,6 +22,9 @@ import AdminEvents from './pages/admin/AdminEvents.jsx'
 import AdminNews from './pages/admin/AdminNews.jsx'
 import AdminMidweek from './pages/admin/AdminMidweek.jsx'
 import AdminMembers from './pages/admin/AdminMembers.jsx'
+import AdminSchedules from './pages/admin/AdminSchedules.jsx'
+import AdminScheduleDetail from './pages/admin/AdminScheduleDetail.jsx'
+import AdminMessages from './pages/admin/AdminMessages.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
@@ -105,6 +108,9 @@ export default function App() {
               <Route path="admin/news" element={<AdminNews />} />
               <Route path="admin/midweek" element={<AdminMidweek />} />
               <Route path="admin/members" element={<AdminMembers />} />
+              <Route path="admin/schedules" element={<AdminSchedules />} />
+              <Route path="admin/schedules/:id" element={<AdminScheduleDetail />} />
+              <Route path="admin/messages" element={<AdminMessages />} />
             </Route>
           </Route>
         </Route>

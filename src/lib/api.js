@@ -378,6 +378,249 @@ export async function adminGetMembers() {
   }
 }
 
+export async function adminUpdateUserRole(userId, role) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update({ role })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminGetServiceAreas() {
+  try {
+    const { data, error } = await supabase.from('service_areas').select('*').order('name')
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminGetUserServiceAssignments(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('service_assignments')
+      .select('*, service_areas(id, name)')
+      .eq('user_id', userId)
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminAssignServiceArea(userId, areaId) {
+  try {
+    const { data, error } = await supabase
+      .from('service_assignments')
+      .insert({ user_id: userId, area_id: areaId, is_leader: false })
+      .select('*, service_areas(id, name)')
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminRemoveServiceArea(userId, areaId) {
+  try {
+    const { error } = await supabase
+      .from('service_assignments')
+      .delete()
+      .eq('user_id', userId)
+      .eq('area_id', areaId)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminAssignAreaLeader(userId, areaId) {
+  try {
+    const { data, error } = await supabase
+      .from('service_assignments')
+      .upsert({ user_id: userId, area_id: areaId, is_leader: true }, { onConflict: 'user_id,area_id' })
+      .select('*, service_areas(id, name)')
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminRemoveAreaLeader(userId, areaId) {
+  try {
+    const { data, error } = await supabase
+      .from('service_assignments')
+      .update({ is_leader: false })
+      .eq('user_id', userId)
+      .eq('area_id', areaId)
+      .select('*, service_areas(id, name)')
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminAssignMidweekLeader(userId, groupId) {
+  try {
+    const { data, error } = await supabase
+      .from('midweek_groups')
+      .update({ leader_id: userId })
+      .eq('id', groupId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+// ADMIN: SCHEDULES
+
+export async function adminGetSchedules() {
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*, schedule_summaries(title, speaker)')
+      .order('date', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminCreateSchedules(dates) {
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert(dates.map((date) => ({ date })))
+      .select()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteSchedule(id) {
+  try {
+    const { error } = await supabase.from('schedules').delete().eq('id', id)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminGetSummary(scheduleId) {
+  try {
+    const { data, error } = await supabase
+      .from('schedule_summaries')
+      .select('*')
+      .eq('schedule_id', scheduleId)
+      .maybeSingle()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminUpsertSummary(scheduleId, summaryData) {
+  try {
+    const { data, error } = await supabase
+      .from('schedule_summaries')
+      .upsert({ schedule_id: scheduleId, ...summaryData }, { onConflict: 'schedule_id' })
+      .select()
+      .single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function getScheduleRoster(scheduleId, areaId) {
+  try {
+    const { data, error } = await supabase
+      .from('schedule_roster')
+      .select('*, users(id, first_name, last_name, role)')
+      .eq('schedule_id', scheduleId)
+      .eq('area_id', areaId)
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+// ADMIN: MESSAGES
+
+export async function adminGetMessages() {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminCreateMessage(messageData) {
+  try {
+    const { data, error } = await supabase.from('messages').insert(messageData).select().single()
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteMessage(id) {
+  try {
+    const { error } = await supabase.from('messages').delete().eq('id', id)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
 export async function adminGetStats() {
   try {
     const [

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, CalendarDays, Megaphone, Home, Users, LogOut } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, Megaphone, Home, Users, LogOut, Calendar, MessageSquare } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
 
@@ -9,6 +9,8 @@ const NAV_ITEMS = [
   { to: '/admin/news', label: 'News', icon: Megaphone },
   { to: '/admin/midweek', label: 'Midweek Groups', icon: Home },
   { to: '/admin/members', label: 'Members', icon: Users },
+  { to: '/admin/schedules', label: 'Schedules', icon: Calendar },
+  { to: '/admin/messages', label: 'Messages', icon: MessageSquare },
 ]
 
 export default function AdminLayout() {

@@ -503,14 +503,14 @@ describe('Admin Members', () => {
     expect(screen.getByText('Elena Ruiz')).toBeInTheDocument()
   })
 
-  test('shows member name, email, phone, age range', async () => {
+  test('shows member name, email and role in the row', async () => {
     renderWithRouter(<AdminMembers />)
     await screen.findByText('Alice Johnson')
 
     const row = screen.getByText('Alice Johnson').closest('tr')
     expect(within(row).getByText('alice@example.com')).toBeInTheDocument()
-    expect(within(row).getByText('34600000010')).toBeInTheDocument()
-    expect(within(row).getByText('26-35')).toBeInTheDocument()
+    // Role is now an inline dropdown (replaces phone/age_range columns)
+    expect(within(row).getByRole('combobox')).toBeInTheDocument()
   })
 
   test('filters members by name using search bar', async () => {
