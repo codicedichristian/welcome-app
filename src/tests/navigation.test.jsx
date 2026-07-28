@@ -27,9 +27,11 @@ vi.mock('../lib/push.js', () => ({
 import FloatingNav from '../components/FloatingNav.jsx'
 import AppLayout from '../layouts/AppLayout.jsx'
 
+const VISITOR_USER = { id: 'usr-0', firstName: 'Guest', lastName: 'User', role: 'visitor' }
 const MEMBER_USER = { id: 'usr-1', firstName: 'Alice', lastName: 'Smith', role: 'member' }
 
-function renderFloatingNav(initialPath = '/') {
+function renderFloatingNav(initialPath = '/', storedUser = null) {
+  if (storedUser) localStorage.setItem('welcome_user', JSON.stringify(storedUser))
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <FloatingNav />
@@ -66,32 +68,70 @@ afterEach(() => {
   localStorage.clear()
 })
 
-describe('FloatingNav', () => {
-  test('Renders Home, Events, News, and My Church tab buttons', () => {
-    renderFloatingNav('/')
+describe('FloatingNav — visitor (4 tabs)', () => {
+  test('Visitor sees Home, Events, News, My Events tabs', () => {
+    renderFloatingNav('/', VISITOR_USER)
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /my church/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
   })
 
+  test('Visitor does not see My Church tab', () => {
+    renderFloatingNav('/', VISITOR_USER)
+    expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
+  })
+
+  test('My Events tab is visually active when at /my-events', () => {
+    renderFloatingNav('/my-events', VISITOR_USER)
+    expect(screen.getByRole('button', { name: /my events/i })).toHaveStyle({ background: '#2e2e2e' })
+  })
+
+  test('Tapping My Events tab navigates to /my-events', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('welcome_user', JSON.stringify(VISITOR_USER))
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<FloatingNav />} />
+          <Route path="/my-events" element={<div>My Events Page</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    await user.click(screen.getByRole('button', { name: /my events/i }))
+    expect(screen.getByText('My Events Page')).toBeInTheDocument()
+  })
+})
+
+describe('FloatingNav — member (3 tabs)', () => {
+  test('Member sees Home, Events, News tabs only', () => {
+    renderFloatingNav('/', MEMBER_USER)
+    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
+  })
+
+  test('Member does not see My Events or My Church tab', () => {
+    renderFloatingNav('/', MEMBER_USER)
+    expect(screen.queryByRole('button', { name: /my events/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('FloatingNav — shared tab behaviour', () => {
   test('Home tab is visually active when at /', () => {
     renderFloatingNav('/')
-    const homeBtn = screen.getByRole('button', { name: /home/i })
-    // Active tab gets background #2e2e2e
-    expect(homeBtn).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /home/i })).toHaveStyle({ background: '#2e2e2e' })
   })
 
   test('Events tab is visually active when at /events', () => {
     renderFloatingNav('/events')
-    const eventsBtn = screen.getByRole('button', { name: /^events$/i })
-    expect(eventsBtn).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /^events$/i })).toHaveStyle({ background: '#2e2e2e' })
   })
 
   test('News tab is visually active when at /news', () => {
     renderFloatingNav('/news')
-    const newsBtn = screen.getByRole('button', { name: /news/i })
-    expect(newsBtn).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /news/i })).toHaveStyle({ background: '#2e2e2e' })
   })
 
   test('Tapping Home tab navigates to /', async () => {
@@ -104,7 +144,6 @@ describe('FloatingNav', () => {
         </Routes>
       </MemoryRouter>,
     )
-
     await user.click(screen.getByRole('button', { name: /home/i }))
     expect(screen.getByText('Home Page')).toBeInTheDocument()
   })
@@ -119,7 +158,6 @@ describe('FloatingNav', () => {
         </Routes>
       </MemoryRouter>,
     )
-
     await user.click(screen.getByRole('button', { name: /^events$/i }))
     expect(screen.getByText('Events Page')).toBeInTheDocument()
   })
@@ -134,36 +172,8 @@ describe('FloatingNav', () => {
         </Routes>
       </MemoryRouter>,
     )
-
     await user.click(screen.getByRole('button', { name: /news/i }))
     expect(screen.getByText('News Page')).toBeInTheDocument()
-  })
-
-  test('Tapping My Church tab navigates to /my-church', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/" element={<FloatingNav />} />
-          <Route path="/my-church" element={<div>My Church Page</div>} />
-        </Routes>
-      </MemoryRouter>,
-    )
-
-    await user.click(screen.getByRole('button', { name: /my church/i }))
-    expect(screen.getByText('My Church Page')).toBeInTheDocument()
-  })
-
-  test('My Church tab is visually active when at /my-church', () => {
-    renderFloatingNav('/my-church')
-    const btn = screen.getByRole('button', { name: /my church/i })
-    expect(btn).toHaveStyle({ background: '#2e2e2e' })
-  })
-
-  test('My Church tab is visually active on /my-church sub-routes', () => {
-    renderFloatingNav('/my-church/midweek')
-    const btn = screen.getByRole('button', { name: /my church/i })
-    expect(btn).toHaveStyle({ background: '#2e2e2e' })
   })
 })
 
@@ -185,8 +195,6 @@ describe('AppLayout FloatingNav visibility', () => {
 
   test('FloatingNav is hidden on event detail page (/events/:id)', () => {
     renderLayout('/events/evt-1')
-    // FloatingNav only renders when showNav is true (MAIN_ROUTES)
-    // On /events/evt-1 it should NOT be in the document
     expect(screen.queryByRole('button', { name: /home/i })).not.toBeInTheDocument()
   })
 
@@ -200,8 +208,13 @@ describe('AppLayout FloatingNav visibility', () => {
     expect(screen.queryByRole('button', { name: /home/i })).not.toBeInTheDocument()
   })
 
+  test('FloatingNav is visible on /my-events', () => {
+    renderLayout('/my-events')
+    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
+  })
+
   test('FloatingNav is visible on /my-church', () => {
     renderLayout('/my-church')
-    expect(screen.getByRole('button', { name: /my church/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
   })
 })

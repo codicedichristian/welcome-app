@@ -1,16 +1,24 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, CalendarDays, Megaphone, Users } from 'lucide-react'
+import { Home, CalendarDays, Megaphone, Bookmark } from 'lucide-react'
+import { useUser } from '../lib/UserContext.js'
 
-const TABS = [
+const MEMBER_ROLES = ['member', 'leader', 'admin']
+
+const BASE_TABS = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/events', icon: CalendarDays, label: 'Events' },
   { to: '/news', icon: Megaphone, label: 'News' },
-  { to: '/my-church', icon: Users, label: 'My Church' },
 ]
+
+const VISITOR_TAB = { to: '/my-events', icon: Bookmark, label: 'My Events' }
 
 export default function FloatingNav() {
   const navigate = useNavigate()
   const location = useLocation()
+  const user = useUser()
+
+  const isVisitor = !MEMBER_ROLES.includes(user?.role)
+  const tabs = isVisitor ? [...BASE_TABS, VISITOR_TAB] : BASE_TABS
 
   return (
     <div
@@ -30,12 +38,8 @@ export default function FloatingNav() {
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       }}
     >
-      {TABS.map(({ to, icon: Icon, label, exact }) => {
-        const isActive = exact
-          ? location.pathname === to
-          : to === '/my-church'
-            ? location.pathname.startsWith('/my-church')
-            : location.pathname === to
+      {tabs.map(({ to, icon: Icon, label, exact }) => {
+        const isActive = exact ? location.pathname === to : location.pathname === to
 
         return (
           <button
