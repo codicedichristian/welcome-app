@@ -19,6 +19,11 @@ import ProfilePage from './pages/ProfilePage.jsx'
 import EditInfoPage from './pages/EditInfoPage.jsx'
 import MyEventsPage from './pages/MyEventsPage.jsx'
 import LastSundayPage from './pages/LastSundayPage.jsx'
+import MyChurchPage from './pages/MyChurchPage.jsx'
+import MyMidweekPage from './pages/MyMidweekPage.jsx'
+import MyServicesPage from './pages/MyServicesPage.jsx'
+import SundaysPage from './pages/SundaysPage.jsx'
+import MemberMessagesPage from './pages/MemberMessagesPage.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminEvents from './pages/admin/AdminEvents.jsx'
 import AdminNews from './pages/admin/AdminNews.jsx'
@@ -112,6 +117,11 @@ export default function App() {
             />
             <Route path="my-events" element={<MyEventsPage />} />
             <Route path="last-sunday" element={<LastSundayPage />} />
+            <Route path="my-church" element={<MyChurchPage />} />
+            <Route path="my-church/midweek" element={<MyMidweekPage />} />
+            <Route path="my-church/services" element={<MyServicesPage />} />
+            <Route path="my-church/sundays" element={<SundaysPage />} />
+            <Route path="my-church/messages" element={<MemberMessagesPage />} />
           </Route>
 
           <Route element={<AdminRoute />}>

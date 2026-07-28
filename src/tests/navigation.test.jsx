@@ -51,6 +51,7 @@ function renderLayout(initialPath = '/') {
           <Route path="news/:id" element={<div>News Detail Page</div>} />
           <Route path="profile" element={<div>Profile Page</div>} />
           <Route path="my-events" element={<div>My Events Page</div>} />
+          <Route path="my-church" element={<div>My Church Page</div>} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -138,24 +139,29 @@ describe('FloatingNav', () => {
     expect(screen.getByText('News Page')).toBeInTheDocument()
   })
 
-  test('Tapping My Church tab navigates to /my-events for members', async () => {
-    localStorage.setItem('welcome_user', JSON.stringify(MEMBER_USER))
+  test('Tapping My Church tab navigates to /my-church', async () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<FloatingNav />} />
-          <Route path="/my-events" element={<div>My Events Page</div>} />
+          <Route path="/my-church" element={<div>My Church Page</div>} />
         </Routes>
       </MemoryRouter>,
     )
 
     await user.click(screen.getByRole('button', { name: /my church/i }))
-    expect(screen.getByText('My Events Page')).toBeInTheDocument()
+    expect(screen.getByText('My Church Page')).toBeInTheDocument()
   })
 
-  test('My Church tab is visually active when at /my-events', () => {
-    renderFloatingNav('/my-events')
+  test('My Church tab is visually active when at /my-church', () => {
+    renderFloatingNav('/my-church')
+    const btn = screen.getByRole('button', { name: /my church/i })
+    expect(btn).toHaveStyle({ background: '#2e2e2e' })
+  })
+
+  test('My Church tab is visually active on /my-church sub-routes', () => {
+    renderFloatingNav('/my-church/midweek')
     const btn = screen.getByRole('button', { name: /my church/i })
     expect(btn).toHaveStyle({ background: '#2e2e2e' })
   })
@@ -194,8 +200,8 @@ describe('AppLayout FloatingNav visibility', () => {
     expect(screen.queryByRole('button', { name: /home/i })).not.toBeInTheDocument()
   })
 
-  test('FloatingNav is visible on /my-events', () => {
-    renderLayout('/my-events')
+  test('FloatingNav is visible on /my-church', () => {
+    renderLayout('/my-church')
     expect(screen.getByRole('button', { name: /my church/i })).toBeInTheDocument()
   })
 })

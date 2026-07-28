@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import RightPanel from '../components/RightPanel.jsx'
 import FloatingNav from '../components/FloatingNav.jsx'
 
-const MAIN_ROUTES = ['/', '/events', '/news', '/my-events']
+const MAIN_ROUTES = ['/', '/events', '/news', '/my-church']
 
 export default function AppLayout() {
   const location = useLocation()
