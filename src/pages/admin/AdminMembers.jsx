@@ -5,6 +5,7 @@ import {
   adminUpdateUserRole,
   adminGetServiceAreas,
   adminGetUserServiceAssignments,
+  adminGetUserLeadingAreas,
   adminAssignServiceArea,
   adminRemoveServiceArea,
   adminAssignAreaLeader,
@@ -86,10 +87,17 @@ function RoleSelect({ memberId, currentRole, onRoleChange }) {
 
 function MemberDetails({ member, serviceAreas, midweekGroups }) {
   const [assignments, setAssignments] = useState(null)
+  const [leadingAreaIds, setLeadingAreaIds] = useState(new Set())
   const [saving, setSaving] = useState(null)
 
   useEffect(() => {
-    adminGetUserServiceAssignments(member.id).then(({ data }) => setAssignments(data ?? []))
+    Promise.all([
+      adminGetUserServiceAssignments(member.id),
+      adminGetUserLeadingAreas(member.id),
+    ]).then(([{ data: assigned }, { data: leading }]) => {
+      setAssignments(assigned ?? [])
+      setLeadingAreaIds(new Set((leading ?? []).map((l) => l.area_id)))
+    })
   }, [member.id])
 
   const assignedAreaIds = useMemo(() => new Set((assignments ?? []).map((a) => a.area_id)), [assignments])
@@ -109,17 +117,20 @@ function MemberDetails({ member, serviceAreas, midweekGroups }) {
     setSaving(areaId)
     await adminRemoveServiceArea(member.id, areaId)
     setAssignments((prev) => (prev ?? []).filter((a) => a.area_id !== areaId))
+    // Also clean up leadership if the area is removed
+    await adminRemoveAreaLeader(member.id, areaId)
+    setLeadingAreaIds((prev) => { const next = new Set(prev); next.delete(areaId); return next })
     setSaving(null)
   }
 
-  const handleToggleLeader = async (assignment) => {
-    setSaving(assignment.area_id)
-    if (assignment.is_leader) {
-      const { data } = await adminRemoveAreaLeader(member.id, assignment.area_id)
-      if (data) setAssignments((prev) => (prev ?? []).map((a) => (a.area_id === assignment.area_id ? { ...a, is_leader: false } : a)))
+  const handleToggleLeader = async (areaId) => {
+    setSaving(areaId)
+    if (leadingAreaIds.has(areaId)) {
+      await adminRemoveAreaLeader(member.id, areaId)
+      setLeadingAreaIds((prev) => { const next = new Set(prev); next.delete(areaId); return next })
     } else {
-      const { data } = await adminAssignAreaLeader(member.id, assignment.area_id)
-      if (data) setAssignments((prev) => (prev ?? []).map((a) => (a.area_id === assignment.area_id ? { ...a, is_leader: true } : a)))
+      await adminAssignAreaLeader(member.id, areaId)
+      setLeadingAreaIds((prev) => new Set([...prev, areaId]))
     }
     setSaving(null)
   }
@@ -134,33 +145,36 @@ function MemberDetails({ member, serviceAreas, midweekGroups }) {
               <p className="text-zinc-600">Loading...</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {assignments.map((a) => (
-                  <span
-                    key={a.area_id}
-                    className="flex items-center gap-1 rounded-full px-2.5 py-1"
-                    style={{ background: 'rgba(255,255,255,0.08)', color: '#ccc' }}
-                  >
-                    {a.is_leader && <Crown size={9} style={{ color: '#f97316' }} />}
-                    <span>{a.service_areas?.name ?? a.area_id}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleLeader(a)}
-                      disabled={saving === a.area_id}
-                      title={a.is_leader ? 'Remove leader' : 'Make leader'}
-                      className="ml-0.5 rounded-full p-0.5 text-zinc-500 transition-colors hover:text-[#f97316]"
+                {assignments.map((a) => {
+                  const isLeader = leadingAreaIds.has(a.area_id)
+                  return (
+                    <span
+                      key={a.area_id}
+                      className="flex items-center gap-1 rounded-full px-2.5 py-1"
+                      style={{ background: 'rgba(255,255,255,0.08)', color: '#ccc' }}
                     >
-                      <Crown size={9} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveArea(a.area_id)}
-                      disabled={saving === a.area_id}
-                      className="ml-0.5 rounded-full p-0.5 text-zinc-500 transition-colors hover:text-[#e55555]"
-                    >
-                      <X size={9} />
-                    </button>
-                  </span>
-                ))}
+                      {isLeader && <Crown size={9} style={{ color: '#f97316' }} />}
+                      <span>{a.service_areas?.name ?? a.area_id}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLeader(a.area_id)}
+                        disabled={saving === a.area_id}
+                        title={isLeader ? 'Remove leader' : 'Set as leader'}
+                        className="ml-0.5 rounded-full p-0.5 text-zinc-500 transition-colors hover:text-[#f97316]"
+                      >
+                        <Crown size={9} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveArea(a.area_id)}
+                        disabled={saving === a.area_id}
+                        className="ml-0.5 rounded-full p-0.5 text-zinc-500 transition-colors hover:text-[#e55555]"
+                      >
+                        <X size={9} />
+                      </button>
+                    </span>
+                  )
+                })}
                 {unassignedAreas.length > 0 && (
                   <select
                     value=""

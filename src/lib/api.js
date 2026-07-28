@@ -423,7 +423,7 @@ export async function adminAssignServiceArea(userId, areaId) {
   try {
     const { data, error } = await supabase
       .from('service_assignments')
-      .insert({ user_id: userId, area_id: areaId, is_leader: false })
+      .insert({ user_id: userId, area_id: areaId })
       .select('*, service_areas(id, name)')
       .single()
 
@@ -449,12 +449,26 @@ export async function adminRemoveServiceArea(userId, areaId) {
   }
 }
 
+export async function adminGetUserLeadingAreas(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('area_leaders')
+      .select('area_id, service_areas(id, name)')
+      .eq('user_id', userId)
+
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
 export async function adminAssignAreaLeader(userId, areaId) {
   try {
     const { data, error } = await supabase
-      .from('service_assignments')
-      .upsert({ user_id: userId, area_id: areaId, is_leader: true }, { onConflict: 'user_id,area_id' })
-      .select('*, service_areas(id, name)')
+      .from('area_leaders')
+      .upsert({ user_id: userId, area_id: areaId }, { onConflict: 'user_id,area_id' })
+      .select()
       .single()
 
     if (error) throw error
@@ -466,18 +480,16 @@ export async function adminAssignAreaLeader(userId, areaId) {
 
 export async function adminRemoveAreaLeader(userId, areaId) {
   try {
-    const { data, error } = await supabase
-      .from('service_assignments')
-      .update({ is_leader: false })
+    const { error } = await supabase
+      .from('area_leaders')
+      .delete()
       .eq('user_id', userId)
       .eq('area_id', areaId)
-      .select('*, service_areas(id, name)')
-      .single()
 
     if (error) throw error
-    return { data, error: null }
+    return { error: null }
   } catch (error) {
-    return { data: null, error }
+    return { error }
   }
 }
 
