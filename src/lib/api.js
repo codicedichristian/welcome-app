@@ -671,6 +671,170 @@ export async function adminDeleteMessage(id) {
   }
 }
 
+// ─── MEMBERS AREA ────────────────────────────────────────────────────────────
+
+export async function getMyChurchData(userId) {
+  const today = new Date().toISOString().slice(0, 10)
+  const [
+    { data: leaderEntry },
+    { data: myAreas },
+    { data: nextSchedule },
+    { data: allMessages },
+    { data: myReads },
+    { data: summaries },
+  ] = await Promise.all([
+    supabase.from('midweek_leaders').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
+    supabase.from('service_assignments').select('area_id, service_areas(id, name)').eq('user_id', userId),
+    supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(1).maybeSingle(),
+    supabase.from('member_messages').select('id, audience').order('created_at', { ascending: false }),
+    supabase.from('message_reads').select('message_id').eq('user_id', userId),
+    supabase.from('sunday_summaries').select('*, schedule:sunday_schedules!schedule_id(id, date)'),
+  ])
+
+  const myGroup = leaderEntry?.midweek_groups ?? null
+  const myAreaIds = new Set((myAreas ?? []).map((a) => a.area_id))
+  const readIds = new Set((myReads ?? []).map((r) => r.message_id))
+
+  let latestNote = null
+  if (myGroup?.id) {
+    const { data: note } = await supabase
+      .from('midweek_notes')
+      .select('id, title, date')
+      .eq('group_id', myGroup.id)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    latestNote = note
+  }
+
+  const unreadMessages = (allMessages ?? []).filter((msg) => {
+    if (readIds.has(msg.id)) return false
+    if (msg.audience === 'all_members') return true
+    if (msg.audience?.startsWith('area:') && myAreaIds.has(msg.audience.slice(5))) return true
+    if (myGroup?.id && msg.audience === `group:${myGroup.id}`) return true
+    return false
+  }).length
+
+  const lastSunday = (summaries ?? [])
+    .filter((s) => s.schedule?.date && s.schedule.date <= today)
+    .sort((a, b) => (b.schedule?.date ?? '').localeCompare(a.schedule?.date ?? ''))[0] ?? null
+
+  return { myGroup, latestNote, myAreas: myAreas ?? [], nextSchedule: nextSchedule ?? null, unreadMessages, lastSunday }
+}
+
+export async function getMyMidweekData(userId) {
+  const { data: leaderEntry } = await supabase
+    .from('midweek_leaders')
+    .select('group_id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (!leaderEntry?.group_id) return { group: null, leader: null, notes: [] }
+
+  const groupId = leaderEntry.group_id
+  const [{ data: group }, { data: leaderLink }, { data: notes }] = await Promise.all([
+    supabase.from('midweek_groups').select('*').eq('id', groupId).single(),
+    supabase.from('midweek_leaders').select('user_id, users!user_id(first_name, last_name, phone)').eq('group_id', groupId).maybeSingle(),
+    supabase.from('midweek_notes').select('*').eq('group_id', groupId).order('date', { ascending: false }).limit(10),
+  ])
+
+  return { group: group ?? null, leader: leaderLink?.users ?? null, notes: notes ?? [] }
+}
+
+export async function getMyServicesData(userId) {
+  const today = new Date().toISOString().slice(0, 10)
+  const [{ data: assignments }, { data: leadingAreas }, { data: upcomingSchedules }] = await Promise.all([
+    supabase.from('service_assignments').select('area_id, service_areas(id, name, is_macro, parent_id)').eq('user_id', userId),
+    supabase.from('area_leaders').select('area_id').eq('user_id', userId),
+    supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(8),
+  ])
+
+  const scheduleIdSet = new Set((upcomingSchedules ?? []).map((s) => s.id))
+  let responses = []
+  if (scheduleIdSet.size > 0) {
+    const { data: resp } = await supabase
+      .from('service_responses')
+      .select('schedule_id, area_id, status, service_areas(id, name)')
+      .eq('user_id', userId)
+    responses = (resp ?? []).filter((r) => scheduleIdSet.has(r.schedule_id))
+  }
+
+  return {
+    areas: assignments ?? [],
+    leadingAreaIds: new Set((leadingAreas ?? []).map((a) => a.area_id)),
+    upcomingSchedules: upcomingSchedules ?? [],
+    responses,
+  }
+}
+
+export async function updateServiceResponse(userId, scheduleId, areaId, status) {
+  try {
+    const { error } = await supabase
+      .from('service_responses')
+      .update({ status })
+      .eq('user_id', userId)
+      .eq('schedule_id', scheduleId)
+      .eq('area_id', areaId)
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function getSundaySummaries() {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data, error } = await supabase
+      .from('sunday_summaries')
+      .select('*, schedule:sunday_schedules!schedule_id(id, date)')
+    if (error) throw error
+    const past = (data ?? [])
+      .filter((s) => s.schedule?.date && s.schedule.date <= today)
+      .sort((a, b) => (b.schedule?.date ?? '').localeCompare(a.schedule?.date ?? ''))
+      .slice(0, 20)
+    return { data: past, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function getMemberMessages(userId, userRole, userAreaIds, userGroupId) {
+  if (userRole === 'visitor') return { data: [], error: null }
+  try {
+    const [{ data: messages, error }, { data: reads }] = await Promise.all([
+      supabase.from('member_messages').select('*, author:users!author_id(first_name, last_name)').order('created_at', { ascending: false }),
+      supabase.from('message_reads').select('message_id').eq('user_id', userId),
+    ])
+    if (error) throw error
+    const readIds = new Set((reads ?? []).map((r) => r.message_id))
+    const areaSet = new Set(userAreaIds ?? [])
+    const filtered = (messages ?? [])
+      .filter((msg) => {
+        if (msg.audience === 'all_members') return true
+        if (msg.audience?.startsWith('area:') && areaSet.has(msg.audience.slice(5))) return true
+        if (userGroupId && msg.audience === `group:${userGroupId}`) return true
+        return false
+      })
+      .map((msg) => ({ ...msg, isRead: readIds.has(msg.id) }))
+    return { data: filtered, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function markMessageRead(userId, messageId) {
+  try {
+    const { error } = await supabase
+      .from('message_reads')
+      .upsert({ user_id: userId, message_id: messageId, read_at: new Date().toISOString() }, { onConflict: 'user_id,message_id' })
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
 export async function adminGetStats() {
   try {
     const [
