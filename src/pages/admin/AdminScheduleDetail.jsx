@@ -1,33 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Save } from 'lucide-react'
-import {
-  adminGetSummary,
-  adminUpsertSummary,
-  adminGetServiceAreas,
-  getScheduleRoster,
-} from '../../lib/api.js'
+import { ChevronLeft } from 'lucide-react'
+import { adminGetServiceAreas, adminGetScheduleDates, getScheduleRoster } from '../../lib/api.js'
+import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
-import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 
 const STATUS_STYLE = {
   accepted: { color: '#4caf7d', label: 'Accepted' },
   declined:  { color: '#e55555', label: 'Declined' },
   pending:   { color: '#666666', label: 'Pending' },
-}
-
-const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', video_url: '', photos_url: '' }
-
-function toForm(s) {
-  if (!s) return EMPTY_FORM
-  return {
-    title:       s.title ?? '',
-    speaker:     s.speaker ?? '',
-    scripture:   s.scripture ?? '',
-    description: s.description ?? '',
-    video_url:   s.video_url ?? '',
-    photos_url:  s.photos_url ?? '',
-  }
 }
 
 function RosterTab({ scheduleId, areaId }) {
@@ -77,18 +58,17 @@ export default function AdminScheduleDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState(EMPTY_FORM)
+  const [scheduleDate, setScheduleDate] = useState(null)
   const [allAreas, setAllAreas] = useState([])
   const [activeMacro, setActiveMacro] = useState(0)
   const [activeSub, setActiveSub] = useState(0)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    Promise.all([adminGetSummary(id), adminGetServiceAreas()]).then(
-      ([{ data: summary }, { data: areas }]) => {
-        setForm(toForm(summary))
+    Promise.all([adminGetServiceAreas(), adminGetScheduleDates()]).then(
+      ([{ data: areas }, { data: dates }]) => {
         setAllAreas(areas ?? [])
+        const match = (dates ?? []).find((d) => d.id === id)
+        setScheduleDate(match?.date ?? null)
         setLoading(false)
       },
     )
@@ -106,17 +86,6 @@ export default function AdminScheduleDetail() {
     return macroAreas[activeMacro]?.id
   }, [macroAreas, subAreas, activeMacro, activeSub])
 
-  const update = (patch) => setForm((prev) => ({ ...prev, ...patch }))
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    await adminUpsertSummary(id, form)
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
-
   if (loading) return <Spinner />
 
   return (
@@ -130,63 +99,12 @@ export default function AdminScheduleDetail() {
         Schedules
       </button>
 
-      <h1 className="text-lg font-medium text-primary">Schedule Detail</h1>
+      <h1 className="text-lg font-medium text-primary">
+        {scheduleDate ? `Service Roster — ${formatShortDate(scheduleDate)}` : 'Service Roster'}
+      </h1>
 
-      {/* Sermon form */}
-      <section className="mt-6">
-        <h2 className="mb-3 text-sm font-medium text-primary">Sermon details</h2>
-        <form onSubmit={handleSave} className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Title">
-              <Input value={form.title} onChange={(e) => update({ title: e.target.value })} />
-            </Field>
-            <Field label="Speaker">
-              <Input value={form.speaker} onChange={(e) => update({ speaker: e.target.value })} />
-            </Field>
-          </div>
-          <Field label="Scripture">
-            <Input
-              value={form.scripture}
-              onChange={(e) => update({ scripture: e.target.value })}
-              placeholder="e.g. John 3:16"
-            />
-          </Field>
-          <Field label="Description">
-            <Textarea rows={4} value={form.description} onChange={(e) => update({ description: e.target.value })} />
-          </Field>
-          <Field label="Video URL">
-            <Input
-              type="url"
-              value={form.video_url}
-              onChange={(e) => update({ video_url: e.target.value })}
-              placeholder="https://…"
-            />
-          </Field>
-          <Field label="Photos URL">
-            <Input
-              type="url"
-              value={form.photos_url}
-              onChange={(e) => update({ photos_url: e.target.value })}
-              placeholder="https://…"
-            />
-          </Field>
-          <button
-            type="submit"
-            disabled={saving}
-            className="mt-1 flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-medium text-bg disabled:opacity-60"
-          >
-            <Save size={15} />
-            {saving ? 'Saving…' : saved ? 'Saved!' : 'Save sermon details'}
-          </button>
-        </form>
-      </section>
-
-      {/* Service roster */}
-      {macroAreas.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-3 text-sm font-medium text-primary">Service roster</h2>
-
-          {/* Macro tabs */}
+      {macroAreas.length > 0 ? (
+        <section className="mt-6">
           <div className="flex gap-4 border-b border-border">
             {macroAreas.map((area, i) => (
               <button
@@ -204,7 +122,6 @@ export default function AdminScheduleDetail() {
             ))}
           </div>
 
-          {/* Sub-tabs (e.g. Media / Sound under Production) */}
           {subAreas.length > 0 && (
             <div className="mt-2 flex gap-3 border-b border-border/50">
               {subAreas.map((area, i) => (
@@ -224,6 +141,8 @@ export default function AdminScheduleDetail() {
 
           <RosterTab scheduleId={id} areaId={rosterAreaId} />
         </section>
+      ) : (
+        <p className="mt-6 text-sm text-zinc-500">No service areas configured.</p>
       )}
     </div>
   )

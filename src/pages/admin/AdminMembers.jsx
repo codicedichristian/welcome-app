@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Download, ChevronDown, X, Star } from 'lucide-react'
 import {
@@ -45,28 +46,54 @@ function downloadCsv(content, filename) {
   URL.revokeObjectURL(url)
 }
 
-// Custom dropdown for adding service areas — uses onMouseDown to avoid blur-before-click
 function AreaDropdown({ areas, onSelect }) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
   const btnRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (btnRef.current?.contains(e.target)) return
+      setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
 
   if (!areas.length) return null
 
+  const handleClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setPos({ top: rect.bottom + 4, left: rect.left })
+    setOpen((o) => !o)
+  }
+
   return (
-    <div className="relative">
+    <>
       <button
         ref={btnRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        onBlur={() => setOpen(false)}
+        onClick={handleClick}
         className="flex h-5 w-5 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-surface hover:text-primary"
         aria-label="Add area"
       >
         +
       </button>
-      {open && (
+      {open && createPortal(
         <div
-          className="absolute left-0 top-6 z-20 min-w-[120px] overflow-hidden rounded-xl border border-border bg-surface shadow-lg"
+          style={{
+            position: 'fixed',
+            top: pos.top,
+            left: pos.left,
+            zIndex: 9999,
+            background: '#1a1a1a',
+            border: '0.5px solid #2e2e2e',
+            borderRadius: 10,
+            minWidth: 160,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            overflow: 'hidden',
+          }}
         >
           {areas.map((a) => (
             <button
@@ -77,14 +104,24 @@ function AreaDropdown({ areas, onSelect }) {
                 onSelect(a)
                 setOpen(false)
               }}
-              className="block w-full px-3 py-2 text-left text-xs text-primary hover:bg-bg"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '8px 12px',
+                textAlign: 'left',
+                fontSize: 12,
+                color: '#fff',
+                background: 'transparent',
+                cursor: 'pointer',
+              }}
             >
               {a.name}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   )
 }
 

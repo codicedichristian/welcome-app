@@ -507,12 +507,52 @@ export async function adminGetSchedules() {
   try {
     const { data, error } = await supabase
       .from('sunday_schedules')
-      .select('*, sunday_summaries(title, speaker), service_responses(status)')
+      .select('*, service_responses(status)')
       .order('date', { ascending: false })
     if (error) throw error
     return { data, error: null }
   } catch (error) {
     return { data: null, error }
+  }
+}
+
+export async function adminGetScheduleDates() {
+  try {
+    const { data, error } = await supabase
+      .from('sunday_schedules')
+      .select('id, date')
+      .order('date', { ascending: false })
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminGetSundays() {
+  try {
+    const { data, error } = await supabase
+      .from('sunday_summaries')
+      .select('*, schedule:sunday_schedules!schedule_id(id, date)')
+    if (error) throw error
+    const sorted = (data ?? []).sort((a, b) => {
+      const da = a.schedule?.date ?? ''
+      const db = b.schedule?.date ?? ''
+      return db.localeCompare(da)
+    })
+    return { data: sorted, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function adminDeleteSummary(id) {
+  try {
+    const { error } = await supabase.from('sunday_summaries').delete().eq('id', id)
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
   }
 }
 

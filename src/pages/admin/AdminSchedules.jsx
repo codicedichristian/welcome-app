@@ -190,7 +190,6 @@ export default function AdminSchedules() {
               <thead>
                 <tr className="border-b border-border text-xs text-zinc-500">
                   <th className="px-4 py-3 font-normal">Date</th>
-                  <th className="px-4 py-3 font-normal">Sermon</th>
                   <th className="px-4 py-3 font-normal">Accepted</th>
                   <th className="px-4 py-3 font-normal">Declined</th>
                   <th className="px-4 py-3 font-normal">Pending</th>
@@ -200,7 +199,7 @@ export default function AdminSchedules() {
               <tbody>
                 {schedules.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
+                    <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
                       No schedules yet — pick Sundays above
                     </td>
                   </tr>
@@ -210,7 +209,6 @@ export default function AdminSchedules() {
                     const accepted = responses.filter((r) => r.status === 'accepted').length
                     const declined = responses.filter((r) => r.status === 'declined').length
                     const pending = responses.filter((r) => r.status === 'pending').length
-                    const sermon = s.sunday_summaries?.[0]?.title
 
                     return (
                       <tr
@@ -219,9 +217,6 @@ export default function AdminSchedules() {
                         onClick={() => navigate(`/admin/schedules/${s.id}`)}
                       >
                         <td className="px-4 py-3 text-primary">{formatShortDate(s.date)}</td>
-                        <td className="px-4 py-3 text-zinc-400">
-                          {sermon ?? <span className="text-zinc-600">Add sermon →</span>}
-                        </td>
                         <td className="px-4 py-3 font-medium" style={{ color: '#4caf7d' }}>{accepted}</td>
                         <td className="px-4 py-3 font-medium" style={{ color: '#e55555' }}>{declined}</td>
                         <td className="px-4 py-3 text-zinc-500">{pending}</td>
