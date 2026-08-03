@@ -10,6 +10,8 @@ import {
   adminToggleAreaLeader,
   adminAssignMidweekLeader,
   adminRemoveMidweekLeader,
+  adminAssignMidweekGroup,
+  adminRemoveMidweekGroup,
   adminGetMidweekGroups,
 } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
@@ -186,6 +188,19 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
     if (groupId) await adminRemoveMidweekLeader(groupId)
   }
 
+  const handleAssignMidweekGroup = async (e) => {
+    const groupId = e.target.value
+    if (!groupId) return
+    const group = midweekGroups.find((g) => g.id === groupId)
+    onUpdate(member.id, { memberGroup: group })
+    await adminAssignMidweekGroup(member.id, groupId)
+  }
+
+  const handleRemoveMidweekGroup = async () => {
+    onUpdate(member.id, { memberGroup: null })
+    await adminRemoveMidweekGroup(member.id)
+  }
+
   const roleColor = ROLE_STYLE[member.role]?.color ?? '#fff'
 
   return (
@@ -298,6 +313,36 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
           )}
         </td>
 
+        {/* Midweek Group (member assignment) */}
+        <td className="px-4 py-3">
+          {member.memberGroup ? (
+            <div className="flex items-center gap-1.5 text-xs text-primary">
+              <span>{member.memberGroup.zone ?? member.memberGroup.host ?? '—'}</span>
+              <button
+                type="button"
+                onClick={handleRemoveMidweekGroup}
+                className="text-zinc-500 hover:text-[#e55555]"
+                aria-label="Remove midweek group"
+              >
+                <X size={10} />
+              </button>
+            </div>
+          ) : (
+            <select
+              value=""
+              onChange={handleAssignMidweekGroup}
+              style={{ fontSize: 11, background: 'transparent', color: '#555', outline: 'none', cursor: 'pointer' }}
+            >
+              <option value="">Assign group…</option>
+              {midweekGroups.map((g) => (
+                <option key={g.id} value={g.id} style={{ background: '#1a1a1a', color: '#fff' }}>
+                  {g.zone ?? g.host}
+                </option>
+              ))}
+            </select>
+          )}
+        </td>
+
         {/* Actions */}
         <td className="px-4 py-3">
           <button
@@ -313,7 +358,7 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
 
       {expanded && (
         <tr className="border-b border-border bg-bg last:border-b-0">
-          <td colSpan={7} className="px-4 py-3">
+          <td colSpan={8} className="px-4 py-3">
             <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
               <div>
                 <p className="text-zinc-500">Phone</p>
@@ -411,7 +456,7 @@ export default function AdminMembers() {
         <ErrorState />
       ) : (
         <div className="mt-5 overflow-x-auto rounded-2xl border border-border">
-          <table className="w-full min-w-[900px] text-left">
+          <table className="w-full min-w-[1060px] text-left">
             <thead>
               <tr className="border-b border-border text-xs text-zinc-500">
                 <th className="px-4 py-3 font-normal">Name</th>
@@ -420,13 +465,14 @@ export default function AdminMembers() {
                 <th className="px-4 py-3 font-normal">Service areas</th>
                 <th className="px-4 py-3 font-normal">Leading</th>
                 <th className="px-4 py-3 font-normal">Midweek leader</th>
+                <th className="px-4 py-3 font-normal">Midweek group</th>
                 <th className="px-4 py-3 font-normal"></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-sm text-zinc-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-sm text-zinc-500">
                     No members found
                   </td>
                 </tr>

@@ -374,11 +374,13 @@ export async function adminGetMembers() {
       { data: assignments },
       { data: leaders },
       { data: midweekLeaders },
+      { data: midweekMembers },
     ] = await Promise.all([
       supabase.from('users').select('*').order('created_at', { ascending: false }),
       supabase.from('service_assignments').select('user_id, area_id, service_areas(id, name, is_macro, parent_id)'),
       supabase.from('area_leaders').select('user_id, area_id, service_areas(id, name, is_macro)'),
       supabase.from('midweek_leaders').select('user_id, group_id, midweek_groups(id, host, zone)'),
+      supabase.from('midweek_members').select('user_id, group_id, midweek_groups(id, host, zone)'),
     ])
 
     if (usersError) throw usersError
@@ -386,7 +388,7 @@ export async function adminGetMembers() {
     const map = new Map(
       (users ?? []).map((u) => [
         u.id,
-        { ...u, serviceAreas: [], leadingAreas: [], midweekGroup: null, isMidweekLeader: false },
+        { ...u, serviceAreas: [], leadingAreas: [], midweekGroup: null, isMidweekLeader: false, memberGroup: null },
       ]),
     )
 
@@ -404,6 +406,10 @@ export async function adminGetMembers() {
         u.midweekGroup = ml.midweek_groups
         u.isMidweekLeader = true
       }
+    }
+    for (const mm of midweekMembers ?? []) {
+      const u = map.get(mm.user_id)
+      if (u && mm.midweek_groups) u.memberGroup = mm.midweek_groups
     }
 
     return { data: [...map.values()], error: null }
@@ -494,6 +500,28 @@ export async function adminAssignMidweekLeader(userId, groupId) {
 export async function adminRemoveMidweekLeader(groupId) {
   try {
     const { error } = await supabase.from('midweek_leaders').delete().eq('group_id', groupId)
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminAssignMidweekGroup(userId, groupId) {
+  try {
+    const { error } = await supabase
+      .from('midweek_members')
+      .upsert({ user_id: userId, group_id: groupId }, { onConflict: 'user_id' })
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminRemoveMidweekGroup(userId) {
+  try {
+    const { error } = await supabase.from('midweek_members').delete().eq('user_id', userId)
     if (error) throw error
     return { error: null }
   } catch (error) {
@@ -677,6 +705,7 @@ export async function getMyChurchData(userId) {
   const today = new Date().toISOString().slice(0, 10)
   const [
     { data: leaderEntry },
+    { data: memberEntry },
     { data: myAreas },
     { data: nextSchedule },
     { data: allMessages },
@@ -684,6 +713,7 @@ export async function getMyChurchData(userId) {
     { data: summaries },
   ] = await Promise.all([
     supabase.from('midweek_leaders').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
+    supabase.from('midweek_members').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
     supabase.from('service_assignments').select('area_id, service_areas(id, name)').eq('user_id', userId),
     supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(1).maybeSingle(),
     supabase.from('member_messages').select('id, audience, title, body').order('created_at', { ascending: false }),
@@ -691,7 +721,7 @@ export async function getMyChurchData(userId) {
     supabase.from('sunday_summaries').select('*, schedule:sunday_schedules!schedule_id(id, date)'),
   ])
 
-  const myGroup = leaderEntry?.midweek_groups ?? null
+  const myGroup = leaderEntry?.midweek_groups ?? memberEntry?.midweek_groups ?? null
   const myAreaIds = new Set((myAreas ?? []).map((a) => a.area_id))
   const readIds = new Set((myReads ?? []).map((r) => r.message_id))
 
@@ -849,9 +879,19 @@ export async function getSundaySummaries() {
   }
 }
 
-export async function getMemberMessages(userId, userRole, userAreaIds, userGroupId) {
+export async function getMemberMessages(userId, userRole) {
   if (userRole === 'visitor') return { data: [], error: null }
   try {
+    // Resolve user's area IDs and group ID in parallel
+    const [{ data: assignments }, { data: memberRow }, { data: leaderRow }] = await Promise.all([
+      supabase.from('service_assignments').select('area_id').eq('user_id', userId),
+      supabase.from('midweek_members').select('group_id').eq('user_id', userId).maybeSingle(),
+      supabase.from('midweek_leaders').select('group_id').eq('user_id', userId).maybeSingle(),
+    ])
+
+    const areaIds = new Set((assignments ?? []).map((a) => a.area_id))
+    const groupId = memberRow?.group_id ?? leaderRow?.group_id ?? null
+
     const [{ data: messages, error }, { data: reads }, { data: serviceAreas }, { data: groups }] = await Promise.all([
       supabase.from('member_messages').select('*, author:users!author_id(first_name, last_name)').order('created_at', { ascending: false }),
       supabase.from('message_reads').select('message_id').eq('user_id', userId),
@@ -859,8 +899,8 @@ export async function getMemberMessages(userId, userRole, userAreaIds, userGroup
       supabase.from('midweek_groups').select('id, host'),
     ])
     if (error) throw error
+
     const readIds = new Set((reads ?? []).map((r) => r.message_id))
-    const areaSet = new Set(userAreaIds ?? [])
     const areaMap = new Map((serviceAreas ?? []).map((a) => [a.id, a.name]))
     const groupMap = new Map((groups ?? []).map((g) => [g.id, g.host]))
 
@@ -879,9 +919,9 @@ export async function getMemberMessages(userId, userRole, userAreaIds, userGroup
 
     const filtered = (messages ?? [])
       .filter((msg) => {
-        if (msg.audience === 'all_members') return true
-        if (msg.audience?.startsWith('area:') && areaSet.has(msg.audience.slice(5))) return true
-        if (userGroupId && msg.audience === `group:${userGroupId}`) return true
+        if (msg.audience === 'all_members') return ['member', 'leader', 'admin'].includes(userRole)
+        if (msg.audience?.startsWith('area:')) return areaIds.has(msg.audience.slice(5))
+        if (msg.audience?.startsWith('group:')) return groupId === msg.audience.slice(6)
         return false
       })
       .map((msg) => ({
@@ -890,6 +930,7 @@ export async function getMemberMessages(userId, userRole, userAreaIds, userGroup
         audienceLabel: resolveAudience(msg.audience),
         isRead: readIds.has(msg.id),
       }))
+
     return { data: filtered, error: null }
   } catch (error) {
     return { data: null, error }

@@ -53,7 +53,7 @@ export default function MemberMessagesPage() {
 
   useEffect(() => {
     if (!user?.id) return
-    getMemberMessages(user.id, user.role, [], null).then(({ data }) => {
+    getMemberMessages(user.id, user.role).then(({ data }) => {
       setMessages(data ?? [])
       setLoading(false)
     })
