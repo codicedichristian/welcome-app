@@ -686,7 +686,7 @@ export async function getMyChurchData(userId) {
     supabase.from('midweek_leaders').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
     supabase.from('service_assignments').select('area_id, service_areas(id, name)').eq('user_id', userId),
     supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(1).maybeSingle(),
-    supabase.from('member_messages').select('id, audience').order('created_at', { ascending: false }),
+    supabase.from('member_messages').select('id, audience, title, body').order('created_at', { ascending: false }),
     supabase.from('message_reads').select('message_id').eq('user_id', userId),
     supabase.from('sunday_summaries').select('*, schedule:sunday_schedules!schedule_id(id, date)'),
   ])
@@ -695,31 +695,45 @@ export async function getMyChurchData(userId) {
   const myAreaIds = new Set((myAreas ?? []).map((a) => a.area_id))
   const readIds = new Set((myReads ?? []).map((r) => r.message_id))
 
-  let latestNote = null
-  if (myGroup?.id) {
-    const { data: note } = await supabase
-      .from('midweek_notes')
-      .select('id, title, date')
-      .eq('group_id', myGroup.id)
-      .order('date', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    latestNote = note
-  }
-
-  const unreadMessages = (allMessages ?? []).filter((msg) => {
-    if (readIds.has(msg.id)) return false
+  const isRelevantMsg = (msg) => {
     if (msg.audience === 'all_members') return true
     if (msg.audience?.startsWith('area:') && myAreaIds.has(msg.audience.slice(5))) return true
     if (myGroup?.id && msg.audience === `group:${myGroup.id}`) return true
     return false
-  }).length
+  }
+
+  let latestNote = null
+  let groupMemberCount = 0
+  let nextResponse = null
+
+  if (myGroup?.id) {
+    const [{ data: note }, { count }, { data: resp }] = await Promise.all([
+      supabase.from('midweek_notes').select('id, title, date').eq('group_id', myGroup.id).order('date', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('midweek_leaders').select('*', { count: 'exact', head: true }).eq('group_id', myGroup.id),
+      nextSchedule?.id
+        ? supabase.from('service_responses').select('status, area_id').eq('user_id', userId).eq('schedule_id', nextSchedule.id).limit(1).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ])
+    latestNote = note
+    groupMemberCount = count ?? 0
+    nextResponse = resp
+  } else if (nextSchedule?.id) {
+    const { data: resp } = await supabase.from('service_responses').select('status, area_id').eq('user_id', userId).eq('schedule_id', nextSchedule.id).limit(1).maybeSingle()
+    nextResponse = resp
+  }
+
+  const relevantMessages = (allMessages ?? []).filter(isRelevantMsg)
+  const unreadMessages = relevantMessages.filter((msg) => !readIds.has(msg.id)).length
+  const latestMessage = relevantMessages[0] ?? null
 
   const lastSunday = (summaries ?? [])
     .filter((s) => s.schedule?.date && s.schedule.date <= today)
     .sort((a, b) => (b.schedule?.date ?? '').localeCompare(a.schedule?.date ?? ''))[0] ?? null
 
-  return { myGroup, latestNote, myAreas: myAreas ?? [], nextSchedule: nextSchedule ?? null, unreadMessages, lastSunday }
+  return {
+    myGroup, latestNote, myAreas: myAreas ?? [], nextSchedule: nextSchedule ?? null,
+    unreadMessages, lastSunday, groupMemberCount, nextResponse, latestMessage,
+  }
 }
 
 export async function getMyMidweekData(userId) {
@@ -743,27 +757,38 @@ export async function getMyMidweekData(userId) {
 
 export async function getMyServicesData(userId) {
   const today = new Date().toISOString().slice(0, 10)
-  const [{ data: assignments }, { data: leadingAreas }, { data: upcomingSchedules }] = await Promise.all([
+  const [{ data: assignments }, { data: leadingAreas }, { data: upcomingSchedules }, { data: pastSchedules }] = await Promise.all([
     supabase.from('service_assignments').select('area_id, service_areas(id, name, is_macro, parent_id)').eq('user_id', userId),
     supabase.from('area_leaders').select('area_id').eq('user_id', userId),
     supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(8),
+    supabase.from('sunday_schedules').select('id, date').lt('date', today).order('date', { ascending: false }).limit(10),
   ])
 
-  const scheduleIdSet = new Set((upcomingSchedules ?? []).map((s) => s.id))
-  let responses = []
-  if (scheduleIdSet.size > 0) {
+  const upcomingIds = new Set((upcomingSchedules ?? []).map((s) => s.id))
+  const pastIds = new Set((pastSchedules ?? []).map((s) => s.id))
+
+  let allResponses = []
+  if (upcomingIds.size > 0 || pastIds.size > 0) {
     const { data: resp } = await supabase
       .from('service_responses')
       .select('schedule_id, area_id, status, service_areas(id, name)')
       .eq('user_id', userId)
-    responses = (resp ?? []).filter((r) => scheduleIdSet.has(r.schedule_id))
+    allResponses = resp ?? []
   }
+
+  const pastScheduleMap = new Map((pastSchedules ?? []).map((s) => [s.id, s]))
+  const history = allResponses
+    .filter((r) => pastIds.has(r.schedule_id))
+    .map((r) => ({ ...r, scheduleDate: pastScheduleMap.get(r.schedule_id)?.date }))
+    .sort((a, b) => (b.scheduleDate ?? '').localeCompare(a.scheduleDate ?? ''))
+    .slice(0, 10)
 
   return {
     areas: assignments ?? [],
     leadingAreaIds: new Set((leadingAreas ?? []).map((a) => a.area_id)),
     upcomingSchedules: upcomingSchedules ?? [],
-    responses,
+    responses: allResponses.filter((r) => upcomingIds.has(r.schedule_id)),
+    history,
   }
 }
 

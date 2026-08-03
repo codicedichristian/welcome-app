@@ -3,116 +3,194 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { useUser } from '../lib/UserContext.js'
 import { getMyServicesData, updateServiceResponse } from '../lib/api.js'
-import { formatShortDate } from '../lib/format.js'
-import Spinner from '../components/Spinner.jsx'
 
-const PAGE = {
-  background: '#0a0b0a',
-  minHeight: '100dvh',
-  paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
-  paddingLeft: '22px',
-  paddingRight: '22px',
-  paddingBottom: '60px',
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const BG = '#0a0b0a'
+const CARD_BG = '#1a1a1a'
+const CARD_BORDER = '0.5px solid #2e2e2e'
+const CARD_RADIUS = 20
+const CARD_PAD = 18
+const TEXT_PRIMARY = '#ffffff'
+const TEXT_SEC = '#9a9a97'
+const TEXT_TER = '#c9c9c6'
+const TEXT_MUTED = '#6b6b68'
+const ACCENT_BLUE = '#5b8cff'
+const ACCENT_GREEN = '#4caf7d'
+const ACCENT_ORANGE = '#f2a341'
+const ACCENT_RED = '#e05b4f'
+const CHIP_BG = '#242424'
+
+function hex15(hex) { return `${hex}26` }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatScheduleDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 }
 
-const AREA_COLORS = {
-  Worship:    '#ffffff',
-  Media:      '#5b8cff',
-  Sound:      '#5b8cff',
-  Digital:    '#a78bfa',
-  Production: '#f97316',
+function formatShort(dateStr) {
+  if (!dateStr) return ''
+  return new Date(`${dateStr}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function areaColor(name) {
-  return AREA_COLORS[name] ?? '#888'
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function SectionLabel({ text, color = TEXT_MUTED }) {
+  return (
+    <p style={{
+      fontSize: 12, fontWeight: 700, color,
+      letterSpacing: '0.06em', marginBottom: 12,
+    }}>
+      {text}
+    </p>
+  )
 }
 
-function Chip({ name, leading }) {
-  const color = areaColor(name)
+function Pill({ label, color }) {
   return (
     <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 4,
-      fontSize: 12,
-      color,
-      background: `${color}18`,
-      border: `1px solid ${color}44`,
-      borderRadius: 8,
-      padding: '3px 9px',
-      fontWeight: 600,
+      background: hex15(color), color,
+      fontSize: 11, fontWeight: 700,
+      borderRadius: 20, padding: '4px 10px',
+      whiteSpace: 'nowrap', flexShrink: 0,
     }}>
-      {leading && <span>★</span>}
-      {name}
+      {label}
     </span>
   )
 }
 
-function StatusControl({ status, onUpdate }) {
-  const [optimistic, setOptimistic] = useState(status)
+function Skel({ w, h, r = 8 }) {
+  return <div style={{ background: '#242424', borderRadius: r, width: w, height: h, flexShrink: 0 }} />
+}
+
+function AreaChip({ name, leading }) {
+  return (
+    <span style={{
+      background: CHIP_BG, color: '#e5e5e2',
+      fontSize: 12, fontWeight: 600,
+      borderRadius: 20, padding: '6px 12px',
+      whiteSpace: 'nowrap',
+    }}>
+      {leading ? `★ ${name}` : name}
+    </span>
+  )
+}
+
+// ─── Next Assignment status control ──────────────────────────────────────────
+
+function NextAssignmentCard({ schedule, responses, leadingAreaIds, userId, onUpdate }) {
+  const firstResp = responses[0]
+  const [status, setStatus] = useState(firstResp?.status ?? 'pending')
 
   const handle = async (newStatus) => {
-    const resolved = optimistic === newStatus ? 'pending' : newStatus
-    setOptimistic(resolved)
-    await onUpdate(resolved)
-    if (resolved !== 'pending') return
+    if (newStatus === status) return
+    setStatus(newStatus)
+    await onUpdate(schedule.id, firstResp?.area_id, newStatus)
   }
 
-  if (optimistic === 'accepted') {
-    return (
-      <button type="button" onClick={() => handle('accepted')} style={filledBtn('#4caf7d')}>
-        ✓ Accepted
-      </button>
-    )
-  }
-  if (optimistic === 'declined') {
-    return (
-      <button type="button" onClick={() => handle('declined')} style={filledBtn('#e55555')}>
-        ✗ Declined
-      </button>
-    )
-  }
+  const statusColor = status === 'accepted' ? ACCENT_GREEN : status === 'declined' ? ACCENT_RED : ACCENT_ORANGE
+  const statusLabel = status === 'accepted' ? 'Confirmed' : status === 'declined' ? 'Declined' : 'Pending'
+  const areaName = firstResp?.service_areas?.name ?? ''
+
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
-      <button type="button" onClick={() => handle('accepted')} style={outlineBtn('#4caf7d')}>
-        ✓ Accept
-      </button>
-      <button type="button" onClick={() => handle('declined')} style={outlineBtn('#e55555')}>
-        ✗ Decline
-      </button>
+    <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, marginBottom: 24 }}>
+      {/* Label + status pill */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT_ORANGE, letterSpacing: '0.06em' }}>NEXT ASSIGNMENT</p>
+        <Pill label={statusLabel} color={statusColor} />
+      </div>
+
+      {/* Title */}
+      <p style={{ fontSize: 17, fontWeight: 700, color: TEXT_PRIMARY, marginTop: 12, marginBottom: 4 }}>
+        Sunday Service{areaName ? ` · ${areaName}` : ''}
+      </p>
+
+      {/* Date */}
+      <p style={{ fontSize: 13, color: TEXT_SEC }}>
+        {formatScheduleDate(schedule.date)} · Arrive 30min early
+      </p>
+
+      {/* Buttons */}
+      {status === 'pending' && (
+        <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={() => handle('accepted')}
+            style={{
+              flex: 1, background: ACCENT_BLUE, color: TEXT_PRIMARY,
+              fontSize: 14, fontWeight: 700, borderRadius: 12, padding: 11, border: 'none', cursor: 'pointer',
+            }}
+          >
+            Accept
+          </button>
+          <button
+            type="button"
+            onClick={() => handle('declined')}
+            style={{
+              flex: 1, background: CHIP_BG, color: '#e5e5e2',
+              fontSize: 14, fontWeight: 700, borderRadius: 12, padding: 11, border: 'none', cursor: 'pointer',
+            }}
+          >
+            Decline
+          </button>
+        </div>
+      )}
+
+      {status !== 'pending' && (
+        <button
+          type="button"
+          onClick={() => setStatus('pending')}
+          style={{
+            marginTop: 14, background: 'none', border: 'none',
+            color: TEXT_MUTED, fontSize: 13, cursor: 'pointer', padding: 0,
+          }}
+        >
+          Change response
+        </button>
+      )}
     </div>
   )
 }
 
-function filledBtn(color) {
-  return {
-    fontSize: 12, fontWeight: 600, color: '#fff', background: color,
-    border: 'none', borderRadius: 10, padding: '7px 14px', cursor: 'pointer',
-  }
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonScreen() {
+  return (
+    <div style={{ background: BG, minHeight: '100dvh', paddingTop: 'calc(env(safe-area-inset-top) + 24px)', paddingLeft: 22, paddingRight: 22, paddingBottom: 60 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+        <Skel w={36} h={36} r={18} />
+        <Skel w={120} h={20} />
+      </div>
+      <Skel w="100%" h={100} r={20} />
+      <div style={{ height: 14 }} />
+      <Skel w="100%" h={160} r={20} />
+      <div style={{ height: 24 }} />
+      <Skel w={80} h={14} r={6} />
+      <div style={{ height: 12 }} />
+      {[0, 1, 2].map((i) => <div key={i}><Skel w="100%" h={64} r={16} /><div style={{ height: 8 }} /></div>)}
+    </div>
+  )
 }
-function outlineBtn(color) {
-  return {
-    fontSize: 12, fontWeight: 600, color,
-    background: 'transparent', border: `1px solid ${color}`,
-    borderRadius: 10, padding: '7px 14px', cursor: 'pointer',
-  }
-}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function MyServicesPage() {
   const navigate = useNavigate()
   const user = useUser()
   const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [responses, setResponses] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user.id) return
+    if (!user?.id) return
     getMyServicesData(user.id).then((result) => {
       setData(result)
       setResponses(result.responses ?? [])
       setLoading(false)
     })
-  }, [user.id])
+  }, [user?.id])
 
   const handleUpdate = useCallback((scheduleId, areaId, newStatus) => {
     setResponses((prev) =>
@@ -121,82 +199,142 @@ export default function MyServicesPage() {
       ),
     )
     return updateServiceResponse(user.id, scheduleId, areaId, newStatus)
-  }, [user.id])
+  }, [user?.id])
 
-  if (loading) return <Spinner />
+  if (loading) return <SkeletonScreen />
 
-  const { areas, leadingAreaIds, upcomingSchedules } = data ?? { areas: [], leadingAreaIds: new Set(), upcomingSchedules: [] }
+  const { areas, leadingAreaIds, upcomingSchedules, history } = data ?? {
+    areas: [], leadingAreaIds: new Set(), upcomingSchedules: [], history: [],
+  }
+
+  // Find next assignment: first upcoming schedule with any response for the user
+  let nextAssignmentSchedule = null
+  let nextAssignmentResponses = []
+  for (const s of upcomingSchedules) {
+    const myResps = responses.filter((r) => r.schedule_id === s.id)
+    if (myResps.length > 0) {
+      nextAssignmentSchedule = s
+      nextAssignmentResponses = myResps
+      break
+    }
+  }
+
+  // Upcoming accepted: future schedules (excluding next assignment) with accepted responses
+  const upcomingAccepted = upcomingSchedules
+    .filter((s) => s.id !== nextAssignmentSchedule?.id)
+    .flatMap((s) =>
+      responses
+        .filter((r) => r.schedule_id === s.id && r.status === 'accepted')
+        .map((r) => ({ schedule: s, response: r })),
+    )
 
   return (
-    <div style={PAGE}>
-      <button
-        type="button"
-        onClick={() => navigate('/my-church')}
-        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', marginBottom: 20, padding: 0 }}
-      >
-        <ChevronLeft size={18} color="#666" />
-        <span style={{ fontSize: 14, color: '#444' }}>My Church</span>
-      </button>
+    <div style={{
+      background: BG, minHeight: '100dvh',
+      paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
+      paddingLeft: 22, paddingRight: 22, paddingBottom: 60,
+    }}>
 
-      {/* My Areas */}
-      <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', marginBottom: 10 }}>Your areas</p>
-      {areas.length === 0 ? (
-        <p style={{ fontSize: 14, color: '#666', marginBottom: 28 }}>No areas assigned</p>
+      {/* ── NAV ROW ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+        <button
+          type="button"
+          onClick={() => navigate('/my-church')}
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            background: CARD_BG, border: CARD_BORDER,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          <ChevronLeft size={18} color="#e5e5e2" strokeWidth={2} />
+        </button>
+        <p style={{ fontSize: 20, fontWeight: 800, color: TEXT_PRIMARY }}>My Services</p>
+      </div>
+
+      {/* ── YOUR TEAMS ── */}
+      <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, marginBottom: 14 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT_BLUE, letterSpacing: '0.06em' }}>YOUR TEAMS</p>
+        {areas.length === 0 ? (
+          <p style={{ fontSize: 13, color: TEXT_SEC, marginTop: 12 }}>No areas assigned</p>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {areas.map((a) => (
+              <AreaChip
+                key={a.area_id}
+                name={a.service_areas?.name ?? ''}
+                leading={leadingAreaIds.has(a.area_id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── NEXT ASSIGNMENT ── */}
+      {nextAssignmentSchedule ? (
+        <NextAssignmentCard
+          schedule={nextAssignmentSchedule}
+          responses={nextAssignmentResponses}
+          leadingAreaIds={leadingAreaIds}
+          userId={user?.id}
+          onUpdate={handleUpdate}
+        />
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 28 }}>
-          {areas.map((a) => (
-            <Chip
-              key={a.area_id}
-              name={a.service_areas?.name ?? ''}
-              leading={leadingAreaIds.has(a.area_id)}
-            />
-          ))}
+        <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD, marginBottom: 24 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: ACCENT_ORANGE, letterSpacing: '0.06em', marginBottom: 10 }}>NEXT ASSIGNMENT</p>
+          <p style={{ fontSize: 14, color: TEXT_SEC }}>No upcoming assignments</p>
         </div>
       )}
 
-      {/* Upcoming Sundays */}
-      <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>Upcoming Sundays</p>
-
-      {upcomingSchedules.length === 0 ? (
-        <p style={{ fontSize: 14, color: '#666' }}>No upcoming services scheduled</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {upcomingSchedules.map((schedule) => {
-            const myResponses = responses.filter((r) => r.schedule_id === schedule.id)
-            if (myResponses.length === 0) return null
-
-            return (
+      {/* ── UPCOMING ── */}
+      {upcomingAccepted.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel text="UPCOMING" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {upcomingAccepted.map(({ schedule, response }) => (
               <div
-                key={schedule.id}
-                style={{ background: '#1a1a1a', border: '0.5px solid #2e2e2e', borderRadius: 16, padding: 16 }}
+                key={`${schedule.id}-${response.area_id}`}
+                style={{
+                  background: CARD_BG, border: CARD_BORDER, borderRadius: 16, padding: 14,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}
               >
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>
-                  {new Date(`${schedule.date}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {myResponses.map((resp) => {
-                    const areaName = resp.service_areas?.name ?? ''
-                    const isLeading = leadingAreaIds.has(resp.area_id)
-                    return (
-                      <div key={resp.area_id}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                          <Chip name={areaName} leading={false} />
-                          {isLeading && (
-                            <span style={{ fontSize: 11, color: '#f97316', fontWeight: 600 }}>★ Leading</span>
-                          )}
-                        </div>
-                        <StatusControl
-                          status={resp.status}
-                          onUpdate={(s) => handleUpdate(schedule.id, resp.area_id, s)}
-                        />
-                      </div>
-                    )
-                  })}
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: TEXT_PRIMARY, marginBottom: 2 }}>
+                    Sunday Service{response.service_areas?.name ? ` · ${response.service_areas.name}` : ''}
+                  </p>
+                  <p style={{ fontSize: 12, color: TEXT_SEC }}>
+                    {formatShort(schedule.date)}
+                  </p>
                 </div>
+                <Pill label="Confirmed" color={ACCENT_GREEN} />
               </div>
-            )
-          })}
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── HISTORY ── */}
+      {(history ?? []).length > 0 && (
+        <div>
+          <SectionLabel text="HISTORY" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {history.map((r, i) => (
+              <div
+                key={`${r.schedule_id}-${r.area_id}-${i}`}
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '11px 0',
+                  borderBottom: i < history.length - 1 ? '0.5px solid #1e1e1e' : 'none',
+                }}
+              >
+                <p style={{ fontSize: 13, color: TEXT_TER }}>
+                  {r.service_areas?.name ? `${r.service_areas.name} Service` : 'Service'}
+                </p>
+                <p style={{ fontSize: 12, color: TEXT_MUTED }}>{formatShort(r.scheduleDate)}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
