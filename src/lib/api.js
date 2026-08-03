@@ -380,7 +380,7 @@ export async function adminGetMembers() {
       supabase.from('service_assignments').select('user_id, area_id, service_areas(id, name, is_macro, parent_id)'),
       supabase.from('area_leaders').select('user_id, area_id, service_areas(id, name, is_macro)'),
       supabase.from('midweek_leaders').select('user_id, group_id, midweek_groups(id, host, zone)'),
-      supabase.from('midweek_members').select('user_id, group_id, midweek_groups(id, host, zone)'),
+      supabase.from('midweek_members').select('user_id, midweek_id, midweek_groups(id, host, zone)'),
     ])
 
     if (usersError) throw usersError
@@ -511,7 +511,7 @@ export async function adminAssignMidweekGroup(userId, groupId) {
   try {
     const { error } = await supabase
       .from('midweek_members')
-      .upsert({ user_id: userId, group_id: groupId }, { onConflict: 'user_id' })
+      .upsert({ user_id: userId, midweek_id: groupId }, { onConflict: 'user_id' })
     if (error) throw error
     return { error: null }
   } catch (error) {
@@ -713,7 +713,7 @@ export async function getMyChurchData(userId) {
     { data: summaries },
   ] = await Promise.all([
     supabase.from('midweek_leaders').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
-    supabase.from('midweek_members').select('group_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
+    supabase.from('midweek_members').select('midweek_id, midweek_groups(id, host, zone)').eq('user_id', userId).maybeSingle(),
     supabase.from('service_assignments').select('area_id, service_areas(id, name)').eq('user_id', userId),
     supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(1).maybeSingle(),
     supabase.from('member_messages').select('id, audience, title, body').order('created_at', { ascending: false }),
@@ -885,12 +885,12 @@ export async function getMemberMessages(userId, userRole) {
     // Resolve user's area IDs and group ID in parallel
     const [{ data: assignments }, { data: memberRow }, { data: leaderRow }] = await Promise.all([
       supabase.from('service_assignments').select('area_id').eq('user_id', userId),
-      supabase.from('midweek_members').select('group_id').eq('user_id', userId).maybeSingle(),
+      supabase.from('midweek_members').select('midweek_id').eq('user_id', userId).maybeSingle(),
       supabase.from('midweek_leaders').select('group_id').eq('user_id', userId).maybeSingle(),
     ])
 
     const areaIds = new Set((assignments ?? []).map((a) => a.area_id))
-    const groupId = memberRow?.group_id ?? leaderRow?.group_id ?? null
+    const groupId = memberRow?.midweek_id ?? leaderRow?.group_id ?? null
 
     const [{ data: messages, error }, { data: reads }, { data: serviceAreas }, { data: groups }] = await Promise.all([
       supabase.from('member_messages').select('*, author:users!author_id(first_name, last_name)').order('created_at', { ascending: false }),
