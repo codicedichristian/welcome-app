@@ -757,39 +757,64 @@ export async function getMyMidweekData(userId) {
 
 export async function getMyServicesData(userId) {
   const today = new Date().toISOString().slice(0, 10)
-  const [{ data: assignments }, { data: leadingAreas }, { data: upcomingSchedules }, { data: pastSchedules }] = await Promise.all([
+  const [{ data: assignments }, { data: leadingAreas }, { data: upcomingRaw }, { data: pastRaw }] = await Promise.all([
     supabase.from('service_assignments').select('area_id, service_areas(id, name, is_macro, parent_id)').eq('user_id', userId),
     supabase.from('area_leaders').select('area_id').eq('user_id', userId),
     supabase.from('sunday_schedules').select('id, date').gte('date', today).order('date', { ascending: true }).limit(8),
     supabase.from('sunday_schedules').select('id, date').lt('date', today).order('date', { ascending: false }).limit(10),
   ])
 
-  const upcomingIds = new Set((upcomingSchedules ?? []).map((s) => s.id))
-  const pastIds = new Set((pastSchedules ?? []).map((s) => s.id))
+  const leadingSet = new Set((leadingAreas ?? []).map((a) => a.area_id))
+  const upcomingIds = new Set((upcomingRaw ?? []).map((s) => s.id))
+  const pastIds = new Set((pastRaw ?? []).map((s) => s.id))
 
-  let allResponses = []
-  if (upcomingIds.size > 0 || pastIds.size > 0) {
-    const { data: resp } = await supabase
-      .from('service_responses')
-      .select('schedule_id, area_id, status, service_areas(id, name)')
-      .eq('user_id', userId)
-    allResponses = resp ?? []
-  }
+  // Fetch all user responses + all summaries (filter client-side; .in() unsupported in mock)
+  const [{ data: allResp }, { data: allSummaries }] = await Promise.all([
+    supabase.from('service_responses').select('schedule_id, area_id, status, service_areas(id, name)').eq('user_id', userId),
+    supabase.from('sunday_summaries').select('schedule_id, title'),
+  ])
+  const responses = allResp ?? []
+  const summaryMap = new Map((allSummaries ?? []).map((s) => [s.schedule_id, s.title]))
 
-  const pastScheduleMap = new Map((pastSchedules ?? []).map((s) => [s.id, s]))
-  const history = allResponses
+  // Areas with isLeading
+  const areas = (assignments ?? []).map((a) => ({
+    areaId: a.area_id,
+    name: a.service_areas?.name ?? '',
+    isLeading: leadingSet.has(a.area_id),
+  }))
+
+  // Structured upcoming schedules — only schedules where user has a response
+  const upcomingSchedules = (upcomingRaw ?? [])
+    .map((s) => ({
+      scheduleId: s.id,
+      date: s.date,
+      title: summaryMap.get(s.id) ?? null,
+      responses: responses
+        .filter((r) => r.schedule_id === s.id)
+        .map((r) => ({
+          areaId: r.area_id,
+          areaName: r.service_areas?.name ?? '',
+          status: r.status,
+          isLeading: leadingSet.has(r.area_id),
+        })),
+    }))
+    .filter((s) => s.responses.length > 0)
+
+  // History — past responses, newest first
+  const pastDateMap = new Map((pastRaw ?? []).map((s) => [s.id, s.date]))
+  const history = responses
     .filter((r) => pastIds.has(r.schedule_id))
-    .map((r) => ({ ...r, scheduleDate: pastScheduleMap.get(r.schedule_id)?.date }))
-    .sort((a, b) => (b.scheduleDate ?? '').localeCompare(a.scheduleDate ?? ''))
+    .map((r) => ({
+      scheduleId: r.schedule_id,
+      date: pastDateMap.get(r.schedule_id),
+      areaName: r.service_areas?.name ?? '',
+      title: summaryMap.get(r.schedule_id) ?? null,
+      status: r.status,
+    }))
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
     .slice(0, 10)
 
-  return {
-    areas: assignments ?? [],
-    leadingAreaIds: new Set((leadingAreas ?? []).map((a) => a.area_id)),
-    upcomingSchedules: upcomingSchedules ?? [],
-    responses: allResponses.filter((r) => upcomingIds.has(r.schedule_id)),
-    history,
-  }
+  return { areas, upcomingSchedules, history }
 }
 
 export async function updateServiceResponse(userId, scheduleId, areaId, status) {
@@ -827,13 +852,31 @@ export async function getSundaySummaries() {
 export async function getMemberMessages(userId, userRole, userAreaIds, userGroupId) {
   if (userRole === 'visitor') return { data: [], error: null }
   try {
-    const [{ data: messages, error }, { data: reads }] = await Promise.all([
+    const [{ data: messages, error }, { data: reads }, { data: serviceAreas }, { data: groups }] = await Promise.all([
       supabase.from('member_messages').select('*, author:users!author_id(first_name, last_name)').order('created_at', { ascending: false }),
       supabase.from('message_reads').select('message_id').eq('user_id', userId),
+      supabase.from('service_areas').select('id, name'),
+      supabase.from('midweek_groups').select('id, host'),
     ])
     if (error) throw error
     const readIds = new Set((reads ?? []).map((r) => r.message_id))
     const areaSet = new Set(userAreaIds ?? [])
+    const areaMap = new Map((serviceAreas ?? []).map((a) => [a.id, a.name]))
+    const groupMap = new Map((groups ?? []).map((g) => [g.id, g.host]))
+
+    const resolveAudience = (audience) => {
+      if (audience === 'all_members') return 'All members'
+      if (audience?.startsWith('area:')) {
+        const name = areaMap.get(audience.slice(5))
+        return name ? `${name} team` : 'Team'
+      }
+      if (audience?.startsWith('group:')) {
+        const host = groupMap.get(audience.slice(6))
+        return host ? `${host} group` : 'Group'
+      }
+      return 'Members'
+    }
+
     const filtered = (messages ?? [])
       .filter((msg) => {
         if (msg.audience === 'all_members') return true
@@ -841,7 +884,12 @@ export async function getMemberMessages(userId, userRole, userAreaIds, userGroup
         if (userGroupId && msg.audience === `group:${userGroupId}`) return true
         return false
       })
-      .map((msg) => ({ ...msg, isRead: readIds.has(msg.id) }))
+      .map((msg) => ({
+        ...msg,
+        authorName: msg.author ? `${msg.author.first_name} ${msg.author.last_name}` : 'Leader',
+        audienceLabel: resolveAudience(msg.audience),
+        isRead: readIds.has(msg.id),
+      }))
     return { data: filtered, error: null }
   } catch (error) {
     return { data: null, error }

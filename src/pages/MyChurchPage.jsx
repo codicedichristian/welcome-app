@@ -125,9 +125,65 @@ function DonateModal({ onClose }) {
 
 // ─── Section card ─────────────────────────────────────────────────────────────
 
-function SectionCard({ accent, Icon, title, subtitle, detailLeft, detailRight, badge, onDetailRightTap, onClick }) {
+function SectionCard({ accent, Icon, title, subtitle, detailLeft, detailRight, badge, onClick, disabled, comingSoon }) {
   const iconBg = accent === TEXT_PRIMARY ? hex8(accent) : hex15(accent)
   const hasBadge = badge > 0
+
+  const inner = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 14, background: iconBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <Icon size={20} color={accent} strokeWidth={1.8} />
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 2 }}>{title}</p>
+          <p style={{ fontSize: 13, color: TEXT_SEC, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {subtitle}
+          </p>
+          {comingSoon && (
+            <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 2 }}>Coming soon</p>
+          )}
+        </div>
+
+        {!disabled && (
+          hasBadge ? (
+            <div style={{
+              width: 20, height: 20, borderRadius: '50%', background: ACCENT_RED,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: TEXT_PRIMARY }}>{badge}</span>
+            </div>
+          ) : (
+            <ChevronRight size={17} color={TEXT_MUTED} strokeWidth={2} />
+          )
+        )}
+      </div>
+
+      <div style={{ height: '0.5px', background: '#2e2e2e', margin: '14px 0' }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <p style={{ fontSize: 13, color: TEXT_TER, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+          {detailLeft}
+        </p>
+        {detailRight}
+      </div>
+    </>
+  )
+
+  if (disabled) {
+    return (
+      <div style={{
+        width: '100%', background: CARD_BG, border: CARD_BORDER,
+        borderRadius: CARD_RADIUS, padding: CARD_PAD, opacity: 0.5,
+      }}>
+        {inner}
+      </div>
+    )
+  }
 
   return (
     <button
@@ -139,50 +195,7 @@ function SectionCard({ accent, Icon, title, subtitle, detailLeft, detailRight, b
         textAlign: 'left', cursor: 'pointer',
       }}
     >
-      {/* Top row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 14, background: iconBg,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-          <Icon size={20} color={accent} strokeWidth={1.8} />
-        </div>
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 2 }}>{title}</p>
-          <p style={{
-            fontSize: 13, color: TEXT_SEC,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {subtitle}
-          </p>
-        </div>
-
-        {hasBadge ? (
-          <div style={{
-            width: 20, height: 20, borderRadius: '50%', background: ACCENT_RED,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: TEXT_PRIMARY }}>{badge}</span>
-          </div>
-        ) : (
-          <ChevronRight size={17} color={TEXT_MUTED} strokeWidth={2} />
-        )}
-      </div>
-
-      {/* Divider */}
-      <div style={{ height: '0.5px', background: '#2e2e2e', margin: '14px 0' }} />
-
-      {/* Detail row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <p style={{
-          fontSize: 13, color: TEXT_TER,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
-        }}>
-          {detailLeft}
-        </p>
-        {detailRight}
-      </div>
+      {inner}
     </button>
   )
 }
@@ -402,19 +415,16 @@ export default function MyChurchPage() {
       {/* ── SECTION CARDS ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Card 1 — My Midweek */}
+        {/* Card 1 — Leader Messages */}
         <SectionCard
-          accent={ACCENT_PURPLE}
-          Icon={Home}
-          title="My Midweek"
-          subtitle={midweekSub}
-          detailLeft={`Next meeting: ${getNextWednesday()} · 7:00 PM`}
-          detailRight={
-            myGroup
-              ? <Pill label={`${groupMemberCount} members`} color={ACCENT_PURPLE} />
-              : null
-          }
-          onClick={() => navigate('/my-church/midweek')}
+          accent={ACCENT_GREEN}
+          Icon={MessageCircle}
+          title="Leader Messages"
+          subtitle={leaderSub}
+          badge={unreadMessages}
+          detailLeft={latestMessage?.body ?? 'No messages yet'}
+          detailRight={null}
+          onClick={() => navigate('/my-church/messages')}
         />
 
         {/* Card 2 — My Services */}
@@ -451,20 +461,20 @@ export default function MyChurchPage() {
           onClick={() => navigate('/my-church/sundays')}
         />
 
-        {/* Card 4 — From the Leader */}
+        {/* Card 4 — My Midweek (disabled / coming soon) */}
         <SectionCard
-          accent={ACCENT_GREEN}
-          Icon={MessageCircle}
-          title="From the Leader"
-          subtitle={leaderSub}
-          badge={unreadMessages}
-          detailLeft={
-            latestMessage?.body
-              ? latestMessage.body
-              : 'No messages yet'
+          accent={ACCENT_PURPLE}
+          Icon={Home}
+          title="My Midweek"
+          subtitle={midweekSub}
+          detailLeft={`Next meeting: ${getNextWednesday()} · 7:00 PM`}
+          detailRight={
+            myGroup
+              ? <Pill label={`${groupMemberCount} members`} color={ACCENT_PURPLE} />
+              : null
           }
-          detailRight={null}
-          onClick={() => navigate('/my-church/messages')}
+          disabled
+          comingSoon
         />
       </div>
 
