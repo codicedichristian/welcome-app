@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { useUser } from '../lib/UserContext.js'
 import { getMyServicesData, updateServiceResponse } from '../lib/api.js'
 
@@ -153,6 +153,7 @@ export default function MyServicesPage() {
   const user = useUser()
   const [data, setData] = useState(null)
   const [responseMap, setResponseMap] = useState({})
+  const [expandedId, setExpandedId] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -233,19 +234,54 @@ export default function MyServicesPage() {
               const overall = scheduleOverallStatus(s.scheduleId, s.responses, responseMap)
               const statusColor = overall === 'accepted' ? ACCENT_GREEN : overall === 'declined' ? ACCENT_RED : ACCENT_ORANGE
               const statusLabel = overall === 'accepted' ? 'Confirmed' : overall === 'declined' ? 'Declined' : 'Pending'
+              const isExpanded = expandedId === s.scheduleId
 
               return (
                 <div key={s.scheduleId} style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: CARD_PAD }}>
-                  {/* Top row: date + status pill */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {/* Top row: date + status pill — tappable to expand */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(isExpanded ? null : s.scheduleId)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                  >
                     <p style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY }}>{formatDay(s.date)}</p>
                     <Pill label={statusLabel} color={statusColor} />
-                  </div>
+                  </button>
 
                   {/* Schedule title */}
                   <p style={{ fontSize: 14, fontWeight: 600, color: TEXT_TER, marginTop: 6 }}>
                     {s.title ?? 'Sunday Service'}
                   </p>
+
+                  {/* Expanded detail */}
+                  {isExpanded && (
+                    <div style={{ marginTop: 12, padding: '12px 14px', background: '#131313', borderRadius: 12 }}>
+                      {s.arrivalTime && (
+                        <p style={{ fontSize: 12, color: TEXT_SEC, marginBottom: 6 }}>
+                          Arrive by <span style={{ color: TEXT_TER, fontWeight: 600 }}>{s.arrivalTime}</span>
+                        </p>
+                      )}
+                      {s.scheduleNotes && (
+                        <p style={{ fontSize: 13, color: TEXT_TER, lineHeight: 1.5, marginBottom: 6 }}>{s.scheduleNotes}</p>
+                      )}
+                      {s.documentUrl && (
+                        <a
+                          href={s.documentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: ACCENT_BLUE, textDecoration: 'none', marginBottom: 6 }}
+                        >
+                          View document <ExternalLink size={13} />
+                        </a>
+                      )}
+                      {s.responses.filter((r) => r.areaNote).map((r) => (
+                        <div key={r.areaId} style={{ marginTop: 8, borderTop: '0.5px solid #2a2a2a', paddingTop: 8 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: TEXT_MUTED, marginBottom: 4 }}>{r.areaName.toUpperCase()} NOTE</p>
+                          <p style={{ fontSize: 13, color: TEXT_TER, lineHeight: 1.5 }}>{r.areaNote}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Divider */}
                   <div style={{ height: '0.5px', background: '#2e2e2e', margin: '14px 0' }} />

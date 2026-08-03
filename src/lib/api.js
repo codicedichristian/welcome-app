@@ -548,7 +548,7 @@ export async function adminGetScheduleDates() {
   try {
     const { data, error } = await supabase
       .from('sunday_schedules')
-      .select('id, date')
+      .select('id, date, title, arrival_time, notes, document_url')
       .order('date', { ascending: false })
     if (error) throw error
     return { data, error: null }
@@ -584,11 +584,17 @@ export async function adminDeleteSummary(id) {
   }
 }
 
-export async function adminCreateSchedules(dates) {
+export async function adminCreateSchedules(dates, meta = {}) {
   try {
     const { data: schedules, error: scheduleError } = await supabase
       .from('sunday_schedules')
-      .insert(dates.map((date) => ({ date })))
+      .insert(dates.map((date) => ({
+        date,
+        title: meta.title || null,
+        arrival_time: meta.arrival_time || null,
+        notes: meta.notes || null,
+        document_url: meta.document_url || null,
+      })))
       .select()
     if (scheduleError) throw scheduleError
 
@@ -619,6 +625,44 @@ export async function adminDeleteSchedule(id) {
     return { error: null }
   } catch (error) {
     return { error }
+  }
+}
+
+export async function adminUpdateSchedule(scheduleId, data) {
+  try {
+    const { error } = await supabase.from('sunday_schedules').update(data).eq('id', scheduleId)
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminUpsertAreaNote(scheduleId, areaId, authorId, notes) {
+  try {
+    const { error } = await supabase
+      .from('schedule_area_notes')
+      .upsert(
+        { schedule_id: scheduleId, area_id: areaId, author_id: authorId, notes, updated_at: new Date().toISOString() },
+        { onConflict: 'schedule_id,area_id' },
+      )
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    return { error }
+  }
+}
+
+export async function adminGetAreaNotes(scheduleId) {
+  try {
+    const { data, error } = await supabase
+      .from('schedule_area_notes')
+      .select('*, service_areas(name), author:users!author_id(first_name, last_name)')
+      .eq('schedule_id', scheduleId)
+    if (error) throw error
+    return { data: data ?? [], error: null }
+  } catch (error) {
+    return { data: [], error }
   }
 }
 
@@ -798,13 +842,17 @@ export async function getMyServicesData(userId) {
   const upcomingIds = new Set((upcomingRaw ?? []).map((s) => s.id))
   const pastIds = new Set((pastRaw ?? []).map((s) => s.id))
 
-  // Fetch all user responses + all summaries (filter client-side; .in() unsupported in mock)
-  const [{ data: allResp }, { data: allSummaries }] = await Promise.all([
+  // Fetch responses, summaries, schedule detail, and area notes (client-side filter; .in() unsupported in mock)
+  const [{ data: allResp }, { data: allSummaries }, { data: scheduleInfoRaw }, { data: areaNoteRaw }] = await Promise.all([
     supabase.from('service_responses').select('schedule_id, area_id, status, service_areas(id, name)').eq('user_id', userId),
     supabase.from('sunday_summaries').select('schedule_id, title'),
+    supabase.from('sunday_schedules').select('id, title, arrival_time, notes, document_url'),
+    supabase.from('schedule_area_notes').select('schedule_id, area_id, notes'),
   ])
   const responses = allResp ?? []
   const summaryMap = new Map((allSummaries ?? []).map((s) => [s.schedule_id, s.title]))
+  const scheduleInfoMap = new Map((scheduleInfoRaw ?? []).map((s) => [s.id, s]))
+  const areaNoteMap = new Map((areaNoteRaw ?? []).map((n) => [`${n.schedule_id}:${n.area_id}`, n.notes]))
 
   // Areas with isLeading
   const areas = (assignments ?? []).map((a) => ({
@@ -815,19 +863,26 @@ export async function getMyServicesData(userId) {
 
   // Structured upcoming schedules — only schedules where user has a response
   const upcomingSchedules = (upcomingRaw ?? [])
-    .map((s) => ({
-      scheduleId: s.id,
-      date: s.date,
-      title: summaryMap.get(s.id) ?? null,
-      responses: responses
-        .filter((r) => r.schedule_id === s.id)
-        .map((r) => ({
-          areaId: r.area_id,
-          areaName: r.service_areas?.name ?? '',
-          status: r.status,
-          isLeading: leadingSet.has(r.area_id),
-        })),
-    }))
+    .map((s) => {
+      const info = scheduleInfoMap.get(s.id)
+      return {
+        scheduleId: s.id,
+        date: s.date,
+        title: info?.title ?? summaryMap.get(s.id) ?? null,
+        arrivalTime: info?.arrival_time ?? null,
+        scheduleNotes: info?.notes ?? null,
+        documentUrl: info?.document_url ?? null,
+        responses: responses
+          .filter((r) => r.schedule_id === s.id)
+          .map((r) => ({
+            areaId: r.area_id,
+            areaName: r.service_areas?.name ?? '',
+            status: r.status,
+            isLeading: leadingSet.has(r.area_id),
+            areaNote: areaNoteMap.get(`${s.id}:${r.area_id}`) ?? null,
+          })),
+      }
+    })
     .filter((s) => s.responses.length > 0)
 
   // History — past responses, newest first

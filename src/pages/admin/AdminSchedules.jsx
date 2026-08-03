@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Trash2, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Plus, Trash2, ChevronRight, ChevronLeft, X } from 'lucide-react'
 import { adminGetSchedules, adminCreateSchedules, adminDeleteSchedule } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
@@ -8,6 +8,11 @@ import ErrorState from '../../components/ErrorState.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+// Format a local date as YYYY-MM-DD without UTC conversion
+function localDateStr(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
 
 function MonthCalendar({ selectedDates, onToggle, existingDates }) {
   const [view, setView] = useState(() => {
@@ -47,9 +52,7 @@ function MonthCalendar({ selectedDates, onToggle, existingDates }) {
       <div className="grid grid-cols-7 gap-0.5">
         {cells.map((day, i) => {
           if (!day) return <div key={`e-${i}`} />
-          const date = new Date(view.year, view.month, day)
-          const isSunday = date.getDay() === 0
-          const dateStr = date.toISOString().slice(0, 10)
+          const dateStr = localDateStr(view.year, view.month, day)
           const isSelected = selectedDates.includes(dateStr)
           const exists = existingDates.has(dateStr)
 
@@ -57,16 +60,14 @@ function MonthCalendar({ selectedDates, onToggle, existingDates }) {
             <button
               key={dateStr}
               type="button"
-              disabled={!isSunday || exists}
-              onClick={() => isSunday && !exists && onToggle(dateStr)}
+              disabled={exists}
+              onClick={() => !exists && onToggle(dateStr)}
               className={`rounded-lg py-1.5 text-xs transition-colors ${
-                !isSunday
-                  ? 'cursor-default text-zinc-700'
-                  : exists
-                    ? 'cursor-default text-zinc-600'
-                    : isSelected
-                      ? 'bg-primary font-semibold text-bg'
-                      : 'cursor-pointer font-medium text-primary hover:bg-surface'
+                exists
+                  ? 'cursor-default text-zinc-600'
+                  : isSelected
+                    ? 'bg-primary font-semibold text-bg'
+                    : 'cursor-pointer font-medium text-primary hover:bg-surface'
               }`}
             >
               {day}
@@ -79,12 +80,75 @@ function MonthCalendar({ selectedDates, onToggle, existingDates }) {
   )
 }
 
+function CreateModal({ dates, onConfirm, onCancel }) {
+  const [meta, setMeta] = useState({ title: '', arrival_time: '', notes: '', document_url: '' })
+  const set = (k) => (e) => setMeta((prev) => ({ ...prev, [k]: e.target.value }))
+
+  const inputCls = 'w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-primary placeholder-zinc-600 outline-none focus:border-zinc-500'
+  const labelCls = 'mb-1 block text-xs text-zinc-500'
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 md:items-center"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md rounded-t-3xl border border-border bg-bg p-6 pb-8 md:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <p className="font-medium text-primary">
+            New {dates.length} schedule{dates.length !== 1 ? 's' : ''}
+          </p>
+          <button type="button" onClick={onCancel} className="text-zinc-500 hover:text-primary">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className={labelCls}>Title</label>
+            <input className={inputCls} value={meta.title} onChange={set('title')} placeholder="Sunday Service" />
+          </div>
+          <div>
+            <label className={labelCls}>Arrival time</label>
+            <input className={inputCls} type="time" value={meta.arrival_time} onChange={set('arrival_time')} />
+          </div>
+          <div>
+            <label className={labelCls}>Notes</label>
+            <textarea
+              className={`${inputCls} resize-none`}
+              value={meta.notes}
+              onChange={set('notes')}
+              placeholder="General notes for the team…"
+              rows={3}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Document URL</label>
+            <input className={inputCls} value={meta.document_url} onChange={set('document_url')} placeholder="https://…" />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onConfirm(meta)}
+          className="mt-5 w-full rounded-xl bg-primary py-2.5 text-sm font-medium text-bg"
+        >
+          Create schedule{dates.length !== 1 ? 's' : ''}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminSchedules() {
   const navigate = useNavigate()
   const [schedules, setSchedules] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [selectedDates, setSelectedDates] = useState([])
+  const [showModal, setShowModal] = useState(false)
   const [creating, setCreating] = useState(false)
   const [toast, setToast] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -106,10 +170,10 @@ export default function AdminSchedules() {
     )
   }
 
-  const handleCreate = async () => {
-    if (!selectedDates.length) return
+  const handleConfirmCreate = async (meta) => {
+    setShowModal(false)
     setCreating(true)
-    const { data, assignmentCount } = await adminCreateSchedules(selectedDates)
+    const { data, assignmentCount } = await adminCreateSchedules(selectedDates, meta)
     setCreating(false)
     setSelectedDates([])
     const count = data?.length ?? 0
@@ -162,7 +226,7 @@ export default function AdminSchedules() {
       {selectedDates.length > 0 && (
         <button
           type="button"
-          onClick={handleCreate}
+          onClick={() => setShowModal(true)}
           disabled={creating}
           className="mt-3 flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-bg disabled:opacity-60"
         >
@@ -200,7 +264,7 @@ export default function AdminSchedules() {
                 {schedules.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-center text-zinc-500">
-                      No schedules yet — pick Sundays above
+                      No schedules yet — pick dates above
                     </td>
                   </tr>
                 ) : (
@@ -242,6 +306,14 @@ export default function AdminSchedules() {
           </div>
         )}
       </div>
+
+      {showModal && (
+        <CreateModal
+          dates={selectedDates}
+          onConfirm={handleConfirmCreate}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
 
       {deleteTarget && (
         <ConfirmDialog
