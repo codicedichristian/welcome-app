@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, CalendarDays, Megaphone, Home, Users, LogOut, CalendarCheck, Sun, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, Megaphone, Home, Users, LogOut, CalendarCheck, Sun, MessageSquare, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
 
@@ -36,7 +36,19 @@ export default function AdminLayout() {
         className="flex items-center justify-between border-b border-border px-4 py-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <p className="text-sm font-medium text-primary">Welcome Admin</p>
+        <button
+          type="button"
+          onClick={() => { window.location.href = '/' }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: '#1a1a1a', border: '1px solid #2e2e2e', color: '#ffffff',
+            fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 999,
+            cursor: 'pointer',
+          }}
+        >
+          <ArrowLeft size={16} />
+          Back to App
+        </button>
         <div className="flex items-center gap-3">
           <span className="text-xs text-zinc-400">{fullName}</span>
           <button
