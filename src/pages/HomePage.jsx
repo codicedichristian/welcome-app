@@ -160,6 +160,83 @@ function DonateModal({ onClose }) {
   )
 }
 
+// ─── Event carousel slide ────────────────────────────────────────────────────
+
+function EventSlide({ ev, didDrag, navigate }) {
+  const [imgError, setImgError] = useState(false)
+  const pill = CAT_PILL[ev.type] ?? CAT_PILL.special
+  const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/800/580`
+
+  return (
+    <div
+      style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: '0 22px' }}
+      onClick={() => { if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } }) }}
+    >
+      <div style={{ width: '100%', height: '290px', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: '#1a1a1a' }}>
+        {!imgError && (
+          <img
+            src={imgSrc}
+            alt=""
+            draggable={false}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.88) 100%)' }} />
+
+        {/* Date badge — top right */}
+        <div style={{ position: 'absolute', top: '14px', right: '14px', background: '#ffffff', borderRadius: '14px', padding: '8px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+          <span style={{ fontSize: '20px', fontWeight: '800', color: '#111111', lineHeight: 1 }}>{ev.day}</span>
+          <span style={{ fontSize: '11px', fontWeight: '700', color: '#7a7a76', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>{ev.month}</span>
+        </div>
+
+        {/* Bottom content */}
+        <div style={{ position: 'absolute', left: '20px', bottom: '20px', right: '20px', zIndex: 2 }}>
+          <span style={{ display: 'inline-block', background: pill.bg, border: `1px solid ${pill.border}`, color: pill.text, fontSize: '12px', fontWeight: '700', letterSpacing: '0.04em', padding: '5px 11px', borderRadius: '8px', marginBottom: '10px', textTransform: 'uppercase' }}>
+            {ev.type}
+          </span>
+          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', marginBottom: '4px', lineHeight: 1.1, letterSpacing: '-0.01em' }}>{ev.name}</p>
+          <p style={{ fontSize: '15px', color: '#d8d8d5', lineHeight: 1.4 }}>{ev.time ? `${ev.time} · ` : ''}{ev.location}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── News announcement card ───────────────────────────────────────────────────
+
+function NewsCard({ item, gridColumn, onClick }) {
+  const [imgError, setImgError] = useState(false)
+  const dot = NEWS_DOT[item.category] ?? NEWS_DOT.General
+  const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/400/280`
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ gridColumn, height: '140px', borderRadius: '24px', overflow: 'hidden', position: 'relative', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, background: '#1a1a1a' }}
+    >
+      {!imgError && (
+        <img
+          src={imgSrc}
+          alt=""
+          draggable={false}
+          loading="lazy"
+          onError={() => setImgError(true)}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%)' }} />
+      <div style={{ position: 'absolute', top: '12px', left: '12px', width: '9px', height: '9px', borderRadius: '50%', background: dot.color, boxShadow: `0 0 0 3px ${dot.glow}`, zIndex: 2 }} />
+      <div style={{ position: 'absolute', left: '14px', right: '14px', bottom: '12px', zIndex: 2 }}>
+        <p style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', lineHeight: 1.25, marginBottom: '3px' }}>{item.title}</p>
+        <p style={{ fontSize: '12px', color: '#c9c9c6' }}>{formatShortDate(item.published_at)}</p>
+      </div>
+    </button>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -485,102 +562,9 @@ export default function HomePage() {
                         willChange: 'transform',
                       }}
                     >
-                      {upcoming.map((ev) => {
-                        const pill = CAT_PILL[ev.type] ?? CAT_PILL.special
-                        const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/800/580`
-                        return (
-                          <div
-                            key={ev.id}
-                            style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: '0 22px' }}
-                            onClick={() => {
-                              if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } })
-                            }}
-                          >
-                            {/* Event card */}
-                            <div
-                              style={{
-                                width: '100%',
-                                height: '290px',
-                                borderRadius: '24px',
-                                overflow: 'hidden',
-                                position: 'relative',
-                              }}
-                            >
-                              <img
-                                src={imgSrc}
-                                alt=""
-                                draggable={false}
-                                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  inset: 0,
-                                  background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.88) 100%)',
-                                }}
-                              />
-
-                              {/* Date badge — top right */}
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: '14px',
-                                  right: '14px',
-                                  background: '#ffffff',
-                                  borderRadius: '14px',
-                                  padding: '8px 14px',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  alignItems: 'center',
-                                  zIndex: 2,
-                                }}
-                              >
-                                <span style={{ fontSize: '20px', fontWeight: '800', color: '#111111', lineHeight: 1 }}>
-                                  {ev.day}
-                                </span>
-                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#7a7a76', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>
-                                  {ev.month}
-                                </span>
-                              </div>
-
-                              {/* Bottom content */}
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  left: '20px',
-                                  bottom: '20px',
-                                  right: '20px',
-                                  zIndex: 2,
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    display: 'inline-block',
-                                    background: pill.bg,
-                                    border: `1px solid ${pill.border}`,
-                                    color: pill.text,
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    letterSpacing: '0.04em',
-                                    padding: '5px 11px',
-                                    borderRadius: '8px',
-                                    marginBottom: '10px',
-                                    textTransform: 'uppercase',
-                                  }}
-                                >
-                                  {ev.type}
-                                </span>
-                                <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', marginBottom: '4px', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
-                                  {ev.name}
-                                </p>
-                                <p style={{ fontSize: '15px', color: '#d8d8d5', lineHeight: 1.4 }}>
-                                  {ev.time ? `${ev.time} · ` : ''}{ev.location}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      {upcoming.map((ev) => (
+                        <EventSlide key={ev.id} ev={ev} didDrag={didDrag} navigate={navigate} />
+                      ))}
                     </div>
                   </div>
 
@@ -620,64 +604,15 @@ export default function HomePage() {
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   {recentNews.map((item, idx) => {
-                    const dot = NEWS_DOT[item.category] ?? NEWS_DOT.General
-                    const isLast = idx === recentNews.length - 1
                     const isOdd = recentNews.length % 2 !== 0
-                    const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/400/280`
+                    const isLast = idx === recentNews.length - 1
                     return (
-                      <button
+                      <NewsCard
                         key={item.id}
-                        type="button"
+                        item={item}
+                        gridColumn={isOdd && isLast ? '1 / -1' : undefined}
                         onClick={() => navigate(`/news/${item.id}`, { state: { item } })}
-                        style={{
-                          gridColumn: isOdd && isLast ? '1 / -1' : undefined,
-                          height: '140px',
-                          borderRadius: '24px',
-                          overflow: 'hidden',
-                          position: 'relative',
-                          border: 'none',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          padding: 0,
-                        }}
-                      >
-                        <img
-                          src={imgSrc}
-                          alt=""
-                          draggable={false}
-                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(90deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.88) 100%)',
-                          }}
-                        />
-                        {/* Status dot */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '12px',
-                            left: '12px',
-                            width: '9px',
-                            height: '9px',
-                            borderRadius: '50%',
-                            background: dot.color,
-                            boxShadow: `0 0 0 3px ${dot.glow}`,
-                            zIndex: 2,
-                          }}
-                        />
-                        {/* Title + date */}
-                        <div style={{ position: 'absolute', left: '14px', right: '14px', bottom: '12px', zIndex: 2 }}>
-                          <p style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', lineHeight: 1.25, marginBottom: '3px' }}>
-                            {item.title}
-                          </p>
-                          <p style={{ fontSize: '12px', color: '#c9c9c6' }}>
-                            {formatShortDate(item.published_at)}
-                          </p>
-                        </div>
-                      </button>
+                      />
                     )
                   })}
                 </div>

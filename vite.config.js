@@ -17,6 +17,33 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'logo.svg', 'icon-192.svg', 'icon-512.svg'],
       workbox: {
         importScripts: ['push-sw.js'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/(images\.unsplash\.com|picsum\.photos|.*\.supabase\.co\/storage)/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'external-images',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api',
+              networkTimeoutSeconds: 3,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.vercel\.app/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'app-shell' },
+          },
+        ],
       },
       manifest: {
         name: config.churchName,
