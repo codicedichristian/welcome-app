@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { UserContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
+import PWAInstallPrompt, { shouldShowPWAPrompt } from './components/PWAInstallPrompt.jsx'
 import AppLayout from './layouts/AppLayout.jsx'
 import AdminLayout from './layouts/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
@@ -45,6 +46,7 @@ const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 export default function App() {
   const [showSplash, setShowSplash] = useState(true)
   const [splashVisible, setSplashVisible] = useState(true)
+  const [showPWAPrompt, setShowPWAPrompt] = useState(shouldShowPWAPrompt)
   const [user, setUser] = useState(() => getStoredUser())
 
   // Always refresh role from Supabase on mount — localStorage is cache only.
@@ -92,6 +94,7 @@ export default function App() {
     <UserContext.Provider value={user}>
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
+      {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
       <ScrollToTop />
       <Routes>
         <Route element={<RedirectIfAuthenticated />}>
