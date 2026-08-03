@@ -478,6 +478,28 @@ export default function MyChurchPage() {
         />
       </div>
 
+      {/* ── ADMIN PANEL BUTTON ── */}
+      {(user?.role === 'admin' || user?.role === 'leader') && (
+        <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            style={{
+              border: '1px solid oklch(0.34 0.008 260)',
+              background: 'transparent',
+              color: 'oklch(0.85 0.006 260)',
+              fontSize: 13,
+              fontWeight: 600,
+              padding: '8px 18px',
+              borderRadius: 999,
+              cursor: 'pointer',
+            }}
+          >
+            Admin Panel
+          </button>
+        </div>
+      )}
+
       {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
     </div>
   )
