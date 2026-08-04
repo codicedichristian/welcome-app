@@ -708,6 +708,33 @@ export async function getScheduleRoster(scheduleId, areaId) {
   }
 }
 
+export async function adminGetScheduleRoster(scheduleId) {
+  try {
+    const { data, error } = await supabase
+      .from('service_responses')
+      .select('status, decline_reason, user_id, area_id, users(first_name, last_name), service_areas(id, name)')
+      .eq('schedule_id', scheduleId)
+    if (error) throw error
+
+    const grouped = {}
+    for (const row of data ?? []) {
+      const areaId = row.area_id
+      if (!grouped[areaId]) grouped[areaId] = { areaName: row.service_areas?.name ?? '', members: [] }
+      grouped[areaId].members.push({
+        name: `${row.users?.first_name ?? ''} ${row.users?.last_name ?? ''}`.trim(),
+        status: row.status,
+        declineReason: row.decline_reason ?? null,
+      })
+    }
+    for (const area of Object.values(grouped)) {
+      area.members.sort((a, b) => a.name.localeCompare(b.name))
+    }
+    return { data: grouped, error: null }
+  } catch (error) {
+    return { data: {}, error }
+  }
+}
+
 // ADMIN: MESSAGES
 
 export async function adminGetMessages() {
