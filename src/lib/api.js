@@ -902,11 +902,11 @@ export async function getMyServicesData(userId) {
   return { areas, upcomingSchedules, history }
 }
 
-export async function updateServiceResponse(userId, scheduleId, areaId, status) {
+export async function updateServiceResponse(userId, scheduleId, areaId, status, reason = null) {
   try {
     const { error } = await supabase
       .from('service_responses')
-      .update({ status })
+      .update({ status, decline_reason: status === 'declined' ? reason : null })
       .eq('user_id', userId)
       .eq('schedule_id', scheduleId)
       .eq('area_id', areaId)

@@ -60,11 +60,11 @@ function Skel({ w, h, r = 8 }) {
 
 // ─── Per-area response row ────────────────────────────────────────────────────
 
-function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate }) {
+function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate, onDecline }) {
   const [showButtons, setShowButtons] = useState(status === 'pending')
 
-  const handle = (newStatus) => {
-    onUpdate(scheduleId, areaId, newStatus)
+  const handleAccept = () => {
+    onUpdate(scheduleId, areaId, 'accepted')
     setShowButtons(false)
   }
 
@@ -79,7 +79,7 @@ function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate }) 
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             type="button"
-            onClick={() => handle('accepted')}
+            onClick={handleAccept}
             style={{
               background: ACCENT_BLUE, color: TEXT_PRIMARY,
               fontSize: 12, fontWeight: 700, borderRadius: 8, padding: '6px 14px',
@@ -90,7 +90,7 @@ function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate }) 
           </button>
           <button
             type="button"
-            onClick={() => handle('declined')}
+            onClick={() => onDecline(scheduleId, areaId, areaName)}
             style={{
               background: CHIP_BG, color: '#e5e5e2',
               fontSize: 12, fontWeight: 700, borderRadius: 8, padding: '6px 14px',
@@ -115,6 +115,82 @@ function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate }) 
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Decline reason bottom sheet ──────────────────────────────────────────────
+
+function DeclineSheet({ target, date, onConfirm, onCancel }) {
+  const [reason, setReason] = useState('')
+
+  return (
+    <div
+      onClick={onCancel}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: 480,
+          background: '#141414',
+          borderRadius: '24px 24px 0 0',
+          padding: '12px 20px calc(32px + env(safe-area-inset-bottom))',
+        }}
+      >
+        {/* Handle */}
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: '#333', margin: '0 auto 20px' }} />
+
+        <p style={{ fontSize: 16, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 6 }}>
+          Why can't you make it?
+        </p>
+        <p style={{ fontSize: 13, color: TEXT_SEC, marginBottom: 16 }}>
+          {target.areaName} · {date}
+        </p>
+
+        <textarea
+          autoFocus
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Let your leader know…"
+          rows={4}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            background: '#1a1a1a', border: '0.5px solid #2e2e2e', borderRadius: 12,
+            padding: 12, color: TEXT_PRIMARY, fontSize: 15,
+            resize: 'none', outline: 'none',
+            fontFamily: 'inherit',
+          }}
+        />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={() => onConfirm(reason)}
+            style={{
+              width: '100%', background: ACCENT_RED, color: TEXT_PRIMARY,
+              fontSize: 15, fontWeight: 700, borderRadius: 12, padding: 14,
+              border: 'none', cursor: 'pointer',
+            }}
+          >
+            Confirm decline
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              width: '100%', background: 'transparent', color: TEXT_MUTED,
+              fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer', padding: '8px 0',
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -154,6 +230,7 @@ export default function MyServicesPage() {
   const [data, setData] = useState(null)
   const [responseMap, setResponseMap] = useState({})
   const [expandedId, setExpandedId] = useState(null)
+  const [declineTarget, setDeclineTarget] = useState(null) // { scheduleId, areaId, areaName, date }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -173,13 +250,24 @@ export default function MyServicesPage() {
     })
   }, [user?.id])
 
-  const handleUpdate = useCallback((scheduleId, areaId, newStatus) => {
+  const handleUpdate = useCallback((scheduleId, areaId, newStatus, reason = null) => {
     setResponseMap((prev) => ({
       ...prev,
       [scheduleId]: { ...(prev[scheduleId] ?? {}), [areaId]: newStatus },
     }))
-    updateServiceResponse(user?.id, scheduleId, areaId, newStatus)
+    updateServiceResponse(user?.id, scheduleId, areaId, newStatus, reason)
   }, [user?.id])
+
+  const handleDeclineOpen = useCallback((scheduleId, areaId, areaName) => {
+    const schedule = data?.upcomingSchedules?.find((s) => s.scheduleId === scheduleId)
+    setDeclineTarget({ scheduleId, areaId, areaName, date: formatDay(schedule?.date) })
+  }, [data])
+
+  const handleDeclineConfirm = useCallback((reason) => {
+    const { scheduleId, areaId } = declineTarget
+    setDeclineTarget(null)
+    handleUpdate(scheduleId, areaId, 'declined', reason)
+  }, [declineTarget, handleUpdate])
 
   if (loading) return <SkeletonScreen />
 
@@ -297,6 +385,7 @@ export default function MyServicesPage() {
                           status={responseMap[s.scheduleId]?.[r.areaId] ?? r.status}
                           isLeading={r.isLeading}
                           onUpdate={handleUpdate}
+                          onDecline={handleDeclineOpen}
                         />
                         {i < s.responses.length - 1 && (
                           <div style={{ height: '0.5px', background: '#242424' }} />
@@ -309,6 +398,15 @@ export default function MyServicesPage() {
             })}
           </div>
         </>
+      )}
+
+      {declineTarget && (
+        <DeclineSheet
+          target={declineTarget}
+          date={declineTarget.date}
+          onConfirm={handleDeclineConfirm}
+          onCancel={() => setDeclineTarget(null)}
+        />
       )}
 
       {/* ── HISTORY ── */}

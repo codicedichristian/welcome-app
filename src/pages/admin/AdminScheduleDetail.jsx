@@ -94,11 +94,16 @@ function RosterTab({ scheduleId, areaId, areaNoteInitial, authorId }) {
           {roster.map((entry) => {
             const st = STATUS_STYLE[entry.status] ?? STATUS_STYLE.pending
             return (
-              <div key={entry.id} className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
-                <span className="text-sm text-primary">
+              <div key={entry.id} className="flex items-center justify-between rounded-xl border border-border px-4 py-3 gap-3">
+                <span className="text-sm text-primary shrink-0">
                   {entry.users?.first_name} {entry.users?.last_name}
                 </span>
-                <span className="text-xs font-medium" style={{ color: st.color }}>{st.label}</span>
+                {entry.status === 'declined' && entry.decline_reason ? (
+                  <span className="text-xs italic text-zinc-500 text-right">{entry.decline_reason}</span>
+                ) : (
+                  <span className="text-xs text-zinc-700">—</span>
+                )}
+                <span className="text-xs font-medium shrink-0" style={{ color: st.color }}>{st.label}</span>
               </div>
             )
           })}
