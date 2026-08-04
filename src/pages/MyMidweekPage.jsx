@@ -42,7 +42,7 @@ export default function MyMidweekPage() {
   const phone = (leader?.phone ?? group?.phone ?? '').replace(/\D/g, '')
 
   return (
-    <div style={PAGE}>
+    <div className="page-transition" style={PAGE}>
       <button
         type="button"
         onClick={() => navigate('/my-church')}

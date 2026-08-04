@@ -133,7 +133,7 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <div className="min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
+      <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
         <BackRow label="Events" />
 
         <div className="relative mt-4 h-[110px] rounded-[14px] bg-surface">

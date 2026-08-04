@@ -447,6 +447,7 @@ export default function HomePage() {
 
       {/* Page wrapper */}
       <div
+        className="page-transition"
         style={{
           background: '#0a0b0a',
           minHeight: '100dvh',

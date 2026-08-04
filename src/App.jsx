@@ -65,16 +65,6 @@ export default function App() {
     }
   }, [])
 
-  // Prevent Safari's swipe-back from leaving the PWA
-  useEffect(() => {
-    window.history.pushState(null, '', window.location.href)
-    const handlePopState = () => {
-      window.history.pushState(null, '', window.location.href)
-    }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
-
   useEffect(() => {
     const user = getStoredUser()
     if (!user.id || !user.notifications?.app) return

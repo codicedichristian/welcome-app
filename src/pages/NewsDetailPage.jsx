@@ -18,7 +18,7 @@ export default function NewsDetailPage() {
   }
 
   return (
-    <div className="px-4 pb-8">
+    <div className="page-transition px-4 pb-8">
       <BackRow label="News" />
 
       <div className="mt-4 flex items-center justify-between">

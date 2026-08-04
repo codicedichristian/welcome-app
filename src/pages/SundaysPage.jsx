@@ -33,7 +33,7 @@ export default function SundaysPage() {
   if (loading) return <Spinner />
 
   return (
-    <div style={PAGE}>
+    <div className="page-transition" style={PAGE}>
       <button
         type="button"
         onClick={() => navigate('/my-church')}

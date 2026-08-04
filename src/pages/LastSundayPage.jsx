@@ -25,7 +25,7 @@ export default function LastSundayPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-dvh bg-bg px-4 pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
+    <div className="page-transition min-h-dvh bg-bg px-4 pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
       <BackRow label="Home" />
 
       {/* Hero */}

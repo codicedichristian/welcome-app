@@ -285,7 +285,7 @@ export default function MyServicesPage() {
   const { areas, upcomingSchedules, history } = data ?? { areas: [], upcomingSchedules: [], history: [] }
 
   return (
-    <div style={{
+    <div className="page-transition" style={{
       background: BG, minHeight: '100dvh',
       paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
       paddingLeft: 22, paddingRight: 22, paddingBottom: 60,
