@@ -129,6 +129,12 @@ function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate, on
 function DeclineSheet({ target, date, onConfirm, onCancel }) {
   const [reason, setReason] = useState('')
 
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [])
+
   return (
     <div
       onClick={onCancel}
