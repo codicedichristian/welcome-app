@@ -63,6 +63,11 @@ function Skel({ w, h, r = 8 }) {
 function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate, onDecline }) {
   const [showButtons, setShowButtons] = useState(status === 'pending')
 
+  // Sync with external status changes (e.g. after decline sheet confirms)
+  useEffect(() => {
+    if (status !== 'pending') setShowButtons(false)
+  }, [status])
+
   const handleAccept = () => {
     onUpdate(scheduleId, areaId, 'accepted')
     setShowButtons(false)
@@ -265,8 +270,8 @@ export default function MyServicesPage() {
 
   const handleDeclineConfirm = useCallback((reason) => {
     const { scheduleId, areaId } = declineTarget
-    setDeclineTarget(null)
     handleUpdate(scheduleId, areaId, 'declined', reason)
+    setDeclineTarget(null)
   }, [declineTarget, handleUpdate])
 
   if (loading) return <SkeletonScreen />
