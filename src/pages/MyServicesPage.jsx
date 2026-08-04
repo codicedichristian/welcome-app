@@ -126,18 +126,11 @@ function AreaRow({ scheduleId, areaId, areaName, status, isLeading, onUpdate, on
 
 // ─── Decline reason bottom sheet ──────────────────────────────────────────────
 
-function DeclineSheet({ target, date, onConfirm, onCancel }) {
-  const [reason, setReason] = useState('')
-
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [])
-
+function DeclineSheet({ target, date, reason, onReasonChange, onConfirm, onCancel }) {
   return (
     <div
       onClick={onCancel}
+      onTouchMove={(e) => e.stopPropagation()}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
         background: 'rgba(0,0,0,0.6)',
@@ -146,6 +139,7 @@ function DeclineSheet({ target, date, onConfirm, onCancel }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 480,
           background: '#141414',
@@ -165,8 +159,14 @@ function DeclineSheet({ target, date, onConfirm, onCancel }) {
 
         <textarea
           autoFocus
+          inputMode="text"
           value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          onChange={(e) => onReasonChange(e.target.value)}
+          onFocus={(e) => {
+            setTimeout(() => {
+              e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 300)
+          }}
           placeholder="Let your leader know…"
           rows={4}
           style={{
@@ -181,7 +181,7 @@ function DeclineSheet({ target, date, onConfirm, onCancel }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
           <button
             type="button"
-            onClick={() => onConfirm(reason)}
+            onClick={onConfirm}
             style={{
               width: '100%', background: ACCENT_RED, color: TEXT_PRIMARY,
               fontSize: 15, fontWeight: 700, borderRadius: 12, padding: 14,
@@ -242,6 +242,7 @@ export default function MyServicesPage() {
   const [responseMap, setResponseMap] = useState({})
   const [expandedId, setExpandedId] = useState(null)
   const [declineTarget, setDeclineTarget] = useState(null) // { scheduleId, areaId, areaName, date }
+  const [declineReason, setDeclineReason] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -261,6 +262,24 @@ export default function MyServicesPage() {
     })
   }, [user?.id])
 
+  // Lock body scroll when decline sheet is open; restore on close
+  useEffect(() => {
+    if (declineTarget) {
+      const scrollY = window.scrollY
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${scrollY}px`
+      return () => {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [declineTarget])
+
   const handleUpdate = useCallback((scheduleId, areaId, newStatus, reason = null) => {
     setResponseMap((prev) => ({
       ...prev,
@@ -274,11 +293,24 @@ export default function MyServicesPage() {
     setDeclineTarget({ scheduleId, areaId, areaName, date: formatDay(schedule?.date) })
   }, [data])
 
-  const handleDeclineConfirm = useCallback((reason) => {
+  const handleDeclineConfirm = useCallback(() => {
     const { scheduleId, areaId } = declineTarget
-    handleUpdate(scheduleId, areaId, 'declined', reason)
+    const reason = declineReason
+
+    // 1. Optimistic update (functional form avoids stale closure)
+    setResponseMap((prev) => ({
+      ...prev,
+      [scheduleId]: { ...(prev[scheduleId] ?? {}), [areaId]: 'declined' },
+    }))
+
+    // 2. Close sheet immediately
     setDeclineTarget(null)
-  }, [declineTarget, handleUpdate])
+    setDeclineReason('')
+
+    // 3. Persist in background
+    updateServiceResponse(user?.id, scheduleId, areaId, 'declined', reason)
+      .catch((err) => console.error('Failed to save decline:', err))
+  }, [declineTarget, declineReason, user?.id])
 
   if (loading) return <SkeletonScreen />
 
@@ -415,8 +447,10 @@ export default function MyServicesPage() {
         <DeclineSheet
           target={declineTarget}
           date={declineTarget.date}
+          reason={declineReason}
+          onReasonChange={setDeclineReason}
           onConfirm={handleDeclineConfirm}
-          onCancel={() => setDeclineTarget(null)}
+          onCancel={() => { setDeclineTarget(null); setDeclineReason('') }}
         />
       )}
 
