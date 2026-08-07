@@ -68,38 +68,18 @@ afterEach(() => {
   localStorage.clear()
 })
 
-describe('FloatingNav — visitor (4 tabs)', () => {
-  test('Visitor sees Home, Events, News, My Events tabs', () => {
+describe('FloatingNav — visitor (3 tabs)', () => {
+  test('Visitor sees Home, Events, News tabs', () => {
     renderFloatingNav('/', VISITOR_USER)
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
   })
 
-  test('Visitor does not see My Church tab', () => {
+  test('Visitor does not see My Church or My Events tab', () => {
     renderFloatingNav('/', VISITOR_USER)
     expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
-  })
-
-  test('My Events tab is visually active when at /my-events', () => {
-    renderFloatingNav('/my-events', VISITOR_USER)
-    expect(screen.getByRole('button', { name: /my events/i })).toHaveStyle({ background: '#2e2e2e' })
-  })
-
-  test('Tapping My Events tab navigates to /my-events', async () => {
-    const user = userEvent.setup()
-    localStorage.setItem('welcome_user', JSON.stringify(VISITOR_USER))
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/" element={<FloatingNav />} />
-          <Route path="/my-events" element={<div>My Events Page</div>} />
-        </Routes>
-      </MemoryRouter>,
-    )
-    await user.click(screen.getByRole('button', { name: /my events/i }))
-    expect(screen.getByText('My Events Page')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /my events/i })).not.toBeInTheDocument()
   })
 })
 
@@ -117,6 +97,7 @@ describe('FloatingNav — member (3 tabs)', () => {
     expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
   })
 })
+
 
 describe('FloatingNav — shared tab behaviour', () => {
   test('Home tab is visually active when at /', () => {

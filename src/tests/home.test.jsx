@@ -144,12 +144,11 @@ describe('HomePage', () => {
     expect(items.length).toBeGreaterThan(0)
   })
 
-  test('All four quick access cards render', async () => {
+  test('All three quick access cards render', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Quick access')).toBeInTheDocument())
 
     expect(screen.getByText('Events calendar')).toBeInTheDocument()
-    expect(screen.getByText('Last Sunday')).toBeInTheDocument()
     expect(screen.getByText('Find Midweek')).toBeInTheDocument()
     expect(screen.getByText('Donate')).toBeInTheDocument()
   })
@@ -170,15 +169,6 @@ describe('HomePage', () => {
 
     await user.click(screen.getByText('Find Midweek').closest('button'))
     expect(mockNavigate).toHaveBeenCalledWith('/midweek')
-  })
-
-  test('Tapping "Last Sunday" navigates to /last-sunday', async () => {
-    const user = userEvent.setup()
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Last Sunday')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Last Sunday').closest('button'))
-    expect(mockNavigate).toHaveBeenCalledWith('/last-sunday')
   })
 
   test('Tapping "Donate" opens donate modal', async () => {
