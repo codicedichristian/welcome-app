@@ -1,125 +1,158 @@
-import { useNavigate } from 'react-router-dom'
-import { PlayCircle, Image } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { PlayCircle, Image, Headphones } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
+import { getLatestSundaySummary } from '../lib/api.js'
 
-function getLastSundayDate() {
-  const today = new Date()
-  const day = today.getDay() // 0 = Sunday
-  const d = new Date(today)
-  d.setDate(today.getDate() - day)
-  return d
+function formatSundayDate(dateStr) {
+  if (!dateStr) return null
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-const lastSunday = getLastSundayDate()
-const dateLabel = lastSunday.toLocaleDateString('en-US', {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-})
-
-const YOUTUBE_URL = 'https://youtube.com'
-const PHOTOS_URL  = 'https://photos.google.com'
+function MediaButton({ icon, label, href }) {
+  return (
+    <button
+      type="button"
+      onClick={() => window.open(href, '_blank', 'noopener')}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        width: '100%',
+        background: '#1a1a1a',
+        border: '0.5px solid #2e2e2e',
+        borderRadius: '16px',
+        padding: '16px 18px',
+        cursor: 'pointer',
+        textAlign: 'left',
+      }}
+    >
+      {icon}
+      <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>{label}</span>
+    </button>
+  )
+}
 
 export default function LastSundayPage() {
-  const navigate = useNavigate()
+  const location = useLocation()
+  const [summary, setSummary] = useState(location.state?.summary ?? null)
+  const [loading, setLoading] = useState(!location.state?.summary)
+
+  useEffect(() => {
+    if (location.state?.summary) return
+    getLatestSundaySummary().then(({ data }) => {
+      setSummary(data ?? null)
+      setLoading(false)
+    })
+  }, [])
+
+  const dateLabel = formatSundayDate(summary?.schedule?.date)
 
   return (
-    <div className="page-transition min-h-dvh bg-bg px-4 pb-10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
+    <div
+      className="page-transition"
+      style={{
+        background: '#0a0b0a',
+        minHeight: '100dvh',
+        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
+        paddingLeft: '22px',
+        paddingRight: '22px',
+        paddingBottom: '40px',
+      }}
+    >
       <BackRow label="Home" />
 
-      {/* Hero */}
-      <div className="mt-5">
-        <p style={{ fontSize: '13px', color: '#555' }}>{dateLabel}</p>
-        <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', marginTop: '4px' }}>
-          Sunday Service
-        </h1>
-      </div>
-
-      {/* Description card */}
-      <div
-        className="mt-5 rounded-[14px] border border-border p-4"
-        style={{ background: '#1a1a1a' }}
-      >
-        <div className="flex flex-col gap-3">
-          <div>
-            <p style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
-              Pastor
-            </p>
-            <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: '500' }}>Pastor James</p>
-          </div>
-          <div style={{ height: '0.5px', background: '#1e1e1e' }} />
-          <div>
-            <p style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
-              Sermon
-            </p>
-            <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: '500' }}>Walking in Freedom</p>
-          </div>
-          <div style={{ height: '0.5px', background: '#1e1e1e' }} />
-          <div>
-            <p style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '3px' }}>
-              Scripture
-            </p>
-            <p style={{ fontSize: '15px', color: '#ffffff', fontWeight: '500' }}>Galatians 5:1</p>
-          </div>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
+          <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
         </div>
-      </div>
-
-      {/* Video section */}
-      <div className="mt-6">
-        <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', marginBottom: '10px' }}>Watch</p>
-        <button
-          type="button"
-          onClick={() => window.open(YOUTUBE_URL, '_blank', 'noopener')}
-          className="flex w-full items-center gap-3 rounded-[14px] border border-border p-4 text-left"
-          style={{ background: '#1a1a1a' }}
-        >
-          <PlayCircle size={24} color="#ff0000" />
-          <div className="flex-1">
-            <p style={{ fontSize: '14px', fontWeight: '500', color: '#ffffff' }}>Watch on YouTube</p>
-            <p
-              style={{
-                fontSize: '11px',
-                color: '#555',
-                marginTop: '2px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {YOUTUBE_URL}
-            </p>
+      ) : !summary ? (
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
+          <p style={{ color: '#4a4a47', fontSize: '15px' }}>No summary available yet.</p>
+        </div>
+      ) : (
+        <>
+          {/* Date + title + speaker */}
+          <div style={{ marginTop: '24px', marginBottom: '24px' }}>
+            {dateLabel && (
+              <p style={{ fontSize: '11px', color: '#9a9a97', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+                {dateLabel}
+              </p>
+            )}
+            <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', lineHeight: 1.2, marginBottom: '6px' }}>
+              {summary.title}
+            </h1>
+            {summary.speaker && (
+              <p style={{ fontSize: '14px', color: '#9a9a97' }}>{summary.speaker}</p>
+            )}
           </div>
-        </button>
-      </div>
 
-      {/* Photos section */}
-      <div className="mt-6">
-        <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', marginBottom: '10px' }}>Photos</p>
-        <button
-          type="button"
-          onClick={() => window.open(PHOTOS_URL, '_blank', 'noopener')}
-          className="flex w-full items-center gap-3 rounded-[14px] border border-border p-4 text-left"
-          style={{ background: '#1a1a1a' }}
-        >
-          <Image size={24} color="#5b8cff" />
-          <div className="flex-1">
-            <p style={{ fontSize: '14px', fontWeight: '500', color: '#ffffff' }}>View photos</p>
-            <p
-              style={{
-                fontSize: '11px',
-                color: '#555',
-                marginTop: '2px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {PHOTOS_URL}
-            </p>
+          {/* Info card */}
+          <div
+            style={{
+              background: '#1a1a1a',
+              border: '0.5px solid #2e2e2e',
+              borderRadius: '20px',
+              padding: '20px',
+              marginBottom: '24px',
+            }}
+          >
+            {summary.scripture && (
+              <div style={{ marginBottom: summary.description ? '16px' : 0 }}>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    background: 'rgba(91,140,255,0.15)',
+                    border: '0.5px solid rgba(91,140,255,0.4)',
+                    color: '#8bb4ff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    letterSpacing: '0.04em',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {summary.scripture}
+                </span>
+              </div>
+            )}
+            {summary.description && (
+              <p style={{ fontSize: '15px', color: '#c9c9c6', lineHeight: 1.6 }}>
+                {summary.description}
+              </p>
+            )}
           </div>
-        </button>
-      </div>
+
+          {/* Media buttons — conditional */}
+          {(summary.video_url || summary.photos_url || summary.audio_url) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {summary.video_url && (
+                <MediaButton
+                  href={summary.video_url}
+                  label="Watch"
+                  icon={<PlayCircle size={22} color="#ff4444" />}
+                />
+              )}
+              {summary.photos_url && (
+                <MediaButton
+                  href={summary.photos_url}
+                  label="Photos"
+                  icon={<Image size={22} color="#5b8cff" />}
+                />
+              )}
+              {summary.audio_url && (
+                <MediaButton
+                  href={summary.audio_url}
+                  label="Listen"
+                  icon={<Headphones size={22} color="#3ddc97" />}
+                />
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

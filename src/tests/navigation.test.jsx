@@ -15,6 +15,7 @@ vi.mock('../lib/supabase.js', () => ({
 vi.mock('../lib/api.js', () => ({
   getEvents: vi.fn(async () => ({ data: [], error: null })),
   getNews: vi.fn(async () => ({ data: [], error: null })),
+  getLatestSundaySummary: vi.fn(async () => ({ data: null, error: null })),
   saveSubscription: vi.fn(async () => ({ data: null, error: null })),
   getUserByAuthId: vi.fn(async () => ({ data: null, error: null })),
 }))

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { getEvents, getNews } from '../lib/api.js'
+import { getEvents, getNews, getLatestSundaySummary } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
 import { getNextOccurrence, normalizeEvent } from '../lib/events.js'
@@ -248,6 +248,7 @@ export default function HomePage() {
 
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
+  const [lastSunday, setLastSunday] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
@@ -269,10 +270,11 @@ export default function HomePage() {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      const [evRes, nwRes] = await Promise.all([getEvents(), getNews()])
+      const [evRes, nwRes, lsRes] = await Promise.all([getEvents(), getNews(), getLatestSundaySummary()])
       if (cancelled) return
       setEvents(evRes.data?.length ? evRes.data : fallbackEvents)
       setNews(nwRes.data?.length ? nwRes.data : fallbackNews)
+      setLastSunday(lsRes.data ?? null)
       setLoading(false)
     }
     load()
@@ -611,7 +613,12 @@ export default function HomePage() {
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <QuickCard icon={<CalendarIcon />} label="Events calendar" sub="All events"  onClick={() => navigate('/events')} />
-                <QuickCard icon={<PlayIcon />}     label="Last Sunday"     sub="Sermon"      onClick={() => navigate('/last-sunday')} />
+                <QuickCard
+                  icon={<PlayIcon />}
+                  label="Last Sunday"
+                  sub={lastSunday?.title ?? 'Sermon'}
+                  onClick={() => navigate('/last-sunday', { state: { summary: lastSunday } })}
+                />
                 <QuickCard icon={<PinIcon />}      label="Find Midweek"    sub="Near you"    onClick={() => navigate('/midweek')} />
                 <QuickCard icon={<HeartIcon />}    label="Donate"          sub="Give online" onClick={() => setShowDonate(true)} />
               </div>

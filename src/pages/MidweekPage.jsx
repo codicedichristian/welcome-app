@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import L from 'leaflet'
@@ -39,6 +39,7 @@ function createPinIcon(selected) {
 
 export default function MidweekPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const popupRef = useRef(null)
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
@@ -186,6 +187,14 @@ export default function MidweekPage() {
               >
                 {going && <Check size={18} />}
                 <span>{going ? "You're in!" : "I'm going"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0 2px', width: '100%', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#5b8cff' }}
+              >
+                More info →
               </button>
             </div>
           )}

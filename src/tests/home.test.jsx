@@ -30,6 +30,7 @@ vi.mock('../lib/supabase.js', () => ({
 vi.mock('../lib/api.js', () => ({
   getEvents: vi.fn(async () => ({ data: [], error: null })),
   getNews: vi.fn(async () => ({ data: [], error: null })),
+  getLatestSundaySummary: vi.fn(async () => ({ data: null, error: null })),
   saveSubscription: vi.fn(async () => ({ data: null, error: null })),
   getUserByAuthId: vi.fn(async () => ({ data: null, error: null })),
 }))
@@ -178,7 +179,7 @@ describe('HomePage', () => {
     await waitFor(() => expect(screen.getByText('Last Sunday')).toBeInTheDocument())
 
     await user.click(screen.getByText('Last Sunday').closest('button'))
-    expect(mockNavigate).toHaveBeenCalledWith('/last-sunday')
+    expect(mockNavigate).toHaveBeenCalledWith('/last-sunday', { state: { summary: null } })
   })
 
   test('Tapping "Donate" opens donate modal', async () => {
