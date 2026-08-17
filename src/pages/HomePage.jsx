@@ -423,30 +423,21 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Scroll-aware sticky title bar */}
+      {/* Status bar fill — covers safe-area-inset-top with black when scrolled */}
       <div
         style={{
           position: 'fixed',
-          top: 'env(safe-area-inset-top)',
+          top: 0,
           left: 0,
           right: 0,
-          height: '44px',
-          background: 'rgba(10,11,10,0.95)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '0.5px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          height: 'env(safe-area-inset-top)',
+          background: '#0a0b0a',
           zIndex: 99,
           opacity: showScrollBar ? 1 : 0,
-          transform: showScrollBar ? 'translateY(0)' : 'translateY(-100%)',
-          transition: 'opacity 200ms ease-out, transform 200ms ease-out',
-          pointerEvents: showScrollBar ? 'auto' : 'none',
+          transition: 'opacity 200ms ease-out',
+          pointerEvents: 'none',
         }}
-      >
-        <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>Welcome</span>
-      </div>
+      />
 
       {/* Page wrapper */}
       <div
