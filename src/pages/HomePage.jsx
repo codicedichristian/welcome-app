@@ -251,7 +251,7 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [lastSunday, setLastSunday] = useState(null)
   const [loading, setLoading] = useState(true)
-  useScrollMemory(!loading)
+  useScrollMemory('home')
   const [activeIndex, setActiveIndex] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)

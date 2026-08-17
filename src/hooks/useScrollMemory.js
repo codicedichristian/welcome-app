@@ -1,25 +1,30 @@
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigationType } from 'react-router-dom'
 
-const scrollPositions = new Map()
+export function useScrollMemory(key) {
+  const location = useLocation()
+  const navType = useNavigationType()
+  const storageKey = `scroll_${key || location.pathname}`
 
-// ready: pass !loading so scroll restores only after content is rendered
-export function useScrollMemory(ready = true) {
-  const { pathname } = useLocation()
-
-  // Restore saved position once the page is ready to scroll
   useEffect(() => {
-    if (!ready) return
-    const saved = scrollPositions.get(pathname)
-    if (saved != null) {
-      window.scrollTo({ top: saved, behavior: 'instant' })
+    if (navType === 'POP') {
+      const saved = sessionStorage.getItem(storageKey)
+      if (saved) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+          })
+        })
+      }
     }
-  }, [pathname, ready])
 
-  // Save position on unmount (always, regardless of ready)
-  useEffect(() => {
+    const saveScroll = () => {
+      sessionStorage.setItem(storageKey, String(window.scrollY))
+    }
+    window.addEventListener('scroll', saveScroll, { passive: true })
+
     return () => {
-      scrollPositions.set(pathname, window.scrollY)
+      window.removeEventListener('scroll', saveScroll)
     }
-  }, [pathname])
+  }, [navType, storageKey])
 }
