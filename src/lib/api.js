@@ -965,7 +965,7 @@ export async function getLatestSundaySummary() {
   try {
     const { data, error } = await supabase
       .from('sunday_summaries')
-      .select('*, schedule:sunday_schedules!schedule_id(id, date)')
+      .select('id, title, speaker, description, scripture, video_url, audio_url, photos_url, created_at, schedule_id, schedule:sunday_schedules!schedule_id(id, date)')
       .order('created_at', { ascending: false })
       .limit(1)
       .single()

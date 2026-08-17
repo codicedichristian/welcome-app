@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import { getEvents, getNews, getLatestSundaySummary } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -240,6 +241,7 @@ function NewsCard({ item, gridColumn, onClick }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  useScrollMemory()
   const navigate = useNavigate()
   const outletContext = useOutletContext()
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})

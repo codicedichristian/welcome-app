@@ -36,7 +36,7 @@ export default function NewsPage() {
   }, [])
 
   return (
-    <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
+    <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
       {loading ? (
         <Spinner />
       ) : error ? (

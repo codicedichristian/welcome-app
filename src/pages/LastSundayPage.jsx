@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { PlayCircle, Image, Headphones } from 'lucide-react'
+import { PlayCircle, Headphones, Camera } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 import { getLatestSundaySummary } from '../lib/api.js'
 
@@ -125,28 +125,28 @@ export default function LastSundayPage() {
             )}
           </div>
 
-          {/* Media buttons — conditional */}
-          {(summary.video_url || summary.photos_url || summary.audio_url) && (
+          {/* Media buttons — conditional, order: Watch / Listen / Photos */}
+          {(summary.video_url || summary.audio_url || summary.photos_url) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {summary.video_url && (
                 <MediaButton
                   href={summary.video_url}
                   label="Watch"
-                  icon={<PlayCircle size={22} color="#ff4444" />}
-                />
-              )}
-              {summary.photos_url && (
-                <MediaButton
-                  href={summary.photos_url}
-                  label="Photos"
-                  icon={<Image size={22} color="#5b8cff" />}
+                  icon={<PlayCircle size={22} color="#ee5555" />}
                 />
               )}
               {summary.audio_url && (
                 <MediaButton
                   href={summary.audio_url}
                   label="Listen"
-                  icon={<Headphones size={22} color="#3ddc97" />}
+                  icon={<Headphones size={22} color="#a78bfa" />}
+                />
+              )}
+              {summary.photos_url && (
+                <MediaButton
+                  href={summary.photos_url}
+                  label="Photos"
+                  icon={<Camera size={22} color="#5b8cff" />}
                 />
               )}
             </div>
