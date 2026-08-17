@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
 import BackRow from '../components/BackRow.jsx'
@@ -38,6 +39,7 @@ function getEventsOnDate(allEvents, date) {
 }
 
 export default function EventsPage() {
+  const navigate = useNavigate()
   const user = getStoredUser()
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
 
@@ -387,14 +389,22 @@ export default function EventsPage() {
               const catColor = CAT_COLOR[ev.type] ?? 'oklch(0.55 0.01 260)'
 
               return (
-                <div
+                <button
                   key={`${ev.id}-${ei}`}
+                  type="button"
+                  onClick={() => navigate(`/events/${ev.id}`, { state: { event: ev } })}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '52px 10px 1fr',
+                    gridTemplateColumns: '52px 10px 1fr auto',
                     columnGap: '10px',
                     alignItems: 'start',
                     marginTop: ei > 0 ? '12px' : 0,
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
                   {/* Time */}
@@ -425,7 +435,10 @@ export default function EventsPage() {
                       </p>
                     )}
                   </div>
-                </div>
+
+                  {/* Chevron */}
+                  <ChevronRight size={15} style={{ color: 'oklch(0.38 0.008 260)', marginTop: '2px', flexShrink: 0 }} />
+                </button>
               )
             })}
           </>
