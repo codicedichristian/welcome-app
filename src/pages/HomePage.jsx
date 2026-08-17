@@ -241,7 +241,6 @@ function NewsCard({ item, gridColumn, onClick }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  useScrollMemory()
   const navigate = useNavigate()
   const outletContext = useOutletContext()
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})
@@ -252,6 +251,7 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [lastSunday, setLastSunday] = useState(null)
   const [loading, setLoading] = useState(true)
+  useScrollMemory(!loading)
   const [activeIndex, setActiveIndex] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
