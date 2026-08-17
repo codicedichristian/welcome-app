@@ -68,7 +68,7 @@ afterEach(() => {
   localStorage.clear()
 })
 
-describe('FloatingNav — visitor (4 tabs)', () => {
+describe('FloatingNav — all users (4 tabs)', () => {
   test('Visitor sees Home, Events, News, My Events tabs', () => {
     renderFloatingNav('/', VISITOR_USER)
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
@@ -77,8 +77,16 @@ describe('FloatingNav — visitor (4 tabs)', () => {
     expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
   })
 
-  test('Visitor does not see My Church tab', () => {
-    renderFloatingNav('/', VISITOR_USER)
+  test('Member also sees all four tabs including My Events', () => {
+    renderFloatingNav('/', MEMBER_USER)
+    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my events/i })).toBeInTheDocument()
+  })
+
+  test('No user sees My Church tab', () => {
+    renderFloatingNav('/', MEMBER_USER)
     expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
   })
 
@@ -100,21 +108,6 @@ describe('FloatingNav — visitor (4 tabs)', () => {
     )
     await user.click(screen.getByRole('button', { name: /my events/i }))
     expect(screen.getByText('My Events Page')).toBeInTheDocument()
-  })
-})
-
-describe('FloatingNav — member (3 tabs)', () => {
-  test('Member sees Home, Events, News tabs only', () => {
-    renderFloatingNav('/', MEMBER_USER)
-    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /^events$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /news/i })).toBeInTheDocument()
-  })
-
-  test('Member does not see My Events or My Church tab', () => {
-    renderFloatingNav('/', MEMBER_USER)
-    expect(screen.queryByRole('button', { name: /my events/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /my church/i })).not.toBeInTheDocument()
   })
 })
 

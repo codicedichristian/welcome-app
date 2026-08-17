@@ -5,9 +5,7 @@ import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
 import PWAInstallPrompt, { shouldShowPWAPrompt } from './components/PWAInstallPrompt.jsx'
 import AppLayout from './layouts/AppLayout.jsx'
-import AdminLayout from './layouts/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
-import AdminRoute from './components/AdminRoute.jsx'
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated.jsx'
 import OnboardingPage from './pages/OnboardingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -19,22 +17,6 @@ import NewsDetailPage from './pages/NewsDetailPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import EditInfoPage from './pages/EditInfoPage.jsx'
 import MyEventsPage from './pages/MyEventsPage.jsx'
-import LastSundayPage from './pages/LastSundayPage.jsx'
-import MyChurchPage from './pages/MyChurchPage.jsx'
-import MyMidweekPage from './pages/MyMidweekPage.jsx'
-import MyServicesPage from './pages/MyServicesPage.jsx'
-import SundaysPage from './pages/SundaysPage.jsx'
-import MemberMessagesPage from './pages/MemberMessagesPage.jsx'
-import AdminDashboard from './pages/admin/AdminDashboard.jsx'
-import AdminEvents from './pages/admin/AdminEvents.jsx'
-import AdminNews from './pages/admin/AdminNews.jsx'
-import AdminMidweek from './pages/admin/AdminMidweek.jsx'
-import AdminMembers from './pages/admin/AdminMembers.jsx'
-import AdminSchedules from './pages/admin/AdminSchedules.jsx'
-import AdminScheduleDetail from './pages/admin/AdminScheduleDetail.jsx'
-import AdminSundays from './pages/admin/AdminSundays.jsx'
-import AdminSundayDetail from './pages/admin/AdminSundayDetail.jsx'
-import AdminMessages from './pages/admin/AdminMessages.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
@@ -109,27 +91,6 @@ export default function App() {
               }
             />
             <Route path="my-events" element={<MyEventsPage />} />
-            <Route path="last-sunday" element={<LastSundayPage />} />
-            <Route path="my-church" element={<MyChurchPage />} />
-            <Route path="my-church/midweek" element={<MyMidweekPage />} />
-            <Route path="my-church/services" element={<MyServicesPage />} />
-            <Route path="my-church/sundays" element={<SundaysPage />} />
-            <Route path="my-church/messages" element={<MemberMessagesPage />} />
-          </Route>
-
-          <Route element={<AdminRoute />}>
-            <Route element={<AdminLayout />}>
-              <Route path="admin" element={<AdminDashboard />} />
-              <Route path="admin/events" element={<AdminEvents />} />
-              <Route path="admin/news" element={<AdminNews />} />
-              <Route path="admin/midweek" element={<AdminMidweek />} />
-              <Route path="admin/members" element={<AdminMembers />} />
-              <Route path="admin/schedules" element={<AdminSchedules />} />
-              <Route path="admin/schedules/:id" element={<AdminScheduleDetail />} />
-              <Route path="admin/sundays" element={<AdminSundays />} />
-              <Route path="admin/sundays/:scheduleId" element={<AdminSundayDetail />} />
-              <Route path="admin/messages" element={<AdminMessages />} />
-            </Route>
           </Route>
         </Route>
       </Routes>

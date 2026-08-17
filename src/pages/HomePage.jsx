@@ -245,7 +245,6 @@ export default function HomePage() {
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})
   const user = useUser()
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase()
-  const isMember = ['member', 'leader', 'admin'].includes(user?.role)
 
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
@@ -473,33 +472,18 @@ export default function HomePage() {
             </p>
           </button>
 
-          {/* Header right: My Events / My Church + avatar */}
+          {/* Header right: My Events + avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
-            {isMember ? (
-              <button
-                type="button"
-                onClick={() => navigate('/my-church')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                <span style={{ fontSize: '13px', color: '#c9c9c6' }}>My Church</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => navigate('/my-events')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-                <span style={{ fontSize: '13px', color: '#c9c9c6' }}>My Events</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => navigate('/my-events')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9c9c6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+              <span style={{ fontSize: '13px', color: '#c9c9c6' }}>My Events</span>
+            </button>
 
             <button
               type="button"

@@ -1,24 +1,18 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Home, CalendarDays, Megaphone, Bookmark } from 'lucide-react'
-import { useUser } from '../lib/UserContext.js'
 
-const MEMBER_ROLES = ['member', 'leader', 'admin']
-
-const BASE_TABS = [
+const TABS = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/events', icon: CalendarDays, label: 'Events' },
   { to: '/news', icon: Megaphone, label: 'News' },
+  { to: '/my-events', icon: Bookmark, label: 'My Events' },
 ]
-
-const VISITOR_TAB = { to: '/my-events', icon: Bookmark, label: 'My Events' }
 
 export default function FloatingNav() {
   const navigate = useNavigate()
   const location = useLocation()
-  const user = useUser()
 
-  const isVisitor = !MEMBER_ROLES.includes(user?.role)
-  const tabs = isVisitor ? [...BASE_TABS, VISITOR_TAB] : BASE_TABS
+  const tabs = TABS
 
   return (
     <div
