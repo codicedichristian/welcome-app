@@ -961,6 +961,37 @@ export async function getSundaySummaries() {
   }
 }
 
+export async function getLatestSundaySummary() {
+  try {
+    const { data, error } = await supabase
+      .from('sunday_summaries')
+      .select('*, schedule:sunday_schedules!schedule_id(id, date)')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function getMidweekGroupDetail(groupId) {
+  try {
+    const [groupRes, leadersRes] = await Promise.all([
+      supabase.from('midweek_groups').select('*').eq('id', groupId).single(),
+      supabase
+        .from('midweek_leaders')
+        .select('*, users!user_id(first_name, last_name)')
+        .eq('group_id', groupId),
+    ])
+    if (groupRes.error) throw groupRes.error
+    return { data: { group: groupRes.data, leaders: leadersRes.data ?? [] }, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
 export async function getMemberMessages(userId, userRole) {
   if (userRole === 'visitor') return { data: [], error: null }
   try {

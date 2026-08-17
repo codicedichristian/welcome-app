@@ -17,6 +17,8 @@ import NewsDetailPage from './pages/NewsDetailPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import EditInfoPage from './pages/EditInfoPage.jsx'
 import MyEventsPage from './pages/MyEventsPage.jsx'
+import LastSundayPage from './pages/LastSundayPage.jsx'
+import MidweekDetailPage from './pages/MidweekDetailPage.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
@@ -91,6 +93,8 @@ export default function App() {
               }
             />
             <Route path="my-events" element={<MyEventsPage />} />
+            <Route path="last-sunday" element={<LastSundayPage />} />
+            <Route path="midweek/:groupId" element={<MidweekDetailPage />} />
           </Route>
         </Route>
       </Routes>
