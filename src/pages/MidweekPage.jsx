@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapPin, Clock, Check, Home } from 'lucide-react'
+import { MapPin, Clock, Check, Home, ChevronRight } from 'lucide-react'
 import { getMidweekGroups, rsvpMidweek } from '../lib/api.js'
 import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
 import { getEventById } from '../data/events.js'
@@ -138,7 +138,12 @@ export default function MidweekPage() {
           {!selectedGroup && <p className="mt-3 text-[13px] text-zinc-500">Tap a pin to see the group details</p>}
 
           {selectedGroup && (
-            <div ref={popupRef} className="mt-3 rounded-[14px] border border-border bg-surface p-4">
+            <div
+              ref={popupRef}
+              className="mt-3 rounded-[14px] border border-border bg-surface p-4"
+              onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-[14px] font-medium text-primary">
                   {selectedGroup.initials}
@@ -147,9 +152,7 @@ export default function MidweekPage() {
                   <p className="text-[16px] text-primary">{selectedGroup.host}</p>
                   <p className="text-[13px] text-zinc-500">{selectedGroup.zone}</p>
                 </div>
-                <div className="rounded-full bg-accent-blue px-2.5 py-1 text-[13px] font-medium text-bg">
-                  {selectedGroup.confirmed ?? 0} confirmed
-                </div>
+                <ChevronRight size={16} color="#444444" />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -179,7 +182,7 @@ export default function MidweekPage() {
 
               <button
                 type="button"
-                onClick={handleGoing}
+                onClick={(e) => { e.stopPropagation(); handleGoing() }}
                 disabled={going}
                 className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
                   going ? 'bg-accent-green text-bg' : 'border border-primary bg-bg text-primary'
@@ -187,14 +190,6 @@ export default function MidweekPage() {
               >
                 {going && <Check size={18} />}
                 <span>{going ? "You're in!" : "I'm going"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0 2px', width: '100%', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: '#5b8cff' }}
-              >
-                More info →
               </button>
             </div>
           )}
