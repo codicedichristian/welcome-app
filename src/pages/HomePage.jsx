@@ -277,7 +277,6 @@ export default function HomePage() {
             marginLeft: '-24px',
             marginRight: '-24px',
             paddingLeft: '24px',
-            paddingRight: '24px',
             boxSizing: 'content-box',
             width: '100%',
           }}
@@ -353,6 +352,7 @@ export default function HomePage() {
               </button>
             )
           })}
+          <div aria-hidden="true" style={{ minWidth: '24px', flexShrink: 0 }} />
         </div>
 
         {/* Event cards — fixed-height container prevents layout jump */}
