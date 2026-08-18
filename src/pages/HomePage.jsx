@@ -277,7 +277,7 @@ export default function HomePage() {
             marginRight: '-24px',
             paddingLeft: '24px',
             boxSizing: 'content-box',
-            width: '100%',
+            width: 'calc(100% + 48px)',
           }}
         >
           {weekDays.map((day, i) => {
