@@ -160,6 +160,22 @@ textarea {
   transform: scale(0.9);
 }
 
+/* Vision page map popup */
+.vision-popup .leaflet-popup-content-wrapper {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 0.5px solid #2e2e2e;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  padding: 0;
+}
+.vision-popup .leaflet-popup-content {
+  margin: 8px 12px;
+}
+.vision-popup .leaflet-popup-tip {
+  background: #1a1a1a;
+}
+
 /* Midweek map pins */
 .midweek-pin {
   position: relative;
