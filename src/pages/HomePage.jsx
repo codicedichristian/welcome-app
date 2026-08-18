@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { Bookmark } from 'lucide-react'
+import { Bookmark, CalendarDays, Play, MapPin, Heart } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import { getEvents, getNews } from '../lib/api.js'
@@ -87,7 +87,16 @@ export default function HomePage() {
 
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
+  const [showDonateModal, setShowDonateModal] = useState(false)
   useScrollMemory('home')
+
+  const qaCard = {
+    background: '#1c1c1c', border: '0.5px solid #2a2a2a', borderRadius: '16px',
+    padding: '14px 12px', display: 'flex', alignItems: 'center', gap: '12px',
+    cursor: 'pointer', textAlign: 'left', width: '100%',
+  }
+  const qaLabel = { fontSize: '13px', fontWeight: '500', color: '#fff', margin: 0 }
+  const qaSub = { fontSize: '10px', color: '#555', marginTop: '2px', marginBottom: 0 }
 
   useEffect(() => {
     let cancelled = false
@@ -302,6 +311,30 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ── 5. QUICK ACCESS ── */}
+      <div style={{ paddingTop: '30px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Quick access</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
+          <button type="button" onClick={() => navigate('/events')} style={qaCard}>
+            <CalendarDays size={24} color="#5b8cff" strokeWidth={1.75} />
+            <div><p style={qaLabel}>Events calendar</p><p style={qaSub}>All events</p></div>
+          </button>
+          <button type="button" onClick={() => navigate('/last-sunday')} style={qaCard}>
+            <Play size={24} color="#ffffff" strokeWidth={1.75} />
+            <div><p style={qaLabel}>Last Sunday</p><p style={qaSub}>Sermon</p></div>
+          </button>
+          <button type="button" onClick={() => navigate('/midweek')} style={qaCard}>
+            <MapPin size={24} color="#5b8cff" strokeWidth={1.75} />
+            <div><p style={qaLabel}>Find Midweek</p><p style={qaSub}>Near you</p></div>
+          </button>
+          <button type="button" onClick={() => setShowDonateModal(true)} style={qaCard}>
+            <Heart size={24} color="#4caf7d" strokeWidth={1.75} />
+            <div><p style={qaLabel}>Donate</p><p style={qaSub}>Support us</p></div>
+          </button>
+        </div>
+      </div>
+
     </div>
   )
 }
