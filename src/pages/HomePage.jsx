@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Bookmark } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
@@ -112,6 +112,7 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState(today)
+  const defaultDaySet = useRef(false)
   useScrollMemory('home')
 
   useEffect(() => {
@@ -126,6 +127,18 @@ export default function HomePage() {
     load()
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    if (defaultDaySet.current || !events.length) return
+    defaultDaySet.current = true
+    const weekEnd = new Date(weekDays[weekDays.length - 1])
+    weekEnd.setHours(23, 59, 59, 999)
+    const nextInWeek = events
+      .map((ev) => getNextOccurrence(ev))
+      .filter((d) => d && d >= today && d <= weekEnd)
+      .sort((a, b) => a - b)[0]
+    if (nextInWeek) setSelectedDay(nextInWeek)
+  }, [events])
 
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
@@ -240,7 +253,7 @@ export default function HomePage() {
           style={{
             display: 'flex',
             gap: '8px',
-            padding: '14px 24px 2px',
+            padding: '14px 0 2px',
             overflowX: 'auto',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -261,6 +274,8 @@ export default function HomePage() {
                   alignItems: 'center',
                   gap: '6px',
                   minWidth: '42px',
+                  marginLeft: i === 0 ? '24px' : 0,
+                  marginRight: i === weekDays.length - 1 ? '24px' : 0,
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
