@@ -431,22 +431,6 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Pager dots */}
-            {eventsOnDay.length > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', marginTop: '12px' }}>
-                {eventsOnDay.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      height: '5px',
-                      width: i === 0 ? '20px' : '5px',
-                      borderRadius: '9px',
-                      background: i === 0 ? '#ffffff' : '#3a3a3c',
-                    }}
-                  />
-                ))}
-              </div>
-            )}
           </>
         )}
       </div>
