@@ -270,10 +270,16 @@ export default function HomePage() {
           style={{
             display: 'flex',
             gap: '8px',
-            padding: '14px 0 2px',
             overflowX: 'auto',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
+            padding: '14px 0 2px',
+            marginLeft: '-24px',
+            marginRight: '-24px',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            boxSizing: 'content-box',
+            width: '100%',
           }}
         >
           {weekDays.map((day, i) => {
@@ -292,7 +298,6 @@ export default function HomePage() {
                   alignItems: 'center',
                   gap: '6px',
                   minWidth: '42px',
-                  ...(i === 0 && { marginLeft: '24px' }),
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -348,8 +353,6 @@ export default function HomePage() {
               </button>
             )
           })}
-          {/* Spacer forces scroll to extend 24px past the last item */}
-          <div style={{ minWidth: '24px', flexShrink: 0 }} />
         </div>
 
         {/* Event cards — fixed-height container prevents layout jump */}
