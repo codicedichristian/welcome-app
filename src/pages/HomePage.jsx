@@ -175,7 +175,7 @@ function EventSlide({ ev, didDrag, navigate }) {
       style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: '0 22px' }}
       onClick={() => { if (!didDrag.current) navigate(`/events/${ev.id}`, { state: { event: ev } }) }}
     >
-      <div style={{ width: '100%', height: '290px', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: '#1a1a1a' }}>
+      <div style={{ width: '100%', height: '160px', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: '#1a1a1a' }}>
         {!imgError && (
           <img
             src={imgSrc}

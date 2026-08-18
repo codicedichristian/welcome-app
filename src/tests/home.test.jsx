@@ -114,7 +114,7 @@ describe('HomePage', () => {
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
     // Cards are now 290px tall
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 290px"]')
+      const card = document.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
   })
@@ -122,7 +122,7 @@ describe('HomePage', () => {
   test('Dot indicators count matches upcoming events', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 290px"]')
+      const card = document.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
 
@@ -207,13 +207,13 @@ describe('HomePage', () => {
     renderHome()
     await waitFor(() => {
       const section = screen.getByText('Upcoming events').closest('section')
-      const card = section.querySelector('[style*="height: 290px"]')
+      const card = section.querySelector('[style*="height: 160px"]')
       expect(card).not.toBeNull()
     })
 
     // Fire touch events on the events carousel card specifically
     const section = screen.getByText('Upcoming events').closest('section')
-    const card = section.querySelector('[style*="height: 290px"]')
+    const card = section.querySelector('[style*="height: 160px"]')
     expect(card).toBeTruthy()
 
     // Simulate a clear left swipe (diffX = -100, diffY = 5 — horizontal dominant)
