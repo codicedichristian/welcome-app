@@ -111,7 +111,7 @@ export default function HomePage() {
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedDay, setSelectedDay] = useState(null)
+  const [selectedDay, setSelectedDay] = useState(today)
   const defaultDaySet = useRef(false)
   useScrollMemory('home')
 
@@ -151,8 +151,7 @@ export default function HomePage() {
       rawEndTime: item.event.end_time,
     }))
 
-  const activeDay = selectedDay ?? today
-  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, activeDay))
+  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, selectedDay))
   const hasEvents = eventsOnDay.length > 0
 
   const CAT_COLORS = {
@@ -283,7 +282,7 @@ export default function HomePage() {
         >
           {weekDays.map((day, i) => {
             const isToday = isSameDay(day, today)
-            const isSelected = isSameDay(day, activeDay)
+            const isSelected = isSameDay(day, selectedDay)
             const label = isToday ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short' })
             const dots = dotsForDay(day)
             return (
