@@ -206,12 +206,14 @@ describe('HomePage', () => {
   test('Swiping left on card advances to next event', async () => {
     renderHome()
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 290px"]')
+      const section = screen.getByText('Upcoming events').closest('section')
+      const card = section.querySelector('[style*="height: 290px"]')
       expect(card).not.toBeNull()
     })
 
-    // Fire touch events on the card — they bubble up to the carousel outer handler
-    const card = document.querySelector('[style*="height: 290px"]')
+    // Fire touch events on the events carousel card specifically
+    const section = screen.getByText('Upcoming events').closest('section')
+    const card = section.querySelector('[style*="height: 290px"]')
     expect(card).toBeTruthy()
 
     // Simulate a clear left swipe (diffX = -100, diffY = 5 — horizontal dominant)

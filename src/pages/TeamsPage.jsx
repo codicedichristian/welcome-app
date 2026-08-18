@@ -98,18 +98,6 @@ export default function TeamsPage() {
                 <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', marginLeft: '12px', flex: 1 }}>
                   {team.name}
                 </p>
-                <span
-                  style={{
-                    background: `${team.color}26`,
-                    color: team.color,
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    borderRadius: '20px',
-                    padding: '4px 10px',
-                  }}
-                >
-                  Join this team
-                </span>
               </div>
 
               <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>

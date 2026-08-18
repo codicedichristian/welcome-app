@@ -256,8 +256,8 @@ function ExploreCard({ card, didDrag, navigate }) {
       onClick={() => { if (!didDrag.current) navigate(card.to) }}
       style={{
         width: '100%',
-        height: '160px',
-        borderRadius: '20px',
+        height: '290px',
+        borderRadius: '24px',
         overflow: 'hidden',
         position: 'relative',
         background: '#1a1a1a',
@@ -271,19 +271,19 @@ function ExploreCard({ card, didDrag, navigate }) {
         loading="lazy"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
       />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.88) 100%)' }} />
 
       {/* Top-right arrow circle */}
-      <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', top: '14px', right: '14px', width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <ArrowRight size={14} color="#ffffff" />
       </div>
 
       {/* Bottom-left content */}
-      <div style={{ position: 'absolute', left: '16px', bottom: '16px' }}>
-        <span style={{ display: 'inline-block', background: card.pillBg, color: card.pillColor, fontSize: '11px', fontWeight: '700', letterSpacing: '0.04em', padding: '3px 10px', borderRadius: '20px' }}>
+      <div style={{ position: 'absolute', left: '20px', bottom: '20px' }}>
+        <span style={{ display: 'inline-block', background: card.pillBg, color: card.pillColor, fontSize: '12px', fontWeight: '700', letterSpacing: '0.04em', padding: '5px 11px', borderRadius: '8px', marginBottom: '10px' }}>
           {card.category}
         </span>
-        <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '6px', lineHeight: 1.2 }}>
+        <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.01em' }}>
           {card.title}
         </p>
       </div>
