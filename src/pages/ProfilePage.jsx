@@ -83,7 +83,7 @@ export default function ProfilePage() {
 
   return (
     <div className="page-transition px-4 pt-6 pb-8">
-      {liveUser.role === 'admin' && (
+      {(liveUser.role === 'admin' || liveUser.role === 'leader') && (
         <button
           type="button"
           onClick={() => navigate('/admin')}

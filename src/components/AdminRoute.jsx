@@ -29,7 +29,8 @@ export default function AdminRoute() {
       }
 
       localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(profile, session.user.id)))
-      setStatus(profile.role === 'admin' ? 'admin' : 'not-admin')
+      const allowed = profile.role === 'admin' || profile.role === 'leader'
+      setStatus(allowed ? 'admin' : 'not-admin')
     }
 
     check()
