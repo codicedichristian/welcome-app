@@ -111,7 +111,7 @@ export default function HomePage() {
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedDay, setSelectedDay] = useState(today)
+  const [selectedDay, setSelectedDay] = useState(null)
   const defaultDaySet = useRef(false)
   useScrollMemory('home')
 
@@ -137,7 +137,7 @@ export default function HomePage() {
       .map((ev) => getNextOccurrence(ev))
       .filter((d) => d && d >= today && d <= weekEnd)
       .sort((a, b) => a - b)[0]
-    if (nextInWeek) setSelectedDay(nextInWeek)
+    setSelectedDay(nextInWeek ?? today)
   }, [events])
 
   const upcoming = events
@@ -151,8 +151,25 @@ export default function HomePage() {
       rawEndTime: item.event.end_time,
     }))
 
-  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, selectedDay))
-  const visibleEvents = eventsOnDay.length > 0 ? eventsOnDay : upcoming
+  const activeDay = selectedDay ?? today
+  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, activeDay))
+  const hasEvents = eventsOnDay.length > 0
+
+  const CAT_COLORS = {
+    sunday:  'oklch(0.64 0.18 232)',
+    service: 'oklch(0.64 0.18 232)',
+    youth:   'oklch(0.64 0.18 152)',
+    midweek: 'oklch(0.64 0.18 292)',
+    prayer:  'oklch(0.64 0.18 42)',
+    special: 'oklch(0.64 0.18 42)',
+  }
+
+  const dotsForDay = (day) =>
+    [...new Set(
+      upcoming
+        .filter((ev) => isSameDay(ev.dateObj, day))
+        .map((ev) => CAT_COLORS[ev.type] ?? '#8e8e93'),
+    )].slice(0, 3)
 
   const recentNews = news.slice(0, 3)
 
@@ -261,8 +278,9 @@ export default function HomePage() {
         >
           {weekDays.map((day, i) => {
             const isToday = isSameDay(day, today)
-            const isSelected = isSameDay(day, selectedDay)
+            const isSelected = isSameDay(day, activeDay)
             const label = isToday ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short' })
+            const dots = dotsForDay(day)
             return (
               <button
                 key={i}
@@ -275,7 +293,6 @@ export default function HomePage() {
                   gap: '6px',
                   minWidth: '42px',
                   ...(i === 0 && { marginLeft: '24px' }),
-                  ...(i === weekDays.length - 1 && { marginRight: '24px' }),
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -295,25 +312,47 @@ export default function HomePage() {
                 <div
                   style={{
                     width: '42px',
-                    height: '42px',
+                    height: '52px',
                     borderRadius: '14px',
                     background: isSelected ? ACCENT : '#18181b',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '15px',
-                    fontWeight: '700',
-                    color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#c7c7cc',
+                    gap: '4px',
                   }}
                 >
-                  {day.getDate()}
+                  <span
+                    style={{
+                      fontSize: '15px',
+                      fontWeight: '700',
+                      color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#c7c7cc',
+                    }}
+                  >
+                    {day.getDate()}
+                  </span>
+                  <div style={{ display: 'flex', gap: '3px', height: '5px' }}>
+                    {dots.map((color, di) => (
+                      <div
+                        key={di}
+                        style={{
+                          width: '5px',
+                          height: '5px',
+                          borderRadius: '50%',
+                          background: isSelected ? 'rgba(255,255,255,0.6)' : color,
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </button>
             )
           })}
+          {/* Spacer forces scroll to extend 24px past the last item */}
+          <div style={{ minWidth: '24px', flexShrink: 0 }} />
         </div>
 
-        {/* Event cards — horizontal scroll */}
+        {/* Event cards — fixed-height container prevents layout jump */}
         {loading ? (
           <p style={{ padding: '16px 24px', color: '#6e6e73', fontSize: '14px', fontFamily: FONT }}>Loading…</p>
         ) : (
@@ -323,13 +362,15 @@ export default function HomePage() {
                 display: 'flex',
                 gap: '14px',
                 padding: '16px 24px 4px',
-                overflowX: 'auto',
+                overflowX: hasEvents ? 'auto' : 'hidden',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
                 scrollSnapType: 'x mandatory',
+                minHeight: '220px',
+                alignItems: 'flex-start',
               }}
             >
-              {visibleEvents.map((ev) => {
+              {hasEvents ? eventsOnDay.map((ev) => {
                 const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/400/320`
                 const timeStr = ev.rawEndTime
                   ? `${ev.time} – ${formatTime12h(ev.rawEndTime)}`
@@ -370,13 +411,27 @@ export default function HomePage() {
                     </div>
                   </button>
                 )
-              })}
+              }) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '188px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#8e8e93',
+                    fontSize: '14px',
+                  }}
+                >
+                  No events today
+                </div>
+              )}
             </div>
 
             {/* Pager dots */}
-            {visibleEvents.length > 1 && (
+            {eventsOnDay.length > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', marginTop: '12px' }}>
-                {visibleEvents.map((_, i) => (
+                {eventsOnDay.map((_, i) => (
                   <div
                     key={i}
                     style={{
