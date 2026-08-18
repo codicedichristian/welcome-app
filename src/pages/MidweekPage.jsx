@@ -106,95 +106,131 @@ export default function MidweekPage() {
   }
 
   return (
-    <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
-      <BackRow label="Events" />
+    <div className="page-transition" style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
+      {/* Back row over hero */}
+      <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
+        <BackRow label="Home" />
+      </div>
 
-      <h1 className="mt-4 text-[24px] font-medium text-primary">Find your group</h1>
-      <p className="mt-1 text-[13px] text-zinc-500">Wed · {midweekEvent.time}</p>
+      {/* Hero image */}
+      <div style={{ position: 'relative', width: '100%', height: '260px' }}>
+        <img
+          src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80"
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(10,11,10,0.85) 100%)',
+          }}
+        />
+        <div style={{ position: 'absolute', left: '22px', bottom: '20px' }}>
+          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em' }}>
+            Midweeks
+          </p>
+        </div>
+      </div>
 
-      {loading ? (
-        <Spinner />
-      ) : error ? (
-        <ErrorState />
-      ) : (
-        <>
-          <div className="mt-4 h-[220px] overflow-hidden rounded-[14px]">
-            <MapContainer center={MADRID_CENTER} zoom={12} className="h-full w-full">
-              <TileLayer
-                url={TILE_URL}
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              />
-              {groups.map((group) => (
-                <Marker
-                  key={group.id}
-                  position={[Number(group.lat), Number(group.lng)]}
-                  icon={createPinIcon(String(group.id) === String(selectedId))}
-                  eventHandlers={{ click: () => selectGroup(group.id) }}
+      {/* Body */}
+      <div style={{ padding: '20px 22px 0' }}>
+        <p style={{ fontSize: '15px', color: '#ffffff', lineHeight: 1.7 }}>
+          Midweeks are small groups that meet every Wednesday evening across Madrid. They are a space
+          to connect, share a meal, study the Bible together, and pray. Whether you're new to the
+          church or have been around for years, there's a group near you.
+        </p>
+
+        <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '32px', marginBottom: '16px' }}>
+          Find your group
+        </p>
+
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <ErrorState />
+        ) : (
+          <>
+            <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
+              <MapContainer center={MADRID_CENTER} zoom={12} className="h-full w-full">
+                <TileLayer
+                  url={TILE_URL}
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 />
-              ))}
-            </MapContainer>
-          </div>
-
-          {!selectedGroup && <p className="mt-3 text-[13px] text-zinc-500">Tap a pin to see the group details</p>}
-
-          {selectedGroup && (
-            <div
-              ref={popupRef}
-              className="mt-3 rounded-[14px] border border-border bg-surface p-4"
-              onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-[14px] font-medium text-primary">
-                  {selectedGroup.initials}
-                </div>
-                <div className="flex-1">
-                  <p className="text-[16px] text-primary">{selectedGroup.host}</p>
-                  <p className="text-[13px] text-zinc-500">{selectedGroup.zone}</p>
-                </div>
-                <ChevronRight size={16} color="#444444" />
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div className="flex items-center gap-2 text-[14px] text-zinc-400">
-                  <MapPin size={15} className="text-accent-blue" />
-                  <span>{selectedGroup.address}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[14px] text-zinc-400">
-                  <Clock size={15} className="text-accent-blue" />
-                  <span>{midweekEvent.time}</span>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2">
-                <div className="flex">
-                  {(selectedGroup.confirmedPeople ?? []).map((initial, index) => (
-                    <span
-                      key={index}
-                      className="-ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-bg bg-surface text-[9px] text-primary first:ml-0"
-                    >
-                      {initial}
-                    </span>
-                  ))}
-                </div>
-                <span className="text-[13px] text-zinc-500">{selectedGroup.confirmed ?? 0} people going</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleGoing() }}
-                disabled={going}
-                className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-                  going ? 'bg-accent-green text-bg' : 'border border-primary bg-bg text-primary'
-                }`}
-              >
-                {going && <Check size={18} />}
-                <span>{going ? "You're in!" : "I'm going"}</span>
-              </button>
+                {groups.map((group) => (
+                  <Marker
+                    key={group.id}
+                    position={[Number(group.lat), Number(group.lng)]}
+                    icon={createPinIcon(String(group.id) === String(selectedId))}
+                    eventHandlers={{ click: () => selectGroup(group.id) }}
+                  />
+                ))}
+              </MapContainer>
             </div>
-          )}
-        </>
-      )}
+
+            {!selectedGroup && (
+              <p className="mt-3 text-[13px] text-zinc-500">Tap a pin to see the group details</p>
+            )}
+
+            {selectedGroup && (
+              <div
+                ref={popupRef}
+                className="mt-3 rounded-[14px] border border-border bg-surface p-4"
+                onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-[14px] font-medium text-primary">
+                    {selectedGroup.initials}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[16px] text-primary">{selectedGroup.host}</p>
+                    <p className="text-[13px] text-zinc-500">{selectedGroup.zone}</p>
+                  </div>
+                  <ChevronRight size={16} color="#444444" />
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <div className="flex items-center gap-2 text-[14px] text-zinc-400">
+                    <MapPin size={15} className="text-accent-blue" />
+                    <span>{selectedGroup.address}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[14px] text-zinc-400">
+                    <Clock size={15} className="text-accent-blue" />
+                    <span>{midweekEvent.time}</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex">
+                    {(selectedGroup.confirmedPeople ?? []).map((initial, index) => (
+                      <span
+                        key={index}
+                        className="-ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-bg bg-surface text-[9px] text-primary first:ml-0"
+                      >
+                        {initial}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-[13px] text-zinc-500">{selectedGroup.confirmed ?? 0} people going</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleGoing() }}
+                  disabled={going}
+                  className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                    going ? 'bg-accent-green text-bg' : 'border border-primary bg-bg text-primary'
+                  }`}
+                >
+                  {going && <Check size={18} />}
+                  <span>{going ? "You're in!" : "I'm going"}</span>
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }
