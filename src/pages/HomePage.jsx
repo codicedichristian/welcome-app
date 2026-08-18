@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Bookmark } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
@@ -111,8 +111,7 @@ export default function HomePage() {
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedDay, setSelectedDay] = useState(today)
-  const defaultDaySet = useRef(false)
+  const [selectedDay, setSelectedDay] = useState(null)
   useScrollMemory('home')
 
   useEffect(() => {
@@ -128,18 +127,6 @@ export default function HomePage() {
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    if (defaultDaySet.current || !events.length) return
-    defaultDaySet.current = true
-    const weekEnd = new Date(weekDays[weekDays.length - 1])
-    weekEnd.setHours(23, 59, 59, 999)
-    const nextInWeek = events
-      .map((ev) => getNextOccurrence(ev))
-      .filter((d) => d && d >= today && d <= weekEnd)
-      .sort((a, b) => a - b)[0]
-    setSelectedDay(nextInWeek ?? today)
-  }, [events])
-
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
     .filter((item) => item.date)
@@ -151,9 +138,6 @@ export default function HomePage() {
       rawEndTime: item.event.end_time,
     }))
 
-  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, selectedDay))
-  const hasEvents = eventsOnDay.length > 0
-
   const CAT_COLORS = {
     sunday:  'oklch(0.64 0.18 232)',
     service: 'oklch(0.64 0.18 232)',
@@ -163,12 +147,23 @@ export default function HomePage() {
     special: 'oklch(0.64 0.18 42)',
   }
 
+  const computeDefault = () => {
+    const now = new Date(); now.setHours(0, 0, 0, 0)
+    return weekDays.find((day) =>
+      upcoming.some((ev) => isSameDay(ev.dateObj, day)) && day >= now,
+    ) ?? today
+  }
+
+  const activeDay = selectedDay ?? computeDefault()
+
   const dotsForDay = (day) =>
     [...new Set(
       upcoming
         .filter((ev) => isSameDay(ev.dateObj, day))
         .map((ev) => CAT_COLORS[ev.type] ?? '#8e8e93'),
     )].slice(0, 3)
+
+  const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, activeDay))
 
   const recentNews = news.slice(0, 3)
 
@@ -250,188 +245,99 @@ export default function HomePage() {
 
       {/* ── 3. UPCOMING EVENTS ── */}
       <div style={{ paddingTop: '30px' }}>
-        {/* Header row */}
-        <div style={{ paddingLeft: '24px', paddingRight: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0' }}>
-          <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Upcoming events
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate('/events')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: ACCENT, padding: 0 }}
-          >
-            See all
-          </button>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '24px', paddingRight: '24px' }}>
+          <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Upcoming events</span>
+          <button type="button" onClick={() => navigate('/events')} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
         </div>
 
-        {/* Weekday strip */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            padding: '14px 0 2px',
-            marginLeft: '-24px',
-            marginRight: '-24px',
-            paddingLeft: '24px',
-            boxSizing: 'content-box',
-            width: 'calc(100% + 48px)',
-          }}
-        >
+        {/* Weekday strip — full bleed via negative margins + trailing spacer */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          marginTop: '14px',
+          marginLeft: '-24px',
+          marginRight: '-24px',
+          paddingLeft: '24px',
+        }}>
           {weekDays.map((day, i) => {
             const isToday = isSameDay(day, today)
-            const isSelected = isSameDay(day, selectedDay)
+            const isSelected = isSameDay(day, activeDay)
             const label = isToday ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short' })
             const dots = dotsForDay(day)
             return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setSelectedDay(day)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '6px',
-                  minWidth: '42px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  flexShrink: 0,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '11.5px',
-                    fontWeight: isSelected || isToday ? '700' : '500',
-                    color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#8e8e93',
-                  }}
-                >
+              <button key={i} type="button" onClick={() => setSelectedDay(day)} style={{
+                flexShrink: 0,
+                minWidth: '42px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              }}>
+                <span style={{ fontSize: '11.5px', fontWeight: isSelected || isToday ? '700' : '500', color: isSelected ? '#fff' : isToday ? '#e5e5ea' : '#8e8e93' }}>
                   {label}
                 </span>
-                <div
-                  style={{
-                    width: '42px',
-                    height: '52px',
-                    borderRadius: '14px',
-                    background: isSelected ? ACCENT : '#18181b',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#c7c7cc',
-                    }}
-                  >
+                <div style={{
+                  width: '42px', height: '52px', borderRadius: '14px',
+                  background: isSelected ? ACCENT : '#18181b',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                }}>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: isSelected ? '#fff' : isToday ? '#e5e5ea' : '#c7c7cc' }}>
                     {day.getDate()}
                   </span>
-                  <div style={{ display: 'flex', gap: '3px', height: '5px' }}>
+                  <div style={{ display: 'flex', gap: '3px' }}>
                     {dots.map((color, di) => (
-                      <div
-                        key={di}
-                        style={{
-                          width: '5px',
-                          height: '5px',
-                          borderRadius: '50%',
-                          background: isSelected ? 'rgba(255,255,255,0.6)' : color,
-                        }}
-                      />
+                      <div key={di} style={{ width: '5px', height: '5px', borderRadius: '50%', background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
                     ))}
                   </div>
                 </div>
               </button>
             )
           })}
-          <div aria-hidden="true" style={{ minWidth: '24px', flexShrink: 0 }} />
+          <div style={{ minWidth: '24px', flexShrink: 0 }} />
         </div>
 
-        {/* Event cards — fixed-height container prevents layout jump */}
-        {loading ? (
-          <p style={{ padding: '16px 24px', color: '#6e6e73', fontSize: '14px', fontFamily: FONT }}>Loading…</p>
-        ) : (
-          <>
-            <div
-              style={{
-                display: 'flex',
-                gap: '14px',
-                padding: '16px 24px 4px',
-                overflowX: hasEvents ? 'auto' : 'hidden',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                scrollSnapType: 'x mandatory',
-                minHeight: '220px',
-                alignItems: 'flex-start',
-              }}
-            >
-              {hasEvents ? eventsOnDay.map((ev) => {
+        {/* Event cards or empty state — fixed height 220px */}
+        <div style={{
+          display: 'flex', gap: '14px',
+          overflowX: eventsOnDay.length > 0 ? 'auto' : 'hidden',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          marginLeft: '-24px',
+          marginRight: '-24px',
+          paddingLeft: '24px',
+          marginTop: '16px',
+          minHeight: '220px',
+          alignItems: 'flex-start',
+        }}>
+          {eventsOnDay.length > 0 ? (
+            <>
+              {eventsOnDay.map((ev) => {
                 const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/400/320`
-                const timeStr = ev.rawEndTime
-                  ? `${ev.time} – ${formatTime12h(ev.rawEndTime)}`
-                  : ev.time
+                const timeStr = ev.rawEndTime ? `${ev.time} – ${formatTime12h(ev.rawEndTime)}` : ev.time
                 return (
-                  <button
-                    key={ev.id}
-                    type="button"
+                  <button key={ev.id} type="button"
                     onClick={() => navigate(`/events/${ev.id}`, { state: { event: ev } })}
-                    style={{
-                      flex: '0 0 auto',
-                      width: '176px',
-                      background: '#161618',
-                      border: '1px solid #222226',
-                      borderRadius: '22px',
-                      padding: '8px 8px 12px',
-                      scrollSnapAlign: 'start',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
-                  >
+                    style={{ flexShrink: 0, width: '176px', background: '#161618', border: '1px solid #222226', borderRadius: '22px', padding: '8px 8px 12px', cursor: 'pointer', textAlign: 'left' }}>
                     <div style={{ height: '160px', borderRadius: '16px', overflow: 'hidden', background: '#1c1c1f' }}>
-                      <img
-                        src={imgSrc}
-                        alt=""
-                        draggable={false}
-                        loading="lazy"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                      <img src={imgSrc} alt="" draggable={false} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ padding: '9px 6px 0' }}>
-                      <p style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em', lineHeight: 1.25 }}>
-                        {ev.name}
-                      </p>
-                      <p style={{ fontSize: '12.5px', color: '#8e8e93', marginTop: '4px' }}>
-                        {timeStr}
-                      </p>
+                      <p style={{ fontSize: '17px', fontWeight: '700', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1.25, margin: 0 }}>{ev.name}</p>
+                      <p style={{ fontSize: '12.5px', color: '#8e8e93', marginTop: '4px', marginBottom: 0 }}>{timeStr}</p>
                     </div>
                   </button>
                 )
-              }) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '188px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#8e8e93',
-                    fontSize: '14px',
-                  }}
-                >
-                  No events today
-                </div>
-              )}
+              })}
+              <div style={{ minWidth: '24px', flexShrink: 0 }} />
+            </>
+          ) : (
+            <div style={{ width: '100%', height: '188px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '14px', color: '#8e8e93' }}>No events today</span>
             </div>
-
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       {/* ── 4. ANNOUNCEMENTS ── */}
