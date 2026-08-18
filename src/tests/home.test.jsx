@@ -139,16 +139,21 @@ describe('HomePage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/events')
   })
 
-  test('Announcements section shows up to 4 news tiles', async () => {
+  test('Announcements section shows up to 3 news tiles', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Announcements')).toBeInTheDocument())
-    // Tiles are image-only buttons (no title text in the new design)
     await waitFor(() => {
       const section = screen.getByText('Announcements').closest('section')
       const items = section.querySelectorAll('button')
       expect(items.length).toBeGreaterThan(0)
-      expect(items.length).toBeLessThanOrEqual(4)
+      expect(items.length).toBeLessThanOrEqual(3)
     })
+  })
+
+  test('First announcement card shows title text', async () => {
+    renderHome()
+    // Full-width first card renders the title visibly
+    await waitFor(() => expect(screen.getByText('Summer camp — sign up open')).toBeInTheDocument())
   })
 
   test('Tapping "My Events" navigates to /my-events', async () => {

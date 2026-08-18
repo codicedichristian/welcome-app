@@ -27,6 +27,16 @@ const NEWS_DOT = {
   General:      '#8e8e93',
 }
 
+function formatAnnouncementDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  const day = d.getDate()
+  const month = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+  return `${day} ${month}`
+}
+
+const SCRIM = 'linear-gradient(to top, rgba(0,0,0,.88) 8%, rgba(0,0,0,.35) 50%, transparent 80%)'
+
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning!'
@@ -131,7 +141,7 @@ export default function HomePage() {
   const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, selectedDay))
   const visibleEvents = eventsOnDay.length > 0 ? eventsOnDay : upcoming
 
-  const recentNews = news.slice(0, 4)
+  const recentNews = news.slice(0, 3)
 
   return (
     <div
@@ -373,40 +383,69 @@ export default function HomePage() {
         <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em' }}>
           Announcements
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '14px' }}>
-          {recentNews.map((item, idx) => {
-            const isOdd = recentNews.length % 2 !== 0
-            const isLast = idx === recentNews.length - 1
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '14px' }}>
+          {/* Card 1 — full width */}
+          {recentNews[0] && (() => {
+            const item = recentNews[0]
             const dotColor = NEWS_DOT[item.category] ?? NEWS_DOT.General
-            const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/400/280`
+            const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/600/300`
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => navigate(`/news/${item.id}`, { state: { item } })}
-                style={{
-                  gridColumn: isOdd && isLast ? '1 / -1' : undefined,
-                  height: '110px',
-                  borderRadius: '18px',
-                  overflow: 'hidden',
-                  position: 'relative',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  background: '#161618',
-                }}
+                style={{ height: '150px', borderRadius: '20px', overflow: 'hidden', position: 'relative', border: 'none', cursor: 'pointer', padding: 0, background: '#161618', display: 'block', width: '100%' }}
               >
-                <img
-                  src={imgSrc}
-                  alt=""
-                  draggable={false}
-                  loading="lazy"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <div style={{ position: 'absolute', top: '10px', left: '10px', width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
+                <img src={imgSrc} alt="" draggable={false} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: SCRIM, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: '12px', left: '12px', width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
+                <div style={{ position: 'absolute', left: '16px', right: '16px', bottom: '14px', pointerEvents: 'none', textAlign: 'left' }}>
+                  <p style={{ fontSize: '10.5px', fontWeight: '700', letterSpacing: '0.07em', color: '#d1d1d6', marginBottom: '6px' }}>
+                    {formatAnnouncementDate(item.published_at)}
+                  </p>
+                  <p style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.015em', lineHeight: 1.2, color: '#ffffff' }}>
+                    {item.title}
+                  </p>
+                  {item.body && (
+                    <p style={{ fontSize: '12px', lineHeight: 1.35, color: '#c7c7cc', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {item.body}
+                    </p>
+                  )}
+                </div>
               </button>
             )
-          })}
+          })()}
+
+          {/* Cards 2 & 3 — side by side */}
+          {recentNews.length > 1 && (
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {recentNews.slice(1, 3).map((item) => {
+                const dotColor = NEWS_DOT[item.category] ?? NEWS_DOT.General
+                const imgSrc = item.image_url ?? `https://picsum.photos/seed/news-${item.id}/400/280`
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(`/news/${item.id}`, { state: { item } })}
+                    style={{ flex: 1, height: '120px', borderRadius: '20px', overflow: 'hidden', position: 'relative', border: 'none', cursor: 'pointer', padding: 0, background: '#161618' }}
+                  >
+                    <img src={imgSrc} alt="" draggable={false} loading="lazy" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: SCRIM, pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', top: '12px', left: '12px', width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
+                    <div style={{ position: 'absolute', left: '12px', right: '12px', bottom: '12px', pointerEvents: 'none', textAlign: 'left' }}>
+                      <p style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.07em', color: '#d1d1d6', marginBottom: '4px' }}>
+                        {formatAnnouncementDate(item.published_at)}
+                      </p>
+                      <p style={{ fontSize: '14.5px', fontWeight: '700', lineHeight: 1.2, color: '#ffffff' }}>
+                        {item.title}
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
     </div>

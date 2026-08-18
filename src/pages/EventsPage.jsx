@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
@@ -67,6 +67,8 @@ export default function EventsPage() {
   const [detailEvent, setDetailEvent] = useState(null)
   const [overlayGoing, setOverlayGoing] = useState(false)
 
+  const defaultDaySet = useRef(false)
+
   const loadEvents = useCallback(async () => {
     const { data } = await getEvents()
     setEvents(data?.length ? data : fallbackEvents)
@@ -74,6 +76,24 @@ export default function EventsPage() {
   }, [])
 
   useEffect(() => { loadEvents() }, [loadEvents])
+
+  // On first load: select the next upcoming event day >= today in the current month
+  useEffect(() => {
+    if (!events.length || defaultDaySet.current) return
+    defaultDaySet.current = true
+    const curYear = currentMonth.getFullYear()
+    const curMonth = currentMonth.getMonth()
+    const isCurrentMonth =
+      curYear === TODAY.getFullYear() && curMonth === TODAY.getMonth()
+    if (!isCurrentMonth) return
+    const todayDay = TODAY.getDate()
+    const futureDays = events
+      .flatMap((ev) => getOccurrencesInMonth(ev, curYear, curMonth))
+      .filter((d) => d >= todayDay)
+    if (futureDays.length > 0) {
+      setSelectedDate(new Date(curYear, curMonth, Math.min(...futureDays)))
+    }
+  }, [events]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (detailEvent) setOverlayGoing(isRsvped(detailEvent.id))
@@ -226,16 +246,38 @@ export default function EventsPage() {
           {cells.map((cell, idx) => {
             if (cell.outside) {
               return (
-                <div key={idx} style={{ height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={idx} style={{ height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: '15px', fontWeight: '500', color: '#3a3a3e' }}>{cell.day}</span>
                 </div>
               )
             }
 
-            const dayEvs = occByDay[cell.day] ?? []
+            const hasEvents = (occByDay[cell.day] ?? []).length > 0
             const isToday = isSameDay(cell.date, TODAY)
             const isSelected = isSameDay(cell.date, selectedDate)
-            const cats = [...new Set(dayEvs.map((e) => e.type))].slice(0, 3)
+
+            let cellBg, cellBorder, numColor, numWeight
+            if (isSelected) {
+              cellBg = 'oklch(0.64 0.18 292)'
+              cellBorder = '1px solid oklch(0.64 0.18 292)'
+              numColor = '#ffffff'
+              numWeight = '700'
+            } else if (hasEvents) {
+              cellBg = '#1e1b2b'
+              cellBorder = '1px solid #312a48'
+              numColor = '#ffffff'
+              numWeight = '700'
+            } else if (isToday) {
+              cellBg = 'transparent'
+              cellBorder = '1px solid #3a3a3e'
+              numColor = '#ffffff'
+              numWeight = '700'
+            } else {
+              cellBg = 'transparent'
+              cellBorder = '1px solid transparent'
+              numColor = '#c7c7cc'
+              numWeight = '500'
+            }
 
             return (
               <button
@@ -243,42 +285,19 @@ export default function EventsPage() {
                 type="button"
                 onClick={() => setSelectedDate(cell.date)}
                 style={{
-                  height: '46px',
+                  height: '44px',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '4px',
                   borderRadius: '14px',
-                  background: isSelected ? 'oklch(0.64 0.18 292)' : 'transparent',
-                  border: isToday && !isSelected ? '1px solid #3a3a3e' : '1px solid transparent',
+                  background: cellBg,
+                  border: cellBorder,
                   cursor: 'pointer',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '15px',
-                    fontWeight: isSelected || isToday ? '700' : '500',
-                    color: isSelected ? '#ffffff' : isToday ? '#ffffff' : '#c7c7cc',
-                  }}
-                >
+                <span style={{ fontSize: '15px', fontWeight: numWeight, color: numColor }}>
                   {cell.day}
                 </span>
-                {cats.length > 0 && (
-                  <div style={{ display: 'flex', gap: '3px', height: '5px', alignItems: 'center' }}>
-                    {cats.map((cat) => (
-                      <div
-                        key={cat}
-                        style={{
-                          width: '5px',
-                          height: '5px',
-                          borderRadius: '50%',
-                          background: isSelected ? 'rgba(255,255,255,0.7)' : CAT_COLOR[cat] ?? '#8e8e93',
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
               </button>
             )
           })}
