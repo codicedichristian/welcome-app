@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin } from 'lucide-react'
-import BackRow from '../components/BackRow.jsx'
+import DetailPage from '../components/DetailPage.jsx'
 
 const TILE_URL = 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
 
@@ -30,118 +30,59 @@ const WHITE_PIN = L.divIcon({
 
 export default function VisionPage() {
   return (
-    <div
-      className="page-transition"
-      style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}
+    <DetailPage
+      image="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80"
+      title="Our Vision"
+      description="We exist to see every person in Madrid and beyond experience the transforming love of Jesus Christ. We believe the local church is the hope of the world — a community of broken people made whole, sent out to serve their city and plant churches across the nations."
+      backLabel="Home"
+      backPath="/"
     >
-      {/* Back row over image */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 'calc(env(safe-area-inset-top) + 12px)',
-          left: '22px',
-          zIndex: 10,
-        }}
-      >
-        <BackRow label="Home" />
-      </div>
+      <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '8px', marginBottom: '16px' }}>
+        Our Churches
+      </p>
 
-      {/* Hero image */}
-      <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-        <img
-          src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80"
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(10,11,10,0.85) 100%)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: '22px',
-            bottom: '20px',
-          }}
+      <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
+        <MapContainer
+          center={[20, 0]}
+          zoom={2}
+          style={{ height: '100%', width: '100%' }}
+          zoomControl={false}
+          attributionControl={false}
+          scrollWheelZoom={false}
         >
-          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em' }}>
-            Our Vision
-          </p>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: '20px 22px 0' }}>
-        <p style={{ fontSize: '15px', color: '#ffffff', lineHeight: 1.7 }}>
-          We exist to see every person in Madrid and beyond experience the transforming love of Jesus
-          Christ. We believe the local church is the hope of the world — a community of broken people
-          made whole, sent out to serve their city and plant churches across the nations.
-        </p>
-
-        {/* Our Churches */}
-        <p
-          style={{
-            fontSize: '18px',
-            fontWeight: '700',
-            color: '#ffffff',
-            marginTop: '32px',
-            marginBottom: '16px',
-          }}
-        >
-          Our Churches
-        </p>
-
-        {/* Map */}
-        <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
-          <MapContainer
-            center={[20, 0]}
-            zoom={2}
-            style={{ height: '100%', width: '100%' }}
-            zoomControl={false}
-            attributionControl={false}
-            scrollWheelZoom={false}
-          >
-            <TileLayer url={TILE_URL} />
-            {LOCATIONS.map((loc) => (
-              <Marker key={loc.city} position={[loc.lat, loc.lng]} icon={WHITE_PIN}>
-                <Popup
-                  closeButton={false}
-                  className="vision-popup"
-                >
-                  <span style={{ fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                    {loc.city}, {loc.country} · Est. {loc.year}
-                  </span>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
-
-        {/* Location list */}
-        <div style={{ marginTop: '16px' }}>
-          {LOCATIONS.map((loc, i) => (
-            <div
-              key={loc.city}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 0',
-                borderBottom: i < LOCATIONS.length - 1 ? '0.5px solid #1e1e1e' : 'none',
-              }}
-            >
-              <MapPin size={16} color="#5b8cff" style={{ flexShrink: 0 }} />
-              <span style={{ flex: 1, fontSize: '13px', color: '#ffffff' }}>
-                {loc.city}, {loc.country}
-              </span>
-              <span style={{ fontSize: '13px', color: '#6b6b68' }}>Est. {loc.year}</span>
-            </div>
+          <TileLayer url={TILE_URL} />
+          {LOCATIONS.map((loc) => (
+            <Marker key={loc.city} position={[loc.lat, loc.lng]} icon={WHITE_PIN}>
+              <Popup closeButton={false} className="vision-popup">
+                <span style={{ fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                  {loc.city}, {loc.country} · Est. {loc.year}
+                </span>
+              </Popup>
+            </Marker>
           ))}
-        </div>
+        </MapContainer>
       </div>
-    </div>
+
+      <div style={{ marginTop: '16px' }}>
+        {LOCATIONS.map((loc, i) => (
+          <div
+            key={loc.city}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 0',
+              borderBottom: i < LOCATIONS.length - 1 ? '0.5px solid #1e1e1e' : 'none',
+            }}
+          >
+            <MapPin size={16} color="#5b8cff" style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: '13px', color: '#ffffff' }}>
+              {loc.city}, {loc.country}
+            </span>
+            <span style={{ fontSize: '13px', color: '#6b6b68' }}>Est. {loc.year}</span>
+          </div>
+        ))}
+      </div>
+    </DetailPage>
   )
 }
