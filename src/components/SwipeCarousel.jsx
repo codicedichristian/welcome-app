@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function SwipeCarousel({ items, renderItem }) {
+export default function SwipeCarousel({ items, renderItem, sidePadding = 22 }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -127,7 +127,7 @@ export default function SwipeCarousel({ items, renderItem }) {
         onMouseDown={handleMouseDown}
         style={{
           overflow: 'hidden',
-          margin: '0 -22px',
+          margin: `0 -${sidePadding}px`,
           cursor: isDragging ? 'grabbing' : 'grab',
           userSelect: 'none',
           WebkitUserSelect: 'none',
@@ -143,7 +143,7 @@ export default function SwipeCarousel({ items, renderItem }) {
           }}
         >
           {items.map((item, i) => (
-            <div key={i} style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: '0 22px' }}>
+            <div key={i} style={{ flex: '0 0 100%', width: '100%', minWidth: '100%', padding: `0 ${sidePadding}px` }}>
               {renderItem(item, didDrag)}
             </div>
           ))}
@@ -158,10 +158,10 @@ export default function SwipeCarousel({ items, renderItem }) {
               type="button"
               onClick={() => { setActiveIndex(i); setDragOffset(0) }}
               style={{
-                height: '6px',
-                width: i === activeDotIndex ? '20px' : '6px',
-                borderRadius: i === activeDotIndex ? '3px' : '50%',
-                background: i === activeDotIndex ? '#ffffff' : '#4a4a47',
+                height: '5px',
+                width: i === activeDotIndex ? '20px' : '5px',
+                borderRadius: '9px',
+                background: i === activeDotIndex ? '#ffffff' : '#3a3a3c',
                 border: 'none',
                 padding: 0,
                 cursor: 'pointer',

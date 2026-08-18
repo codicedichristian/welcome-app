@@ -60,6 +60,8 @@ function renderHome() {
         <Route path="/events/:id" element={<div>Event Detail</div>} />
         <Route path="/midweek" element={<div>Midweek Page</div>} />
         <Route path="/last-sunday" element={<div>Last Sunday Page</div>} />
+        <Route path="/my-events" element={<div>My Events Page</div>} />
+        <Route path="/news/:id" element={<div>News Detail</div>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -112,123 +114,57 @@ describe('HomePage', () => {
   test('Upcoming events section renders with at least one event card', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
-    // Cards are now 290px tall
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 160px"]')
+      // Event cards are 176px wide buttons
+      const card = document.querySelector('button[style*="width: 176px"]')
       expect(card).not.toBeNull()
     })
   })
 
-  test('Dot indicators count matches upcoming events', async () => {
+  test('Explore carousel shows 5 dot indicators', async () => {
     renderHome()
+    await waitFor(() => expect(screen.getByText('Explore the Church')).toBeInTheDocument())
+    // SwipeCarousel dots are buttons with height: 5px
     await waitFor(() => {
-      const card = document.querySelector('[style*="height: 160px"]')
-      expect(card).not.toBeNull()
+      const dots = document.querySelectorAll('button[style*="height: 5px"]')
+      expect(dots.length).toBe(5)
     })
-
-    // Dot buttons are 6px tall
-    const dots = document.querySelectorAll('button[style*="height: 6px"]')
-    expect(dots.length).toBeGreaterThan(0)
   })
 
-  test('Announcements section shows at most 3 news items', async () => {
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Announcements')).toBeInTheDocument())
-
-    // Fallback news first item is 'Summer camp — sign up open'
-    await waitFor(() => expect(screen.getByText('Summer camp — sign up open')).toBeInTheDocument())
-
-    // Each news card is a <button> inside the announcements <section>
-    const section = screen.getByText('Announcements').closest('section')
-    const items = section.querySelectorAll('button')
-    expect(items.length).toBeLessThanOrEqual(3)
-    expect(items.length).toBeGreaterThan(0)
-  })
-
-  test('All four quick access cards render', async () => {
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Quick access')).toBeInTheDocument())
-
-    expect(screen.getByText('Events calendar')).toBeInTheDocument()
-    expect(screen.getByText('Last Sunday')).toBeInTheDocument()
-    expect(screen.getByText('Find Midweek')).toBeInTheDocument()
-    expect(screen.getByText('Donate')).toBeInTheDocument()
-  })
-
-  test('Tapping "Events calendar" navigates to /events', async () => {
+  test('"See all" navigates to /events', async () => {
     const user = userEvent.setup()
     renderHome()
-    await waitFor(() => expect(screen.getByText('Events calendar')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Events calendar').closest('button'))
+    await waitFor(() => expect(screen.getByText('See all')).toBeInTheDocument())
+    await user.click(screen.getByText('See all'))
     expect(mockNavigate).toHaveBeenCalledWith('/events')
   })
 
-  test('Tapping "Find Midweek" navigates to /midweek', async () => {
-    const user = userEvent.setup()
+  test('Announcements section shows up to 4 news tiles', async () => {
     renderHome()
-    await waitFor(() => expect(screen.getByText('Find Midweek')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Find Midweek').closest('button'))
-    expect(mockNavigate).toHaveBeenCalledWith('/midweek')
-  })
-
-  test('Tapping "Last Sunday" navigates to /last-sunday', async () => {
-    const user = userEvent.setup()
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Last Sunday')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Last Sunday').closest('button'))
-    expect(mockNavigate).toHaveBeenCalledWith('/last-sunday', { state: { summary: null } })
-  })
-
-  test('Tapping "Donate" opens donate modal', async () => {
-    const user = userEvent.setup()
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Donate')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Donate').closest('button'))
-    expect(screen.getByText('Support the church')).toBeInTheDocument()
-  })
-
-  test('Donate modal can be closed', async () => {
-    const user = userEvent.setup()
-    renderHome()
-    await waitFor(() => expect(screen.getByText('Donate')).toBeInTheDocument())
-
-    await user.click(screen.getByText('Donate').closest('button'))
-    expect(screen.getByText('Support the church')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: /close/i }))
-    expect(screen.queryByText('Support the church')).not.toBeInTheDocument()
-  })
-
-  test('Swiping left on card advances to next event', async () => {
-    renderHome()
+    await waitFor(() => expect(screen.getByText('Announcements')).toBeInTheDocument())
+    // Tiles are image-only buttons (no title text in the new design)
     await waitFor(() => {
-      const section = screen.getByText('Upcoming events').closest('section')
-      const card = section.querySelector('[style*="height: 160px"]')
-      expect(card).not.toBeNull()
+      const section = screen.getByText('Announcements').closest('section')
+      const items = section.querySelectorAll('button')
+      expect(items.length).toBeGreaterThan(0)
+      expect(items.length).toBeLessThanOrEqual(4)
     })
+  })
 
-    // Fire touch events on the events carousel card specifically
-    const section = screen.getByText('Upcoming events').closest('section')
-    const card = section.querySelector('[style*="height: 160px"]')
-    expect(card).toBeTruthy()
+  test('Tapping "My Events" navigates to /my-events', async () => {
+    const user = userEvent.setup()
+    renderHome()
+    await waitFor(() => expect(screen.getByText('alice')).toBeInTheDocument())
 
-    // Simulate a clear left swipe (diffX = -100, diffY = 5 — horizontal dominant)
-    fireEvent.touchStart(card, { touches: [{ clientX: 200, clientY: 100 }] })
-    fireEvent.touchEnd(card, { changedTouches: [{ clientX: 100, clientY: 105 }] })
+    await user.click(screen.getByText('My Events').closest('button'))
+    expect(mockNavigate).toHaveBeenCalledWith('/my-events')
+  })
 
-    // Active dot should advance — the first dot (index 0) should no longer be the wide one.
-    // Explore carousel always has 5 dots; events carousel dots follow after.
-    await waitFor(() => {
-      const allDots = [...document.querySelectorAll('button[style*="height: 6px"]')]
-      const eventDots = allDots.slice(5) // skip the 5 Explore carousel dots
-      if (eventDots.length > 1) {
-        // The wide dot (width: 20px) moved from position 0 to position 1
-        expect(eventDots[0]).not.toHaveStyle({ width: '20px' })
-      }
-    })
+  test('Weekday strip renders 7 day buttons', async () => {
+    renderHome()
+    await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
+    // 7 day tile buttons (42×42 divs inside buttons)
+    const dayTiles = document.querySelectorAll('button[style*="flex-direction: column"][style*="min-width: 42px"]')
+    expect(dayTiles.length).toBe(7)
   })
 })

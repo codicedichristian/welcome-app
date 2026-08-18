@@ -1,25 +1,34 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
 import { getEvents } from '../lib/api.js'
-import BackRow from '../components/BackRow.jsx'
+import { rsvpEvent } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { getOccurrencesInMonth } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
 import { formatTime12h } from '../lib/format.js'
+import { isRsvped, addRsvp } from '../lib/rsvp.js'
 
-const CARD_BG = 'oklch(0.18 0.006 260)'
+const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 
 const CAT_COLOR = {
-  sunday:  'oklch(0.85 0.005 260)',
-  youth:   'oklch(0.65 0.14 150)',
-  midweek: 'oklch(0.6 0.01 260)',
-  prayer:  'oklch(0.62 0.18 300)',
-  special: 'oklch(0.65 0.14 150)',
+  sunday:  'oklch(0.64 0.18 232)',
+  service: 'oklch(0.64 0.18 232)',
+  youth:   'oklch(0.64 0.18 152)',
+  midweek: 'oklch(0.64 0.18 292)',
+  prayer:  'oklch(0.64 0.18 42)',
+  special: 'oklch(0.64 0.18 42)',
+}
+
+const CHIP_TYPE = {
+  Midweek: 'midweek',
+  Service: 'sunday',
+  Youth:   'youth',
+  Prayer:  'prayer',
 }
 
 const DAY_NAMES = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-
+const CATEGORIES = ['All', 'Midweek', 'Service', 'Youth', 'Prayer']
 const TODAY = new Date()
 
 function isSameDay(a, b) {
@@ -38,6 +47,11 @@ function getEventsOnDate(allEvents, date) {
   return allEvents.filter((ev) => getOccurrencesInMonth(ev, y, m).includes(d))
 }
 
+function dayLabel(date) {
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
+  return `${weekday} ${date.getDate()}`
+}
+
 export default function EventsPage() {
   const navigate = useNavigate()
   const user = getStoredUser()
@@ -49,6 +63,9 @@ export default function EventsPage() {
   const [selectedDate, setSelectedDate] = useState(TODAY)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [detailEvent, setDetailEvent] = useState(null)
+  const [overlayGoing, setOverlayGoing] = useState(false)
 
   const loadEvents = useCallback(async () => {
     const { data } = await getEvents()
@@ -56,20 +73,20 @@ export default function EventsPage() {
     setLoading(false)
   }, [])
 
+  useEffect(() => { loadEvents() }, [loadEvents])
+
   useEffect(() => {
-    loadEvents()
-  }, [loadEvents])
+    if (detailEvent) setOverlayGoing(isRsvped(detailEvent.id))
+  }, [detailEvent])
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
 
-  // Monday-first: Mon=0 … Sun=6
   const firstDow = (new Date(year, month, 1).getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const prevMonthDays = new Date(year, month, 0).getDate()
   const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7
 
-  // Build flat grid cells
   const cells = []
   for (let i = firstDow - 1; i >= 0; i--) {
     const d = prevMonthDays - i
@@ -82,201 +99,143 @@ export default function EventsPage() {
     cells.push({ day: d, outside: true, date: new Date(year, month + 1, d) })
   }
 
-  // Occurrences for the current calendar month (for rings)
-  const occByDay = events.reduce((acc, ev) => {
+  const filteredEvents = activeCategory === 'All'
+    ? events
+    : events.filter((ev) => ev.type === CHIP_TYPE[activeCategory])
+
+  const occByDay = filteredEvents.reduce((acc, ev) => {
     for (const d of getOccurrencesInMonth(ev, year, month)) {
       ;(acc[d] ??= []).push(ev)
     }
     return acc
   }, {})
 
-  const changeMonth = (delta) => {
-    setCurrentMonth(new Date(year, month + delta, 1))
+  const changeMonth = (delta) => setCurrentMonth(new Date(year, month + delta, 1))
+
+  const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long' })
+
+  const selEvents = getEventsOnDate(filteredEvents, selectedDate)
+
+  const handleOverlayRsvp = () => {
+    if (!detailEvent) return
+    if (detailEvent.type === 'midweek') {
+      navigate('/midweek')
+      return
+    }
+    addRsvp(detailEvent.id)
+    setOverlayGoing(true)
+    const u = getStoredUser()
+    if (u.id) rsvpEvent(u.id, detailEvent.id)
   }
-
-  const monthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long' })
-
-  // Events section: selected day only
-  const selEvents = getEventsOnDate(events, selectedDate)
 
   return (
     <div
       style={{
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
+        fontFamily: FONT,
+        background: '#0a0a0a',
+        minHeight: '100dvh',
+        paddingBottom: '110px',
+        position: 'relative',
       }}
     >
-      {/* Back button */}
-      <div style={{ padding: '0 16px 10px' }}>
-        <BackRow label="Home" />
-      </div>
-
-      {/* ── Calendar card ── */}
+      {/* ── 1. NAV ROW ── */}
       <div
         style={{
-          margin: '0 12px',
-          background: CARD_BG,
-          borderRadius: '32px',
-          border: '1px solid oklch(0.26 0.006 260)',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.5)',
-          padding: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'calc(env(safe-area-inset-top) + 22px) 24px 0',
         }}
       >
-        {/* Header row — avatar only */}
-        <div style={{ marginBottom: '16px' }}>
-          <div
-            style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '50%',
-              background: 'oklch(0.28 0.008 260)',
-              border: '1px solid oklch(0.35 0.008 260)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: 'oklch(0.75 0.006 260)',
-            }}
-          >
-            {initials || '?'}
-          </div>
-        </div>
-
-        {/* Month title row */}
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <ArrowLeft size={18} color="#8e8e93" />
+          <span style={{ fontSize: '15px', fontWeight: '600', color: '#8e8e93' }}>Home</span>
+        </button>
         <div
           style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: '#1c1c1f',
+            border: '1px solid #2c2c30',
             display: 'flex',
             alignItems: 'center',
-            marginBottom: '16px',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: '700',
+            color: '#ffffff',
           }}
         >
+          {initials || '?'}
+        </div>
+      </div>
+
+      {/* ── 2. MONTH CARD ── */}
+      <div
+        style={{
+          margin: '18px 16px 0',
+          background: '#111113',
+          border: '1px solid #1e1e22',
+          borderRadius: '26px',
+          padding: '18px 16px 16px',
+        }}
+      >
+        {/* Month header */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <button
             type="button"
             onClick={() => changeMonth(-1)}
             aria-label="Previous month"
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              color: 'oklch(0.55 0.01 260)',
-              flexShrink: 0,
-            }}
+            style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={18} color="#c7c7cc" />
           </button>
-          <h2
-            style={{
-              flex: 1,
-              margin: '0 4px',
-              fontSize: '26px',
-              fontWeight: '700',
-              color: 'oklch(0.95 0.005 260)',
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-            }}
-          >
-            {monthLabel}
-          </h2>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <p style={{ fontSize: '24px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+              {monthName}
+            </p>
+            <p style={{ fontSize: '11.5px', fontWeight: '600', color: '#8e8e93', letterSpacing: '0.08em', marginTop: '2px' }}>
+              {year}
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => changeMonth(1)}
             aria-label="Next month"
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              color: 'oklch(0.55 0.01 260)',
-              flexShrink: 0,
-            }}
+            style={{ width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={18} color="#c7c7cc" />
           </button>
         </div>
 
         {/* Weekday headers */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            marginBottom: '6px',
-          }}
-        >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginTop: '16px' }}>
           {DAY_NAMES.map((name, i) => (
-            <div
-              key={i}
-              style={{
-                textAlign: 'center',
-                fontSize: '11px',
-                fontWeight: '600',
-                color: 'oklch(0.42 0.008 260)',
-                paddingBottom: '4px',
-              }}
-            >
+            <div key={i} style={{ textAlign: 'center', fontSize: '11px', fontWeight: '700', color: '#6e6e73', letterSpacing: '0.06em' }}>
               {name}
             </div>
           ))}
         </div>
 
         {/* Day grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            rowGap: '10px',
-          }}
-        >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginTop: '8px' }}>
           {cells.map((cell, idx) => {
             if (cell.outside) {
               return (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '32px',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: 'oklch(0.35 0.006 260)',
-                    }}
-                  >
-                    {cell.day}
-                  </span>
+                <div key={idx} style={{ height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '500', color: '#3a3a3e' }}>{cell.day}</span>
                 </div>
               )
             }
 
             const dayEvs = occByDay[cell.day] ?? []
             const isToday = isSameDay(cell.date, TODAY)
-            const isSelected = selectedDate ? isSameDay(cell.date, selectedDate) : false
-
-            // Unique categories (max 2)
-            const cats = [...new Set(dayEvs.map((e) => e.type))].slice(0, 2)
-
-            // Build combined box-shadow
-            const shadows = []
-            if (isToday) shadows.push('0 0 0 1.5px oklch(0.97 0.005 260)')
-            if (cats.length === 1) {
-              shadows.push(`0 0 0 2px ${CAT_COLOR[cats[0]] ?? 'oklch(0.55 0.01 260)'}`)
-            } else if (cats.length >= 2) {
-              const c1 = CAT_COLOR[cats[0]] ?? 'oklch(0.55 0.01 260)'
-              const c2 = CAT_COLOR[cats[1]] ?? 'oklch(0.55 0.01 260)'
-              shadows.push(
-                `0 0 0 2px ${c1}`,
-                `0 0 0 4.5px ${CARD_BG}`,
-                `0 0 0 6.5px ${c2}`,
-              )
-            }
+            const isSelected = isSameDay(cell.date, selectedDate)
+            const cats = [...new Set(dayEvs.map((e) => e.type))].slice(0, 3)
 
             return (
               <button
@@ -284,47 +243,49 @@ export default function EventsPage() {
                 type="button"
                 onClick={() => setSelectedDate(cell.date)}
                 style={{
+                  height: '46px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
+                  gap: '4px',
+                  borderRadius: '14px',
+                  background: isSelected ? 'oklch(0.64 0.18 292)' : 'transparent',
+                  border: isToday && !isSelected ? '1px solid #3a3a3e' : '1px solid transparent',
                   cursor: 'pointer',
                 }}
               >
-                <div
+                <span
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: isSelected ? 'oklch(0.3 0.01 260)' : 'transparent',
-                    boxShadow: shadows.length > 0 ? shadows.join(', ') : undefined,
+                    fontSize: '15px',
+                    fontWeight: isSelected || isToday ? '700' : '500',
+                    color: isSelected ? '#ffffff' : isToday ? '#ffffff' : '#c7c7cc',
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: isSelected || isToday ? '700' : '500',
-                      color:
-                        isSelected || isToday
-                          ? 'oklch(0.97 0.005 260)'
-                          : 'oklch(0.72 0.006 260)',
-                    }}
-                  >
-                    {cell.day}
-                  </span>
-                </div>
+                  {cell.day}
+                </span>
+                {cats.length > 0 && (
+                  <div style={{ display: 'flex', gap: '3px', height: '5px', alignItems: 'center' }}>
+                    {cats.map((cat) => (
+                      <div
+                        key={cat}
+                        style={{
+                          width: '5px',
+                          height: '5px',
+                          borderRadius: '50%',
+                          background: isSelected ? 'rgba(255,255,255,0.7)' : CAT_COLOR[cat] ?? '#8e8e93',
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </button>
             )
           })}
         </div>
 
-        {/* Today button */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '18px' }}>
+        {/* Today pill */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '14px' }}>
           <button
             type="button"
             onClick={() => {
@@ -333,12 +294,12 @@ export default function EventsPage() {
             }}
             style={{
               background: 'transparent',
-              border: '1px solid oklch(0.34 0.008 260)',
+              border: '1px solid #2c2c30',
               borderRadius: '999px',
-              color: 'oklch(0.85 0.006 260)',
+              color: '#e5e5ea',
               fontSize: '13px',
               fontWeight: '600',
-              padding: '8px 18px',
+              padding: '9px 22px',
               cursor: 'pointer',
             }}
           >
@@ -347,103 +308,259 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* ── Events section ── */}
+      {/* ── 3. CATEGORY CHIPS ── */}
       <div
         style={{
-          marginTop: '12px',
-          background: 'oklch(0.15 0.005 260)',
-          borderTop: '1px solid oklch(0.24 0.006 260)',
-          borderRadius: '24px 24px 0 0',
-          padding: '18px 20px 26px',
-          minHeight: '160px',
+          display: 'flex',
+          gap: '8px',
+          padding: '16px 16px 0',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
-        {loading ? (
-          <p style={{ color: 'oklch(0.5 0.008 260)', fontSize: '14px', textAlign: 'center' }}>
-            Loading…
-          </p>
-        ) : selEvents.length === 0 ? (
-          <p style={{ color: 'oklch(0.5 0.008 260)', fontSize: '14px', textAlign: 'center' }}>
-            No events today
-          </p>
-        ) : (
-          <>
-            {/* Day heading */}
-            <p
+        {CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat
+          const dotColor = cat === 'All' ? '#8e8e93' : CAT_COLOR[CHIP_TYPE[cat]] ?? '#8e8e93'
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat)}
               style={{
-                fontSize: '11px',
-                fontWeight: '700',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: 'oklch(0.5 0.008 260)',
-                margin: '0 0 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                fontSize: '12.5px',
+                fontWeight: '600',
+                padding: '8px 13px',
+                borderRadius: '999px',
+                border: isActive ? '1px solid #3a3a3e' : '1px solid #1e1e22',
+                background: isActive ? '#2c2c30' : '#111113',
+                color: isActive ? '#ffffff' : '#aeaeb2',
+                cursor: 'pointer',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
               }}
             >
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()}{' '}
-              {selectedDate.getDate()}
-            </p>
+              {cat !== 'All' && (
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: isActive ? '#ffffff' : dotColor, flexShrink: 0 }} />
+              )}
+              {cat}
+            </button>
+          )
+        })}
+      </div>
 
-            {selEvents.map((ev, ei) => {
+      {/* ── 4. DAY HEADING + EVENT ROWS ── */}
+      <div style={{ padding: '22px 24px 0' }}>
+        <p style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.1em', color: '#8e8e93' }}>
+          {dayLabel(selectedDate)}
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '14px' }}>
+          {loading ? (
+            <p style={{ color: '#6e6e73', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>Loading…</p>
+          ) : selEvents.length === 0 ? (
+            <div
+              style={{
+                border: '1px dashed #26262b',
+                borderRadius: '18px',
+                padding: '26px',
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ fontSize: '13px', color: '#6e6e73' }}>Nothing scheduled this day</p>
+            </div>
+          ) : (
+            selEvents.map((ev, ei) => {
+              const catColor = CAT_COLOR[ev.type] ?? '#8e8e93'
+              const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/200/200`
               const startTime = formatTime12h(ev.start_time)
               const endTime = formatTime12h(ev.end_time)
-              const catColor = CAT_COLOR[ev.type] ?? 'oklch(0.55 0.01 260)'
+              const timeStr = endTime ? `${startTime} · ${endTime}` : startTime
 
               return (
                 <button
                   key={`${ev.id}-${ei}`}
                   type="button"
-                  onClick={() => navigate(`/events/${ev.id}`, { state: { event: ev } })}
+                  onClick={() => setDetailEvent(ev)}
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: '52px 10px 1fr auto',
-                    columnGap: '10px',
-                    alignItems: 'start',
-                    marginTop: ei > 0 ? '12px' : 0,
-                    width: '100%',
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: '#111113',
+                    border: '1px solid #1e1e22',
+                    borderRadius: '18px',
+                    padding: '10px',
                     cursor: 'pointer',
                     textAlign: 'left',
+                    width: '100%',
                   }}
                 >
-                  {/* Time */}
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.4 }}>
-                      {startTime || '—'}
-                    </span>
-                    {endTime && (
-                      <span style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.4 }}>
-                        {endTime}
-                      </span>
-                    )}
+                  {/* Thumbnail */}
+                  <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0 }}>
+                    <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
 
-                  {/* Dot */}
-                  <div style={{ paddingTop: '4px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: catColor }} />
-                  </div>
-
-                  {/* Title + description */}
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: 'oklch(0.94 0.005 260)', margin: '0 0 2px' }}>
-                      {ev.title}
-                    </p>
-                    {ev.description && (
-                      <p style={{ fontSize: '12px', color: 'oklch(0.55 0.008 260)', lineHeight: 1.5, margin: 0 }}>
-                        {ev.description}
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: catColor, flexShrink: 0 }} />
+                      <p style={{ fontSize: '15.5px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ev.title}
                       </p>
-                    )}
+                    </div>
+                    <p style={{ fontSize: '12.5px', color: '#8e8e93', marginTop: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {timeStr}{ev.location ? ` · ${ev.location}` : ''}
+                    </p>
                   </div>
 
-                  {/* Chevron */}
-                  <ChevronRight size={15} style={{ color: 'oklch(0.38 0.008 260)', marginTop: '2px', flexShrink: 0 }} />
+                  <ChevronRight size={18} color="#48484a" style={{ flexShrink: 0 }} />
                 </button>
               )
-            })}
-          </>
-        )}
+            })
+          )}
+        </div>
       </div>
+
+      {/* ── 5. EVENT DETAIL OVERLAY ── */}
+      {detailEvent && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0a0a0a',
+            zIndex: 20,
+            overflowY: 'auto',
+            fontFamily: FONT,
+          }}
+        >
+          {/* Hero */}
+          <div style={{ position: 'relative', height: '300px', flexShrink: 0 }}>
+            <img
+              src={detailEvent.image_url ?? `https://picsum.photos/seed/${detailEvent.id}/800/600`}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to top, #0a0a0a 2%, rgba(10,10,10,0.1) 60%)',
+              }}
+            />
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={() => setDetailEvent(null)}
+              style={{
+                position: 'absolute',
+                top: 'calc(env(safe-area-inset-top) + 16px)',
+                left: '20px',
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                background: 'rgba(10,10,10,0.6)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ArrowLeft size={18} color="#ffffff" />
+            </button>
+            {/* Overlay text */}
+            <div style={{ position: 'absolute', left: '24px', right: '24px', bottom: '16px' }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  background: 'rgba(255,255,255,0.1)',
+                  color: CAT_COLOR[detailEvent.type] ?? '#8e8e93',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  letterSpacing: '0.08em',
+                  padding: '5px 10px',
+                  borderRadius: '8px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {detailEvent.type}
+              </span>
+              <p style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', marginTop: '10px', lineHeight: 1.15 }}>
+                {detailEvent.title}
+              </p>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: '6px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {(detailEvent.start_time || detailEvent.end_time) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Clock size={17} color="#8e8e93" />
+                <span style={{ fontSize: '14px', color: '#c7c7cc' }}>
+                  {formatTime12h(detailEvent.start_time)}
+                  {detailEvent.end_time ? ` – ${formatTime12h(detailEvent.end_time)}` : ''}
+                </span>
+              </div>
+            )}
+            {detailEvent.location && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <MapPin size={17} color="#8e8e93" />
+                <span style={{ fontSize: '14px', color: '#c7c7cc' }}>{detailEvent.location}</span>
+              </div>
+            )}
+            <div style={{ height: '1px', background: '#1e1e22' }} />
+            {detailEvent.description && (
+              <p style={{ fontSize: '14.5px', lineHeight: 1.55, color: '#aeaeb2' }}>
+                {detailEvent.description}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '4px', paddingBottom: '40px' }}>
+              <button
+                type="button"
+                onClick={handleOverlayRsvp}
+                disabled={overlayGoing}
+                style={{
+                  flex: 1,
+                  background: overlayGoing ? '#2c2c30' : CAT_COLOR[detailEvent.type] ?? '#6d3ee0',
+                  color: '#ffffff',
+                  fontSize: '15px',
+                  fontWeight: '700',
+                  borderRadius: '16px',
+                  padding: '15px',
+                  border: 'none',
+                  cursor: overlayGoing ? 'default' : 'pointer',
+                }}
+              >
+                {detailEvent.type === 'midweek' ? 'Find a group' : overlayGoing ? "You're going!" : "I'm going"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  addRsvp(detailEvent.id)
+                  setOverlayGoing(true)
+                }}
+                style={{
+                  width: '54px',
+                  border: '1px solid #2c2c30',
+                  borderRadius: '16px',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Bookmark size={20} color={overlayGoing ? '#ffffff' : '#e5e5ea'} fill={overlayGoing ? '#ffffff' : 'none'} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

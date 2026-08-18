@@ -12,52 +12,59 @@ export default function FloatingNav() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const tabs = TABS
-
   return (
     <div
       style={{
         position: 'fixed',
-        bottom: 'calc(24px + env(safe-area-inset-bottom))',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        left: 0,
+        right: 0,
+        bottom: 'calc(18px + env(safe-area-inset-bottom))',
         zIndex: 100,
         display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-        background: '#1a1a1a',
-        borderRadius: '50px',
-        padding: '8px 12px',
-        border: '0.5px solid #2e2e2e',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        pointerEvents: 'none',
       }}
     >
-      {tabs.map(({ to, icon: Icon, label, exact }) => {
-        const isActive = exact ? location.pathname === to : location.pathname === to
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          background: 'rgba(38,38,42,0.92)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          borderRadius: '999px',
+          padding: '8px',
+          pointerEvents: 'auto',
+        }}
+      >
+        {TABS.map(({ to, icon: Icon, label, exact }) => {
+          const isActive = exact ? location.pathname === to : location.pathname === to
 
-        return (
-          <button
-            key={to}
-            type="button"
-            aria-label={label}
-            onClick={() => navigate(to)}
-            style={{
-              width: '48px',
-              height: '44px',
-              borderRadius: '50px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: isActive ? '#2e2e2e' : 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background 150ms ease',
-            }}
-          >
-            <Icon size={24} color={isActive ? '#ffffff' : '#555555'} strokeWidth={isActive ? 2 : 1.75} />
-          </button>
-        )
-      })}
+          return (
+            <button
+              key={to}
+              type="button"
+              aria-label={label}
+              onClick={() => navigate(to)}
+              style={{
+                width: '52px',
+                height: '44px',
+                borderRadius: '999px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: isActive ? '#3a3a3e' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 150ms ease',
+              }}
+            >
+              <Icon size={22} color={isActive ? '#ffffff' : '#8e8e93'} strokeWidth={2} />
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -93,7 +93,7 @@ describe('FloatingNav — all users (4 tabs)', () => {
 
   test('My Events tab is visually active when at /my-events', () => {
     renderFloatingNav('/my-events', VISITOR_USER)
-    expect(screen.getByRole('button', { name: /my events/i })).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /my events/i })).toHaveStyle({ background: '#3a3a3e' })
   })
 
   test('Tapping My Events tab navigates to /my-events', async () => {
@@ -115,17 +115,17 @@ describe('FloatingNav — all users (4 tabs)', () => {
 describe('FloatingNav — shared tab behaviour', () => {
   test('Home tab is visually active when at /', () => {
     renderFloatingNav('/')
-    expect(screen.getByRole('button', { name: /home/i })).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /home/i })).toHaveStyle({ background: '#3a3a3e' })
   })
 
   test('Events tab is visually active when at /events', () => {
     renderFloatingNav('/events')
-    expect(screen.getByRole('button', { name: /^events$/i })).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /^events$/i })).toHaveStyle({ background: '#3a3a3e' })
   })
 
   test('News tab is visually active when at /news', () => {
     renderFloatingNav('/news')
-    expect(screen.getByRole('button', { name: /news/i })).toHaveStyle({ background: '#2e2e2e' })
+    expect(screen.getByRole('button', { name: /news/i })).toHaveStyle({ background: '#3a3a3e' })
   })
 
   test('Tapping Home tab navigates to /', async () => {
