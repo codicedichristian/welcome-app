@@ -13,15 +13,6 @@ import { formatTime12h } from '../lib/format.js'
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 const ACCENT = '#6d3ee0'
 
-const CAT_COLOR = {
-  sunday:  'oklch(0.64 0.18 232)',
-  service: 'oklch(0.64 0.18 232)',
-  youth:   'oklch(0.64 0.18 152)',
-  midweek: 'oklch(0.64 0.18 292)',
-  prayer:  'oklch(0.64 0.18 42)',
-  special: 'oklch(0.64 0.18 42)',
-}
-
 const EXPLORE_CARDS = [
   { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', category: 'Community', title: 'Midweeks',         to: '/midweek'  },
   { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80', category: 'Serve',      title: 'Teams',            to: '/teams'    },
@@ -140,25 +131,14 @@ export default function HomePage() {
   useEffect(() => {
     if (defaultDaySet.current || !events.length) return
     defaultDaySet.current = true
-    const firstEventDay = weekDays.find((day) => {
-      if (day < today && !isSameDay(day, today)) return false
-      const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate())
-      return events.some((ev) => {
-        const occ = getNextOccurrence(ev, dayStart)
-        return occ && isSameDay(occ, day)
-      })
-    })
-    if (firstEventDay) setSelectedDay(firstEventDay)
+    const weekEnd = new Date(weekDays[weekDays.length - 1])
+    weekEnd.setHours(23, 59, 59, 999)
+    const nextInWeek = events
+      .map((ev) => getNextOccurrence(ev))
+      .filter((d) => d && d >= today && d <= weekEnd)
+      .sort((a, b) => a - b)[0]
+    if (nextInWeek) setSelectedDay(nextInWeek)
   }, [events])
-
-  // Events per weekday — used for dots and filtering
-  const weekDayEvents = weekDays.map((day) => {
-    const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate())
-    return events.filter((ev) => {
-      const occ = getNextOccurrence(ev, dayStart)
-      return occ && isSameDay(occ, day)
-    })
-  })
 
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
@@ -172,6 +152,7 @@ export default function HomePage() {
     }))
 
   const eventsOnDay = upcoming.filter((ev) => isSameDay(ev.dateObj, selectedDay))
+  const visibleEvents = eventsOnDay.length > 0 ? eventsOnDay : upcoming
 
   const recentNews = news.slice(0, 3)
 
@@ -267,17 +248,12 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Weekday strip — negative margins break out of any parent inset */}
+        {/* Weekday strip */}
         <div
           style={{
             display: 'flex',
             gap: '8px',
-            marginLeft: '-24px',
-            marginRight: '-24px',
-            paddingLeft: '24px',
-            paddingRight: '24px',
-            paddingTop: '14px',
-            paddingBottom: '2px',
+            padding: '14px 0 2px',
             overflowX: 'auto',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -287,8 +263,6 @@ export default function HomePage() {
             const isToday = isSameDay(day, today)
             const isSelected = isSameDay(day, selectedDay)
             const label = isToday ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short' })
-            const dayEvs = weekDayEvents[i] ?? []
-            const cats = [...new Set(dayEvs.map((e) => e.type))].slice(0, 3)
             return (
               <button
                 key={i}
@@ -300,6 +274,8 @@ export default function HomePage() {
                   alignItems: 'center',
                   gap: '6px',
                   minWidth: '42px',
+                  ...(i === 0 && { marginLeft: '24px' }),
+                  ...(i === weekDays.length - 1 && { marginRight: '24px' }),
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
@@ -319,40 +295,18 @@ export default function HomePage() {
                 <div
                   style={{
                     width: '42px',
-                    height: '52px',
+                    height: '42px',
                     borderRadius: '14px',
                     background: isSelected ? ACCENT : '#18181b',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px',
+                    fontSize: '15px',
+                    fontWeight: '700',
+                    color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#c7c7cc',
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      color: isSelected ? '#ffffff' : isToday ? '#e5e5ea' : '#c7c7cc',
-                    }}
-                  >
-                    {day.getDate()}
-                  </span>
-                  {cats.length > 0 && (
-                    <div style={{ display: 'flex', gap: '3px', height: '5px', alignItems: 'center' }}>
-                      {cats.map((cat) => (
-                        <div
-                          key={cat}
-                          style={{
-                            width: '5px',
-                            height: '5px',
-                            borderRadius: '50%',
-                            background: isSelected ? 'rgba(255,255,255,0.7)' : CAT_COLOR[cat] ?? '#8e8e93',
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {day.getDate()}
                 </div>
               </button>
             )
@@ -362,8 +316,6 @@ export default function HomePage() {
         {/* Event cards — horizontal scroll */}
         {loading ? (
           <p style={{ padding: '16px 24px', color: '#6e6e73', fontSize: '14px', fontFamily: FONT }}>Loading…</p>
-        ) : eventsOnDay.length === 0 ? (
-          <p style={{ padding: '20px 24px', color: '#8e8e93', fontSize: '14px', textAlign: 'center' }}>No events today</p>
         ) : (
           <>
             <div
@@ -377,7 +329,7 @@ export default function HomePage() {
                 scrollSnapType: 'x mandatory',
               }}
             >
-              {eventsOnDay.map((ev) => {
+              {visibleEvents.map((ev) => {
                 const imgSrc = ev.image_url ?? `https://picsum.photos/seed/${ev.id}/400/320`
                 const timeStr = ev.rawEndTime
                   ? `${ev.time} – ${formatTime12h(ev.rawEndTime)}`
@@ -422,9 +374,9 @@ export default function HomePage() {
             </div>
 
             {/* Pager dots */}
-            {eventsOnDay.length > 1 && (
+            {visibleEvents.length > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', marginTop: '12px' }}>
-                {eventsOnDay.map((_, i) => (
+                {visibleEvents.map((_, i) => (
                   <div
                     key={i}
                     style={{
