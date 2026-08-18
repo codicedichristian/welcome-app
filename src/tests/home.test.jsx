@@ -218,12 +218,14 @@ describe('HomePage', () => {
     fireEvent.touchStart(card, { touches: [{ clientX: 200, clientY: 100 }] })
     fireEvent.touchEnd(card, { changedTouches: [{ clientX: 100, clientY: 105 }] })
 
-    // Active dot should advance — the first dot (index 0) should no longer be the wide one
+    // Active dot should advance — the first dot (index 0) should no longer be the wide one.
+    // Explore carousel always has 5 dots; events carousel dots follow after.
     await waitFor(() => {
-      const dots = [...document.querySelectorAll('button[style*="height: 6px"]')]
-      if (dots.length > 1) {
+      const allDots = [...document.querySelectorAll('button[style*="height: 6px"]')]
+      const eventDots = allDots.slice(5) // skip the 5 Explore carousel dots
+      if (eventDots.length > 1) {
         // The wide dot (width: 20px) moved from position 0 to position 1
-        expect(dots[0]).not.toHaveStyle({ width: '20px' })
+        expect(eventDots[0]).not.toHaveStyle({ width: '20px' })
       }
     })
   })

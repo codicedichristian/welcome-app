@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
+import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import { getEvents, getNews, getLatestSundaySummary } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -235,6 +237,57 @@ function NewsCard({ item, gridColumn, onClick }) {
         <p style={{ fontSize: '12px', color: '#c9c9c6' }}>{formatShortDate(item.published_at)}</p>
       </div>
     </button>
+  )
+}
+
+// ─── Explore cards ───────────────────────────────────────────────────────────
+
+const EXPLORE_CARDS = [
+  { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', pillBg: 'rgba(167,139,250,0.15)', pillColor: '#a78bfa', category: 'Community', title: 'Midweeks',         to: '/midweek'  },
+  { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80', pillBg: 'rgba(91,140,255,0.15)',  pillColor: '#5b8cff', category: 'Serve',      title: 'Teams',            to: '/teams'    },
+  { image: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80', pillBg: 'rgba(255,255,255,0.15)', pillColor: '#ffffff', category: 'Sermons',    title: 'Sundays',          to: '/seasons'  },
+  { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', pillBg: 'rgba(76,175,125,0.15)', pillColor: '#4caf7d', category: 'Leadership', title: 'Meet the Pastors', to: '/pastors'  },
+  { image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80', pillBg: 'rgba(249,115,22,0.15)', pillColor: '#f97316', category: 'Vision',     title: 'Our Vision',       to: '/vision'   },
+]
+
+function ExploreCard({ card, didDrag, navigate }) {
+  return (
+    <div
+      onClick={() => { if (!didDrag.current) navigate(card.to) }}
+      style={{
+        width: '100%',
+        height: '160px',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        position: 'relative',
+        background: '#1a1a1a',
+        cursor: 'pointer',
+      }}
+    >
+      <img
+        src={card.image}
+        alt=""
+        draggable={false}
+        loading="lazy"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.92) 100%)' }} />
+
+      {/* Top-right arrow circle */}
+      <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ArrowRight size={14} color="#ffffff" />
+      </div>
+
+      {/* Bottom-left content */}
+      <div style={{ position: 'absolute', left: '16px', bottom: '16px' }}>
+        <span style={{ display: 'inline-block', background: card.pillBg, color: card.pillColor, fontSize: '11px', fontWeight: '700', letterSpacing: '0.04em', padding: '3px 10px', borderRadius: '20px' }}>
+          {card.category}
+        </span>
+        <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '6px', lineHeight: 1.2 }}>
+          {card.title}
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -503,6 +556,17 @@ export default function HomePage() {
             </button>
           </div>
         </div>
+
+        {/* ── EXPLORE THE CHURCH ── */}
+        <section style={{ marginBottom: '34px' }}>
+          <p style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', marginBottom: '16px', letterSpacing: '-0.01em' }}>
+            Explore the Church
+          </p>
+          <SwipeCarousel
+            items={EXPLORE_CARDS}
+            renderItem={(card, didDrag) => <ExploreCard card={card} didDrag={didDrag} navigate={navigate} />}
+          />
+        </section>
 
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>

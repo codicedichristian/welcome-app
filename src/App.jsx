@@ -21,6 +21,9 @@ import LastSundayPage from './pages/LastSundayPage.jsx'
 import MidweekDetailPage from './pages/MidweekDetailPage.jsx'
 import PastorsPage from './pages/PastorsPage.jsx'
 import VisionPage from './pages/VisionPage.jsx'
+import TeamsPage from './pages/TeamsPage.jsx'
+import SeasonsPage from './pages/SeasonsPage.jsx'
+import SeasonDetailPage from './pages/SeasonDetailPage.jsx'
 import { getStoredUser } from './lib/user.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
@@ -99,6 +102,9 @@ export default function App() {
             <Route path="midweek/:groupId" element={<MidweekDetailPage />} />
             <Route path="pastors" element={<PastorsPage />} />
             <Route path="vision" element={<VisionPage />} />
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="seasons" element={<SeasonsPage />} />
+            <Route path="seasons/:id" element={<SeasonDetailPage />} />
           </Route>
         </Route>
       </Routes>

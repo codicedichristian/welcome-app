@@ -992,6 +992,37 @@ export async function getMidweekGroupDetail(groupId) {
   }
 }
 
+export async function getSeasons() {
+  try {
+    const { data, error } = await supabase
+      .from('seasons')
+      .select('*, sunday_summaries!season_id(id)')
+      .order('start_date', { ascending: false })
+    if (error) throw error
+    const mapped = (data ?? []).map((s) => ({
+      ...s,
+      sunday_count: Array.isArray(s.sunday_summaries) ? s.sunday_summaries.length : 0,
+    }))
+    return { data: mapped, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+export async function getSeasonSundays(seasonId) {
+  try {
+    const { data, error } = await supabase
+      .from('sunday_summaries')
+      .select('*, schedule:sunday_schedules!schedule_id(id, date)')
+      .eq('season_id', seasonId)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
 export async function getMemberMessages(userId, userRole) {
   if (userRole === 'visitor') return { data: [], error: null }
   try {
