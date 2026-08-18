@@ -165,11 +165,12 @@ describe('HomePage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/my-events')
   })
 
-  test('Weekday strip renders 7 day buttons', async () => {
+  test('Upcoming events section renders event cards', async () => {
     renderHome()
     await waitFor(() => expect(screen.getByText('Upcoming events')).toBeInTheDocument())
-    // 7 day tile buttons (42×42 divs inside buttons)
-    const dayTiles = document.querySelectorAll('button[style*="flex-direction: column"][style*="min-width: 42px"]')
-    expect(dayTiles.length).toBe(7)
+    await waitFor(() => {
+      const card = document.querySelector('button[style*="width: 176px"]')
+      expect(card).not.toBeNull()
+    })
   })
 })
