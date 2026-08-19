@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft, ExternalLink } from 'lucide-react'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { isRsvped, addRsvp, removeRsvp } from '../lib/rsvp.js'
@@ -13,6 +13,46 @@ function MetaRow({ icon: Icon, text }) {
       <Icon size={17} className="text-accent-blue" />
       <span>{text}</span>
     </div>
+  )
+}
+
+function LocationRow({ location }) {
+  if (!location) return null
+
+  const isUrl = location.startsWith('http') || location.startsWith('www')
+  const isOnline = location.toLowerCase().includes('zoom') ||
+                   location.toLowerCase().includes('online') ||
+                   location.toLowerCase().includes('remote')
+
+  const href = isUrl
+    ? location
+    : `https://maps.google.com/?q=${encodeURIComponent(location)}`
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.open(href, '_blank', 'noopener')}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        textAlign: 'left',
+        width: '100%',
+      }}
+    >
+      {isUrl || isOnline
+        ? <ExternalLink size={17} style={{ color: '#5b8cff', flexShrink: 0 }} />
+        : <MapPin size={17} style={{ color: '#5b8cff', flexShrink: 0 }} />
+      }
+      <span style={{ fontSize: '14px', color: '#5b8cff', flex: 1 }}>{location}</span>
+      {!isUrl && !isOnline && (
+        <ExternalLink size={12} style={{ color: '#5b8cff', opacity: 0.5, flexShrink: 0 }} />
+      )}
+    </button>
   )
 }
 
@@ -187,7 +227,7 @@ export default function EventDetailPage() {
           <div className="flex flex-col gap-3">
             <MetaRow icon={Calendar} text={event.date} />
             <MetaRow icon={Clock} text={event.time} />
-            <MetaRow icon={MapPin} text={event.location} />
+            <LocationRow location={event.location} />
             <MetaRow icon={Users} text={event.audience} />
           </div>
 
