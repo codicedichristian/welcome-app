@@ -151,22 +151,24 @@ export default function MidweekPage() {
           <ErrorState />
         ) : (
           <>
-            <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
-              <MapContainer center={MADRID_CENTER} zoom={12} className="h-full w-full">
-                <TileLayer
-                  url={TILE_URL}
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                />
-                {groups.map((group) => (
-                  <Marker
-                    key={group.id}
-                    position={[Number(group.lat), Number(group.lng)]}
-                    icon={createPinIcon(String(group.id) === String(selectedId))}
-                    eventHandlers={{ click: () => selectGroup(group.id) }}
+            {groups.filter((g) => g.lat != null && g.lng != null).length > 0 && (
+              <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
+                <MapContainer center={MADRID_CENTER} zoom={12} className="h-full w-full">
+                  <TileLayer
+                    url={TILE_URL}
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                   />
-                ))}
-              </MapContainer>
-            </div>
+                  {groups.filter((g) => g.lat != null && g.lng != null).map((group) => (
+                    <Marker
+                      key={group.id}
+                      position={[Number(group.lat), Number(group.lng)]}
+                      icon={createPinIcon(String(group.id) === String(selectedId))}
+                      eventHandlers={{ click: () => selectGroup(group.id) }}
+                    />
+                  ))}
+                </MapContainer>
+              </div>
+            )}
 
             {!selectedGroup && (
               <p className="mt-3 text-[13px] text-zinc-500">Tap a pin to see the group details</p>

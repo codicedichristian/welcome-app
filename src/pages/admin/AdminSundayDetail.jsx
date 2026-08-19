@@ -6,7 +6,7 @@ import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 
-const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', video_url: '', photos_url: '' }
+const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', video_url: '', photos_url: '', audio_url: '' }
 
 function toForm(s) {
   if (!s) return EMPTY_FORM
@@ -17,6 +17,7 @@ function toForm(s) {
     description: s.description ?? '',
     video_url:   s.video_url ?? '',
     photos_url:  s.photos_url ?? '',
+    audio_url:   s.audio_url ?? '',
   }
 }
 
@@ -92,6 +93,14 @@ export default function AdminSundayDetail() {
             type="url"
             value={form.video_url}
             onChange={(e) => update({ video_url: e.target.value })}
+            placeholder="https://…"
+          />
+        </Field>
+        <Field label="Audio / Podcast URL (optional)">
+          <Input
+            type="url"
+            value={form.audio_url}
+            onChange={(e) => update({ audio_url: e.target.value })}
             placeholder="https://…"
           />
         </Field>

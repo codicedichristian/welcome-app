@@ -1,20 +1,16 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Calendar, Clock, MapPin, Users, Map, Check, Cross, Zap, Home, HandHeart, Star } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft } from 'lucide-react'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
-import { EVENT_COLOR_CLASSES } from '../lib/eventColors.js'
 import { isRsvped, addRsvp, removeRsvp } from '../lib/rsvp.js'
 import { getStoredUser } from '../lib/user.js'
 import { rsvpEvent, deleteRsvp } from '../lib/api.js'
-import BackRow from '../components/BackRow.jsx'
 
-const ICONS = { Cross, Zap, Home, HandHeart, Star }
-
-function MetaRow({ icon: Icon, accentClass, text }) {
+function MetaRow({ icon: Icon, text }) {
   return (
     <div className="flex items-center gap-3 text-[14px] text-zinc-400">
-      <Icon size={17} className={accentClass} />
+      <Icon size={17} className="text-accent-blue" />
       <span>{text}</span>
     </div>
   )
@@ -109,9 +105,6 @@ export default function EventDetailPage() {
     )
   }
 
-  const colors = EVENT_COLOR_CLASSES[event.color]
-  const Icon = ICONS[event.icon] ?? Cross
-
   const handleRsvp = () => {
     addRsvp(event.id)
     setGoing(true)
@@ -133,63 +126,99 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
-        <BackRow label="Events" />
+      <div className="page-transition min-h-dvh pb-8" style={{ background: '#0a0b0a' }}>
+        {/* Back button overlaid on hero */}
+        <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '16px', zIndex: 10 }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '0.5px solid rgba(255,255,255,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <ChevronLeft size={18} color="#ffffff" />
+          </button>
+        </div>
 
-        <div className="relative mt-4 h-[110px] rounded-[14px] bg-surface">
-          <div className="flex h-full items-center justify-center">
-            <Icon size={38} className={colors.accent} />
-          </div>
-
-          <div className={`absolute bottom-3 left-3 rounded-full px-3 py-1 text-[13px] font-medium text-bg ${colors.badge}`}>
-            {event.typeLabel}
-          </div>
-
-          <div className="absolute right-3 top-3 flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-bg leading-none">
-            <span className="text-[16px] font-bold leading-none text-primary">{event.day}</span>
-            <span className="mt-0.5 text-[11px] uppercase leading-none text-zinc-500">{event.month}</span>
+        {/* Hero image */}
+        <div style={{ position: 'relative', width: '100%', height: '260px', background: '#1a1a1a' }}>
+          <img
+            src={event.image_url ?? `https://picsum.photos/seed/${event.id}/800/520`}
+            alt=""
+            draggable={false}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #0a0b0a 100%)' }} />
+          <div style={{ position: 'absolute', left: '22px', bottom: '20px' }}>
+            <span style={{
+              display: 'inline-block',
+              background: 'rgba(0,0,0,0.45)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: '700',
+              letterSpacing: '0.07em',
+              textTransform: 'uppercase',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              marginBottom: '8px',
+            }}>
+              {event.typeLabel}
+            </span>
+            <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>
+              {event.name}
+            </p>
           </div>
         </div>
 
-        <div className="mt-4">
-          <h1 className="text-[24px] font-bold text-primary">{event.name}</h1>
-          <p className="mt-1 text-[13px] text-zinc-500">{event.subtitle}</p>
-        </div>
+        {/* Content */}
+        <div style={{ padding: '20px 22px 0' }}>
+          <div className="flex flex-col gap-3">
+            <MetaRow icon={Calendar} text={event.date} />
+            <MetaRow icon={Clock} text={event.time} />
+            <MetaRow icon={MapPin} text={event.location} />
+            <MetaRow icon={Users} text={event.audience} />
+          </div>
 
-        <div className="mt-4 flex flex-col gap-3">
-          <MetaRow icon={Calendar} accentClass={colors.accent} text={event.date} />
-          <MetaRow icon={Clock} accentClass={colors.accent} text={event.time} />
-          <MetaRow icon={MapPin} accentClass={colors.accent} text={event.location} />
-          <MetaRow icon={Users} accentClass={colors.accent} text={event.audience} />
-        </div>
+          <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
 
-        <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
-
-        <div className="mt-6">
-          {event.type === 'midweek' ? (
-            <button
-              type="button"
-              onClick={() => navigate('/midweek')}
-              className="flex w-full items-center gap-3 rounded-xl bg-accent-blue p-4 text-left text-bg"
-            >
-              <Map size={22} />
-              <div>
-                <p className="text-[16px] font-medium">Find your group</p>
-                <p className="text-[13px]">See all locations on the map</p>
-              </div>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-                going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
-              }`}
-            >
-              {going && <Check size={18} />}
-              <span>{going ? "You're in!" : "I'll be there"}</span>
-            </button>
-          )}
+          <div className="mt-6">
+            {event.type === 'midweek' ? (
+              <button
+                type="button"
+                onClick={() => navigate('/midweek')}
+                className="flex w-full items-center gap-3 rounded-xl bg-accent-blue p-4 text-left text-bg"
+              >
+                <Map size={22} />
+                <div>
+                  <p className="text-[16px] font-medium">Find your group</p>
+                  <p className="text-[13px]">See all locations on the map</p>
+                </div>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                  going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+                }`}
+              >
+                {going && <Check size={18} />}
+                <span>{going ? "You're in!" : "I'll be there"}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

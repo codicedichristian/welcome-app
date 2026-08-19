@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { Check, Camera } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 import { getMidweekGroupDetail, rsvpMidweek } from '../lib/api.js'
 import { getStoredUser } from '../lib/user.js'
@@ -143,6 +143,37 @@ export default function MidweekDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Description */}
+          {group.description && (
+            <p style={{ fontSize: '15px', color: '#c9c9c6', lineHeight: 1.7, marginTop: '20px' }}>
+              {group.description}
+            </p>
+          )}
+
+          {/* Photos link */}
+          {group.photos_url && (
+            <button
+              type="button"
+              onClick={() => window.open(group.photos_url, '_blank', 'noopener')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                width: '100%',
+                background: '#1a1a1a',
+                border: '0.5px solid #2e2e2e',
+                borderRadius: '16px',
+                padding: '14px 16px',
+                marginTop: '16px',
+                cursor: 'pointer',
+                textAlign: 'left',
+              }}
+            >
+              <Camera size={18} color="#5b8cff" strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '15px', fontWeight: '500', color: '#ffffff' }}>View photos</span>
+            </button>
+          )}
 
           {/* Leaders section */}
           {leaders.length > 0 && (
