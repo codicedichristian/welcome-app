@@ -59,7 +59,7 @@ export default function MidweekPage() {
     async function load() {
       const [{ data, error: apiError }, { data: cardData }] = await Promise.all([
         getMidweekGroups(),
-        getExploreCard('/midweek'),
+        getExploreCard('/midweeks'),
       ])
       if (cancelled) return
 
@@ -131,7 +131,7 @@ export default function MidweekPage() {
     <div className="page-transition" style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
       {/* Back row over hero */}
       <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
-        <BackRow label="Home" />
+        <BackRow label="Midweeks" fallback="/midweeks" />
       </div>
 
       {/* Hero */}
