@@ -23,6 +23,7 @@ const EMPTY_NEWS = {
   category: 'Announcement',
   color: COLOR_SWATCHES[0].hex,
   published_at: new Date().toISOString().slice(0, 10),
+  link_url: '',
 }
 
 function toFormState(item) {
@@ -32,6 +33,7 @@ function toFormState(item) {
     category: item.category ?? 'Announcement',
     color: item.color ?? COLOR_SWATCHES[0].hex,
     published_at: item.published_at ?? new Date().toISOString().slice(0, 10),
+    link_url: item.link_url ?? '',
   }
 }
 
@@ -54,6 +56,15 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
 
       <Field label="Body">
         <Textarea rows={6} value={form.body} onChange={(e) => update({ body: e.target.value })} required />
+      </Field>
+
+      <Field label="External link (optional)">
+        <Input
+          type="url"
+          placeholder="https://..."
+          value={form.link_url}
+          onChange={(e) => update({ link_url: e.target.value })}
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-3">

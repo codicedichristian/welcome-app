@@ -9,7 +9,12 @@ import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 
 const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special']
-const ICON_OPTIONS = ['cross', 'bolt', 'home', 'hands', 'star']
+const AUDIENCE_OPTIONS = ['Open to everyone', 'Members only', 'Youth', 'Women', 'Men', 'Leaders']
+const LOCATION_TYPES = [
+  { value: 'in_person', label: 'In person' },
+  { value: 'online',   label: 'Online' },
+  { value: 'other',    label: 'Other' },
+]
 const COLOR_SWATCHES = [
   { name: 'White', hex: '#ffffff' },
   { name: 'Green', hex: '#4caf7d' },
@@ -25,14 +30,20 @@ const RECURRING_OPTIONS = [
   { value: 'biweekly_sunday', label: 'Biweekly (Sunday)' },
 ]
 
+function detectLocationType(loc) {
+  if (!loc) return 'in_person'
+  if (loc.startsWith('http')) return 'online'
+  return 'in_person'
+}
+
 const EMPTY_EVENT = {
   title: '',
   type: 'sunday',
   color: COLOR_SWATCHES[0].hex,
-  icon: ICON_OPTIONS[0],
   description: '',
   location: '',
-  audience: '',
+  location_type: 'in_person',
+  audience: 'Open to everyone',
   recurring: 'none',
   event_date: '',
   start_time: '',
@@ -41,14 +52,15 @@ const EMPTY_EVENT = {
 }
 
 function toFormState(event) {
+  const loc = event.location ?? ''
   return {
     title: event.title ?? '',
     type: event.type ?? 'sunday',
     color: event.color ?? COLOR_SWATCHES[0].hex,
-    icon: event.icon ?? ICON_OPTIONS[0],
     description: event.description ?? '',
-    location: event.location ?? '',
-    audience: event.audience ?? '',
+    location: loc,
+    location_type: detectLocationType(loc),
+    audience: event.audience || 'Open to everyone',
     recurring: event.recurring ?? 'none',
     event_date: event.event_date ?? '',
     start_time: event.start_time?.slice(0, 5) ?? '',
@@ -62,7 +74,7 @@ function toPayload(form) {
     title: form.title,
     type: form.type,
     color: form.color,
-    icon: form.icon,
+    icon: 'cross',
     description: form.description,
     location: form.location,
     audience: form.audience,
@@ -91,27 +103,15 @@ function EventForm({ initial, onSave, onCancel, saving }) {
         <Input value={form.title} onChange={(e) => update({ title: e.target.value })} required />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Type">
-          <Select value={form.type} onChange={(e) => update({ type: e.target.value })}>
-            {TYPE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {capitalize(option)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Icon">
-          <Select value={form.icon} onChange={(e) => update({ icon: e.target.value })}>
-            {ICON_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {capitalize(option)}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </div>
+      <Field label="Type">
+        <Select value={form.type} onChange={(e) => update({ type: e.target.value })}>
+          {TYPE_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              {capitalize(option)}
+            </option>
+          ))}
+        </Select>
+      </Field>
 
       <Field label="Color">
         <div className="flex gap-2">
@@ -134,14 +134,43 @@ function EventForm({ initial, onSave, onCancel, saving }) {
         <Textarea rows={3} value={form.description} onChange={(e) => update({ description: e.target.value })} />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Location">
-          <Input value={form.location} onChange={(e) => update({ location: e.target.value })} />
-        </Field>
-        <Field label="Audience">
-          <Input value={form.audience} onChange={(e) => update({ audience: e.target.value })} />
-        </Field>
-      </div>
+      <Field label="Location type">
+        <Select
+          value={form.location_type}
+          onChange={(e) => update({ location_type: e.target.value, location: '' })}
+        >
+          {LOCATION_TYPES.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </Select>
+      </Field>
+
+      <Field
+        label={
+          form.location_type === 'online' ? 'Zoom / platform link'
+          : form.location_type === 'other' ? 'Description'
+          : 'Address / place name'
+        }
+      >
+        <Input
+          value={form.location}
+          onChange={(e) => update({ location: e.target.value })}
+          type={form.location_type === 'online' ? 'url' : 'text'}
+          placeholder={
+            form.location_type === 'online' ? 'https://zoom.us/...'
+            : form.location_type === 'other' ? 'e.g. Meeting room 2'
+            : 'e.g. Calle Mayor 10, Madrid'
+          }
+        />
+      </Field>
+
+      <Field label="Audience">
+        <Select value={form.audience} onChange={(e) => update({ audience: e.target.value })}>
+          {AUDIENCE_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </Select>
+      </Field>
 
       <Field label="Recurring">
         <Select value={form.recurring} onChange={(e) => update({ recurring: e.target.value })}>

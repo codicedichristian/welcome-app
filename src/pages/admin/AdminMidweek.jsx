@@ -10,7 +10,7 @@ import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
-import { Field, Input } from '../../admin/components/FormField.jsx'
+import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 
 const EMPTY_GROUP = {
   host: '',
@@ -20,6 +20,8 @@ const EMPTY_GROUP = {
   phone: '',
   lat: '',
   lng: '',
+  description: '',
+  photos_url: '',
   active: true,
 }
 
@@ -42,6 +44,8 @@ function toFormState(group) {
     phone: group.phone ?? '',
     lat: group.lat ?? '',
     lng: group.lng ?? '',
+    description: group.description ?? '',
+    photos_url: group.photos_url ?? '',
     active: group.active ?? true,
   }
 }
@@ -55,6 +59,8 @@ function toPayload(form) {
     phone: form.phone,
     lat: form.lat === '' ? null : Number(form.lat),
     lng: form.lng === '' ? null : Number(form.lng),
+    description: form.description || null,
+    photos_url: form.photos_url || null,
     active: form.active,
   }
 }
@@ -119,6 +125,24 @@ function GroupForm({ initial, onSave, onCancel, saving }) {
           <Input type="number" step="any" value={form.lng} onChange={(e) => update({ lng: e.target.value })} />
         </Field>
       </div>
+
+      <Field label="Description">
+        <Textarea
+          rows={3}
+          value={form.description}
+          onChange={(e) => update({ description: e.target.value })}
+          placeholder="Brief description of the group"
+        />
+      </Field>
+
+      <Field label="Photos URL">
+        <Input
+          type="url"
+          placeholder="https://..."
+          value={form.photos_url}
+          onChange={(e) => update({ photos_url: e.target.value })}
+        />
+      </Field>
 
       <label className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5">
         <span className="text-sm text-primary">Active</span>
