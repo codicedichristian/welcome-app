@@ -1,53 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Music, Camera, Volume2, Smartphone, Settings } from 'lucide-react'
 import DetailPage from '../components/DetailPage.jsx'
-import { getExploreCard } from '../lib/api.js'
-
-const TEAMS = [
-  {
-    icon: Music,
-    color: '#a78bfa',
-    name: 'Worship',
-    description:
-      'Our worship team leads the church in song every Sunday. If you play an instrument or love to sing, this might be your place.',
-  },
-  {
-    icon: Camera,
-    color: '#5b8cff',
-    name: 'Media',
-    description:
-      'We capture and broadcast everything that happens at Welcome — photos, videos, live streams and social media.',
-  },
-  {
-    icon: Volume2,
-    color: '#5b8cff',
-    name: 'Sound',
-    description:
-      'The sound team makes sure every word and note is heard clearly. We run the mixing desk, monitors and all audio equipment.',
-  },
-  {
-    icon: Smartphone,
-    color: '#4caf7d',
-    name: 'Digital',
-    description: 'From our website to our app, the digital team keeps Welcome connected online.',
-  },
-  {
-    icon: Settings,
-    color: '#f97316',
-    name: 'Production',
-    description:
-      'Production oversees Media and Sound, making sure every Sunday runs smoothly from a technical standpoint.',
-  },
-]
+import { getExploreCard, getServiceTeams } from '../lib/api.js'
 
 export default function TeamsPage() {
   const [heroImage, setHeroImage] = useState(null)
   const [description, setDescription] = useState(null)
+  const [teams, setTeams] = useState([])
 
   useEffect(() => {
-    getExploreCard('/teams').then(({ data }) => {
-      if (data?.image_url) setHeroImage(data.image_url)
-      if (data?.description) setDescription(data.description)
+    Promise.all([
+      getExploreCard('/teams'),
+      getServiceTeams(),
+    ]).then(([{ data: cardData }, { data: teamsData }]) => {
+      if (cardData?.image_url) setHeroImage(cardData.image_url)
+      if (cardData?.description) setDescription(cardData.description)
+      if (teamsData?.length) setTeams(teamsData)
     })
   }, [])
 
@@ -60,45 +27,43 @@ export default function TeamsPage() {
       backPath="/"
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {TEAMS.map((team) => {
-          const Icon = team.icon
-          return (
-            <div
-              key={team.name}
-              style={{
-                background: '#1a1a1a',
-                border: '0.5px solid #2e2e2e',
-                borderRadius: '20px',
-                padding: '18px',
-              }}
-            >
-              {/* Top row */}
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '14px',
-                    background: `${team.color}26`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Icon size={20} color={team.color} />
-                </div>
-                <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', marginLeft: '12px', flex: 1 }}>
-                  {team.name}
-                </p>
+        {teams.map((team) => (
+          <div
+            key={team.id}
+            style={{
+              background: '#1a1a1a',
+              border: '0.5px solid #2e2e2e',
+              borderRadius: '20px',
+              padding: '18px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '14px',
+                  background: `${team.color ?? '#a78bfa'}26`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <i className={team.icon} style={{ fontSize: '20px', color: team.color ?? '#a78bfa' }} />
               </div>
+              <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', marginLeft: '12px', flex: 1 }}>
+                {team.name}
+              </p>
+            </div>
 
+            {team.description && (
               <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>
                 {team.description}
               </p>
-            </div>
-          )
-        })}
+            )}
+          </div>
+        ))}
       </div>
     </DetailPage>
   )

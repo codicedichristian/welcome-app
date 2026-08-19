@@ -429,13 +429,12 @@ export async function adminUpdateUserRole(userId, role) {
 }
 
 export async function adminGetServiceAreas() {
-  try {
-    const { data, error } = await supabase.from('service_areas').select('*').order('name')
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    return { data: null, error }
-  }
+  const { data, error } = await supabase
+    .from('service_areas')
+    .select('id, name, icon, color, description, is_macro, active')
+    .order('is_macro', { ascending: false })
+    .order('name', { ascending: true })
+  return { data, error }
 }
 
 export async function adminAssignServiceArea(userId, areaId) {
@@ -1148,6 +1147,25 @@ export async function adminUpdateSeason(id, seasonData) {
 export async function adminDeleteSeason(id) {
   const { error } = await supabase.from('seasons').delete().eq('id', id)
   return { error }
+}
+
+export async function getServiceTeams() {
+  const { data, error } = await supabase
+    .from('service_areas')
+    .select('id, name, icon, color, description, is_macro')
+    .or('active.is.null,active.eq.true')
+    .order('is_macro', { ascending: false })
+    .order('name', { ascending: true })
+  return { data, error }
+}
+
+export async function adminUpdateServiceArea(id, fields) {
+  const { data, error } = await supabase
+    .from('service_areas')
+    .update(fields)
+    .eq('id', id)
+    .select()
+  return { data, error }
 }
 
 export async function getExploreCards() {
