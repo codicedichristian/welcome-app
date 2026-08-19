@@ -526,7 +526,7 @@ export default function EventsPage() {
                 disabled={overlayGoing}
                 style={{
                   flex: 1,
-                  background: overlayGoing ? '#2c2c30' : CAT_COLOR[detailEvent.type] ?? '#6d3ee0',
+                  background: overlayGoing ? '#2c2c30' : CAT_COLOR[detailEvent.type] ?? '#f97316',
                   color: '#ffffff',
                   fontSize: '15px',
                   fontWeight: '700',

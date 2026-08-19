@@ -10,7 +10,7 @@ import { getNextOccurrence, normalizeEvent } from '../lib/events.js'
 import { useUser } from '../lib/UserContext.js'
 
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
-const ACCENT = '#6d3ee0'
+const ACCENT = '#f97316'
 
 const FALLBACK_EXPLORE = [
   { image: 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365', category: 'Vision',     title: 'Our Vision',       to: '/vision'   },
