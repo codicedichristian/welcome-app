@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Clock, Check, Home, ChevronRight } from 'lucide-react'
-import { getMidweekGroups, rsvpMidweek } from '../lib/api.js'
+import { getMidweekGroups, rsvpMidweek, getExploreCard } from '../lib/api.js'
 import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent, getNextWednesday } from '../lib/events.js'
@@ -46,6 +46,7 @@ export default function MidweekPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
+  const [pageDescription, setPageDescription] = useState(null)
   const [selectedId, setSelectedId] = useState(() => location.state?.selectedGroupId ?? null)
   const [going, setGoing] = useState(
     () => isRsvped('midweek') && String(getMidweekGroupId()) === String(location.state?.selectedGroupId ?? null),
@@ -55,7 +56,10 @@ export default function MidweekPage() {
     let cancelled = false
 
     async function load() {
-      const { data, error: apiError } = await getMidweekGroups()
+      const [{ data, error: apiError }, { data: cardData }] = await Promise.all([
+        getMidweekGroups(),
+        getExploreCard('/midweek'),
+      ])
       if (cancelled) return
 
       if (apiError || !data || data.length === 0) {
@@ -64,6 +68,7 @@ export default function MidweekPage() {
       } else {
         setGroups(data)
       }
+      if (cardData?.description) setPageDescription(cardData.description)
       setLoading(false)
     }
 
@@ -150,13 +155,13 @@ export default function MidweekPage() {
 
       {/* Body */}
       <div style={{ padding: '20px 22px 0' }}>
-        <p style={{ fontSize: '15px', color: '#ffffff', lineHeight: 1.7 }}>
-          Midweeks are small groups that meet every Wednesday evening across Madrid. They are a space
-          to connect, share a meal, study the Bible together, and pray. Whether you're new to the
-          church or have been around for years, there's a group near you.
-        </p>
+        {pageDescription && (
+          <p style={{ fontSize: '15px', color: '#c9c9c6', lineHeight: 1.6, marginBottom: '16px' }}>
+            {pageDescription}
+          </p>
+        )}
 
-        <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: '32px', marginBottom: '16px' }}>
+        <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: pageDescription ? '16px' : '0', marginBottom: '16px' }}>
           Find your group
         </p>
 
