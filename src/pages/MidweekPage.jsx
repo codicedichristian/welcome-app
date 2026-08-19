@@ -47,6 +47,7 @@ export default function MidweekPage() {
   const [error, setError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
   const [pageDescription, setPageDescription] = useState(null)
+  const [heroImage, setHeroImage] = useState(null)
   const [selectedId, setSelectedId] = useState(() => location.state?.selectedGroupId ?? null)
   const [going, setGoing] = useState(
     () => isRsvped('midweek') && String(getMidweekGroupId()) === String(location.state?.selectedGroupId ?? null),
@@ -69,6 +70,7 @@ export default function MidweekPage() {
         setGroups(data)
       }
       if (cardData?.description) setPageDescription(cardData.description)
+      if (cardData?.image_url) setHeroImage(cardData.image_url)
       setLoading(false)
     }
 
@@ -132,26 +134,34 @@ export default function MidweekPage() {
         <BackRow label="Home" />
       </div>
 
-      {/* Hero image */}
-      <div style={{ position: 'relative', width: '100%', height: '260px' }}>
-        <img
-          src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80"
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(10,11,10,0.85) 100%)',
-          }}
-        />
-        <div style={{ position: 'absolute', left: '22px', bottom: '20px' }}>
-          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em' }}>
+      {/* Hero */}
+      {heroImage ? (
+        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+          <img
+            src={heroImage}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(10,11,10,0.85) 100%)',
+            }}
+          />
+          <div style={{ position: 'absolute', left: '22px', bottom: '20px' }}>
+            <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em' }}>
+              Find your group
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 56px)', padding: '0 22px' }}>
+          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginTop: 'calc(env(safe-area-inset-top) + 56px)' }}>
             Midweeks
           </p>
         </div>
-      </div>
+      )}
 
       {/* Body */}
       <div style={{ padding: '20px 22px 0' }}>
@@ -161,9 +171,11 @@ export default function MidweekPage() {
           </p>
         )}
 
-        <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: pageDescription ? '16px' : '0', marginBottom: '16px' }}>
-          Find your group
-        </p>
+        {!heroImage && (
+          <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: pageDescription ? '16px' : '0', marginBottom: '16px' }}>
+            Find your group
+          </p>
+        )}
 
         {loading ? (
           <Spinner />
