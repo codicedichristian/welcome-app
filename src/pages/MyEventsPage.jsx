@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CalendarX } from 'lucide-react'
-import { getUserRsvps, getUserMidweekRsvp, getMidweekGroups } from '../lib/api.js'
-import { events as fallbackEvents, getEventById } from '../data/events.js'
-import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
+import { getUserRsvps, getUserMidweekRsvp } from '../lib/api.js'
+import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
-import { getRsvpIds, getMidweekGroupId } from '../lib/rsvp.js'
 import { getStoredUser } from '../lib/user.js'
 import BackRow from '../components/BackRow.jsx'
 import EventListItem from '../components/EventListItem.jsx'
@@ -39,8 +37,10 @@ export default function MyEventsPage() {
           getUserMidweekRsvp(user.id),
         ])
 
-        if (!cancelled && !rsvpsError && rsvps) {
-          const events = rsvps.filter((row) => row.event).map((row) => normalizeEvent(row.event))
+        if (!cancelled) {
+          const events = (!rsvpsError && rsvps)
+            ? rsvps.filter((row) => row.event).map((row) => normalizeEvent(row.event))
+            : []
 
           if (midweekRsvp?.group) {
             events.push(withMidweekGroup(normalizeEvent(getEventById('midweek')), midweekRsvp.group))
@@ -48,28 +48,10 @@ export default function MyEventsPage() {
 
           setMyEvents(events)
           setLoading(false)
-          return
         }
+      } else {
+        if (!cancelled) setLoading(false)
       }
-
-      if (cancelled) return
-
-      const { data: liveGroups } = await getMidweekGroups()
-      const groups = liveGroups?.length ? liveGroups : fallbackMidweeks
-
-      const rsvpIds = getRsvpIds()
-      const myFallbackEvents = fallbackEvents
-        .filter((event) => rsvpIds.includes(event.id))
-        .map((event) => {
-          const normalized = normalizeEvent(event)
-          if (normalized.type !== 'midweek') return normalized
-
-          const group = groups.find((g) => String(g.id) === String(getMidweekGroupId()))
-          return withMidweekGroup(normalized, group)
-        })
-
-      setMyEvents(myFallbackEvents)
-      setLoading(false)
     }
 
     load()

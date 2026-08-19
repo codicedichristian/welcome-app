@@ -135,7 +135,7 @@ export async function rsvpEvent(userId, eventId) {
   try {
     const { data, error } = await supabase
       .from('event_rsvps')
-      .insert({ user_id: userId, event_id: eventId })
+      .upsert({ user_id: userId, event_id: eventId })
       .select()
       .single()
 
@@ -144,6 +144,16 @@ export async function rsvpEvent(userId, eventId) {
   } catch (error) {
     return { data: null, error }
   }
+}
+
+export async function checkRsvp(userId, eventId) {
+  const { data } = await supabase
+    .from('event_rsvps')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('event_id', eventId)
+    .maybeSingle()
+  return !!data
 }
 
 export async function deleteRsvp(userId, eventId) {
@@ -1115,16 +1125,28 @@ export async function adminGetStats() {
       { count: totalNews, error: newsError },
       { count: activeMidweekGroups, error: midweekError },
       { data: recentMembers, error: recentError },
+      { data: rsvpRows },
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('events').select('*'),
       supabase.from('news').select('*', { count: 'exact', head: true }),
       supabase.from('midweek_groups').select('*', { count: 'exact', head: true }).eq('active', true),
       supabase.from('users').select('first_name, last_name, email, created_at').order('created_at', { ascending: false }).limit(5),
+      supabase.from('event_rsvps').select('event_id, events(name)'),
     ])
 
     const error = membersError || eventsError || newsError || midweekError || recentError
     if (error) throw error
+
+    // Group RSVP rows by event_id
+    const rsvpMap = {}
+    for (const row of rsvpRows ?? []) {
+      if (!rsvpMap[row.event_id]) {
+        rsvpMap[row.event_id] = { event_id: row.event_id, name: row.events?.name ?? 'Unknown event', count: 0 }
+      }
+      rsvpMap[row.event_id].count++
+    }
+    const eventRsvps = Object.values(rsvpMap).sort((a, b) => b.count - a.count)
 
     return {
       data: {
@@ -1133,6 +1155,8 @@ export async function adminGetStats() {
         totalNews: totalNews ?? 0,
         activeMidweekGroups: activeMidweekGroups ?? 0,
         recentMembers: recentMembers ?? [],
+        totalRsvps: (rsvpRows ?? []).length,
+        eventRsvps,
       },
       error: null,
     }

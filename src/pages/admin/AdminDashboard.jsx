@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, CalendarDays, Megaphone, Home } from 'lucide-react'
+import { Users, CalendarDays, Megaphone, Home, Ticket } from 'lucide-react'
 import { adminGetStats } from '../../lib/api.js'
 import { getNextOccurrence } from '../../lib/events.js'
 import Spinner from '../../components/Spinner.jsx'
@@ -48,9 +48,10 @@ export default function AdminDashboard() {
 
   const cards = [
     { label: 'Total members', value: stats.totalMembers, icon: Users, color: 'text-accent-blue' },
-    { label: 'Upcoming events', value: countUpcomingThisWeek(stats.events), icon: CalendarDays, color: 'text-accent-green' },
+    { label: 'Upcoming this week', value: countUpcomingThisWeek(stats.events), icon: CalendarDays, color: 'text-accent-green' },
     { label: 'Total news', value: stats.totalNews, icon: Megaphone, color: 'text-accent-orange' },
     { label: 'Active midweek groups', value: stats.activeMidweekGroups, icon: Home, color: 'text-accent-purple' },
+    { label: 'Total RSVPs', value: stats.totalRsvps, icon: Ticket, color: 'text-accent-blue' },
   ]
 
   return (
@@ -66,6 +67,27 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {stats.eventRsvps.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium text-primary">RSVPs by event</h2>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
+            {stats.eventRsvps.map((row, index) => (
+              <div
+                key={row.event_id}
+                className={`flex items-center justify-between px-4 py-3 ${
+                  index !== stats.eventRsvps.length - 1 ? 'border-b border-border' : ''
+                }`}
+              >
+                <p className="text-sm text-primary">{row.name}</p>
+                <span className="rounded-full bg-accent-blue/10 px-2.5 py-0.5 text-xs font-medium text-accent-blue">
+                  {row.count} {row.count === 1 ? 'RSVP' : 'RSVPs'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-sm font-medium text-primary">Recent activity</h2>

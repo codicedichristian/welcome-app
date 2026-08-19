@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft, ExternalLink } from 'lucide-react'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
-import { isRsvped, addRsvp, removeRsvp } from '../lib/rsvp.js'
-import { getStoredUser } from '../lib/user.js'
-import { rsvpEvent, deleteRsvp } from '../lib/api.js'
+import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
+import { useUser } from '../lib/UserContext.js'
 
 function MetaRow({ icon: Icon, text }) {
   return (
@@ -130,12 +129,18 @@ export default function EventDetailPage() {
   const { eventId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const user = useUser()
 
   const fallbackEvent = getEventById(eventId)
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
 
-  const [going, setGoing] = useState(() => (event ? isRsvped(event.id) : false))
+  const [going, setGoing] = useState(false)
   const [showCancelSheet, setShowCancelSheet] = useState(false)
+
+  useEffect(() => {
+    if (!user?.id || !event?.id) return
+    checkRsvp(user.id, event.id).then((alreadyGoing) => setGoing(alreadyGoing))
+  }, [user?.id, event?.id])
 
   if (!event) {
     return (
@@ -146,21 +151,17 @@ export default function EventDetailPage() {
   }
 
   const handleRsvp = () => {
-    addRsvp(event.id)
     setGoing(true)
-    const user = getStoredUser()
-    if (user.id) {
-      rsvpEvent(user.id, event.id)
+    if (user?.id) {
+      rsvpEvent(user.id, event.id).catch(console.error)
     }
   }
 
   const handleCancelConfirm = () => {
-    removeRsvp(event.id)
     setGoing(false)
     setShowCancelSheet(false)
-    const user = getStoredUser()
-    if (user.id) {
-      deleteRsvp(user.id, event.id)
+    if (user?.id) {
+      deleteRsvp(user.id, event.id).catch(console.error)
     }
   }
 
