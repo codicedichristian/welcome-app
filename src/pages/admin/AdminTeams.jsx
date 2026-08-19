@@ -180,11 +180,6 @@ export default function AdminTeams() {
                 )}
               </div>
 
-              {/* Active badge */}
-              <span className={`shrink-0 text-xs ${area.active !== false ? 'text-accent-green' : 'text-zinc-600'}`}>
-                {area.active !== false ? 'Active' : 'Hidden'}
-              </span>
-
               {/* Edit */}
               <button
                 type="button"

@@ -431,7 +431,7 @@ export async function adminUpdateUserRole(userId, role) {
 export async function adminGetServiceAreas() {
   const { data, error } = await supabase
     .from('service_areas')
-    .select('id, name, icon, color, description, is_macro, active')
+    .select('id, name, icon, color, description, is_macro')
     .order('is_macro', { ascending: false })
     .order('name', { ascending: true })
   return { data, error }
