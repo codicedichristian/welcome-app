@@ -30,6 +30,7 @@ import { saveSubscription } from './lib/api.js'
 import { supabase } from './lib/supabase.js'
 import { ScrollToTop } from './components/ScrollToTop.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
+import AdminLayout from './components/AdminLayout.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminMembers from './pages/admin/AdminMembers.jsx'
 import AdminSchedules from './pages/admin/AdminSchedules.jsx'
@@ -40,6 +41,7 @@ import AdminNews from './pages/admin/AdminNews.jsx'
 import AdminEvents from './pages/admin/AdminEvents.jsx'
 import AdminMidweek from './pages/admin/AdminMidweek.jsx'
 import AdminMessages from './pages/admin/AdminMessages.jsx'
+import AdminSeasons from './pages/admin/AdminSeasons.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -119,16 +121,19 @@ export default function App() {
           </Route>
         </Route>
         <Route element={<AdminRoute />}>
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="admin/members" element={<AdminMembers />} />
-          <Route path="admin/schedules" element={<AdminSchedules />} />
-          <Route path="admin/schedules/:id" element={<AdminScheduleDetail />} />
-          <Route path="admin/sundays" element={<AdminSundays />} />
-          <Route path="admin/sundays/:scheduleId" element={<AdminSundayDetail />} />
-          <Route path="admin/news" element={<AdminNews />} />
-          <Route path="admin/events" element={<AdminEvents />} />
-          <Route path="admin/midweek" element={<AdminMidweek />} />
-          <Route path="admin/messages" element={<AdminMessages />} />
+          <Route element={<AdminLayout />}>
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin/members" element={<AdminMembers />} />
+            <Route path="admin/schedules" element={<AdminSchedules />} />
+            <Route path="admin/schedules/:id" element={<AdminScheduleDetail />} />
+            <Route path="admin/sundays" element={<AdminSundays />} />
+            <Route path="admin/sundays/:scheduleId" element={<AdminSundayDetail />} />
+            <Route path="admin/news" element={<AdminNews />} />
+            <Route path="admin/events" element={<AdminEvents />} />
+            <Route path="admin/midweek" element={<AdminMidweek />} />
+            <Route path="admin/messages" element={<AdminMessages />} />
+            <Route path="admin/seasons" element={<AdminSeasons />} />
+          </Route>
         </Route>
       </Routes>
     </>

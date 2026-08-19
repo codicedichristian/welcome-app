@@ -1126,3 +1126,26 @@ export async function adminGetStats() {
     return { data: null, error }
   }
 }
+
+export async function adminGetSeasons() {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('*')
+    .order('start_date', { ascending: false })
+  return { data, error }
+}
+
+export async function adminCreateSeason(seasonData) {
+  const { data, error } = await supabase.from('seasons').insert([seasonData]).select()
+  return { data, error }
+}
+
+export async function adminUpdateSeason(id, seasonData) {
+  const { data, error } = await supabase.from('seasons').update(seasonData).eq('id', id).select()
+  return { data, error }
+}
+
+export async function adminDeleteSeason(id) {
+  const { error } = await supabase.from('seasons').delete().eq('id', id)
+  return { error }
+}
