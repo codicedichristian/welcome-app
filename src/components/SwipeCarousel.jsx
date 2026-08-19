@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function SwipeCarousel({ items, renderItem, sidePadding = 22 }) {
-  const [activeIndex, setActiveIndex] = useState(0)
+export default function SwipeCarousel({ items, renderItem, sidePadding = 22, initialIndex = 0, onIndexChange }) {
+  const [activeIndex, setActiveIndex] = useState(initialIndex)
+
+  function updateIndex(n) {
+    setActiveIndex(n)
+    onIndexChange?.(n)
+  }
   const [dragOffset, setDragOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -52,7 +57,7 @@ export default function SwipeCarousel({ items, renderItem, sidePadding = 22 }) {
       let newIndex = activeIndex
       if ((dx < -50 || velocity < -0.3) && activeIndex < items.length - 1) newIndex = activeIndex + 1
       else if ((dx > 50 || velocity > 0.3) && activeIndex > 0) newIndex = activeIndex - 1
-      setActiveIndex(newIndex)
+      updateIndex(newIndex)
       setIsDragging(false)
       setDragOffset(0)
     }
@@ -97,7 +102,7 @@ export default function SwipeCarousel({ items, renderItem, sidePadding = 22 }) {
     let newIndex = activeIndex
     if ((dx < -50 || velocity < -0.3) && activeIndex < items.length - 1) newIndex = activeIndex + 1
     else if ((dx > 50 || velocity > 0.3) && activeIndex > 0) newIndex = activeIndex - 1
-    setActiveIndex(newIndex)
+    updateIndex(newIndex)
     setIsDragging(false)
     setDragOffset(0)
   }
@@ -156,7 +161,7 @@ export default function SwipeCarousel({ items, renderItem, sidePadding = 22 }) {
             <button
               key={i}
               type="button"
-              onClick={() => { setActiveIndex(i); setDragOffset(0) }}
+              onClick={() => { updateIndex(i); setDragOffset(0) }}
               style={{
                 height: '5px',
                 width: i === activeDotIndex ? '20px' : '5px',

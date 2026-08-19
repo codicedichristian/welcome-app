@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext, useNavigationType } from 'react-router-dom'
 import { Bookmark, CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
@@ -105,6 +105,7 @@ export default function HomePage() {
   const [showDonateModal, setShowDonateModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
+  const eventsScrollRef = useRef(null)
   useScrollMemory('home')
 
   const qaCard = {
@@ -163,6 +164,16 @@ export default function HomePage() {
     load()
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    if (isLoading) return
+    const saved = sessionStorage.getItem('scroll_events_x')
+    if (saved && eventsScrollRef.current) {
+      requestAnimationFrame(() => {
+        if (eventsScrollRef.current) eventsScrollRef.current.scrollLeft = parseInt(saved, 10)
+      })
+    }
+  }, [isLoading])
 
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
@@ -264,6 +275,8 @@ export default function HomePage() {
           <SwipeCarousel
             items={exploreCards}
             sidePadding={24}
+            initialIndex={parseInt(sessionStorage.getItem('explore_index') || '0', 10)}
+            onIndexChange={(i) => sessionStorage.setItem('explore_index', String(i))}
             renderItem={(card, didDrag) => <ExploreCard card={card} didDrag={didDrag} navigate={navigate} />}
           />
         </div>
@@ -278,16 +291,19 @@ export default function HomePage() {
         </div>
 
         {/* Cards row */}
-        <div style={{
-          display: 'flex',
-          gap: '14px',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          paddingLeft: '24px',
-          paddingRight: '24px',
-          marginTop: '16px',
-        }}>
+        <div
+          ref={eventsScrollRef}
+          onScroll={() => sessionStorage.setItem('scroll_events_x', String(eventsScrollRef.current.scrollLeft))}
+          style={{
+            display: 'flex',
+            gap: '14px',
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            marginTop: '16px',
+          }}>
           {upcoming.map((ev) => (
             <button key={ev.id} type="button"
               onClick={() => navigate(`/events/${ev.id}`, { state: { event: ev } })}
