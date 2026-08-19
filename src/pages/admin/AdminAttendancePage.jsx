@@ -134,7 +134,7 @@ export default function AdminAttendancePage() {
             <tbody>
               {events.map((ev) => (
                 <tr key={ev.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-3 font-medium text-primary">{ev.name}</td>
+                  <td className="px-5 py-3 font-medium text-primary">{ev.title}</td>
                   <td className="px-4 py-3 text-zinc-400">{formatEventDate(ev)}</td>
                   <td className="px-4 py-3">
                     {ev.rsvp_count > 0 ? (

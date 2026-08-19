@@ -1298,13 +1298,13 @@ export async function revokeAllConsents(userId) {
 export async function adminGetAttendance() {
   const { data, error } = await supabase
     .from('events')
-    .select('id, name, type, recurring, event_date, start_time, event_rsvps(id)')
-    .order('name', { ascending: true })
+    .select('id, title, type, recurring, event_date, start_time, event_rsvps(id)')
+    .order('title', { ascending: true })
   if (error) return { data: null, error }
 
   const rows = (data ?? []).map((ev) => ({
     id: ev.id,
-    name: ev.name,
+    title: ev.title,
     type: ev.type,
     recurring: ev.recurring,
     event_date: ev.event_date,
