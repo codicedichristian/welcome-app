@@ -140,15 +140,7 @@ export default function HomePage() {
       rawEndTime: item.event.end_time,
     }))
 
-  const announcementItems = (() => {
-    const result = []
-    if (news[0]) result.push({ ...news[0], fullWidth: true })
-    for (let i = 1; i < news.length; i += 2) {
-      result.push({ ...news[i], fullWidth: false })
-      if (news[i + 1]) result.push({ ...news[i + 1], fullWidth: false })
-    }
-    return result
-  })()
+  const announcementItems = news.map((item, i) => ({ ...item, fullWidth: i % 3 === 0 }))
 
   return (
     <div
