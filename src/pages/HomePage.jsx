@@ -13,7 +13,7 @@ const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 const ACCENT = '#6d3ee0'
 
 const EXPLORE_CARDS = [
-  { image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80', category: 'Vision',     title: 'Our Vision',       to: '/vision'   },
+  { image: 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365', category: 'Vision', title: 'Our Vision', to: '/vision' },
   { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', category: 'Leadership', title: 'Meet the Pastors', to: '/pastors'  },
   { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', category: 'Community', title: 'Midweeks',          to: '/midweek'  },
   { image: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80', category: 'Sermons',    title: 'Sundays',          to: '/seasons'  },
