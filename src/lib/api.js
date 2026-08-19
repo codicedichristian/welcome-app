@@ -1153,7 +1153,6 @@ export async function getServiceTeams() {
   const { data, error } = await supabase
     .from('service_areas')
     .select('id, name, icon, color, description, is_macro')
-    .or('active.is.null,active.eq.true')
     .order('is_macro', { ascending: false })
     .order('name', { ascending: true })
   return { data, error }
