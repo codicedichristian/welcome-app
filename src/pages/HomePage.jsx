@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext, useNavigationType } from 'react-router-d
 import { Bookmark, CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
+import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getEvents, getNews, getExploreCards } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -101,7 +102,7 @@ export default function HomePage() {
 
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
-  const [exploreCards, setExploreCards] = useState(FALLBACK_EXPLORE)
+  const [exploreCards, setExploreCards] = useState([])
   const [showDonateModal, setShowDonateModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [fadeOut, setFadeOut] = useState(false)
@@ -272,13 +273,24 @@ export default function HomePage() {
           Explore the Church
         </p>
         <div style={{ marginTop: '14px' }}>
-          <SwipeCarousel
-            items={exploreCards}
-            sidePadding={24}
-            initialIndex={parseInt(sessionStorage.getItem('explore_index') || '0', 10)}
-            onIndexChange={(i) => sessionStorage.setItem('explore_index', String(i))}
-            renderItem={(card, didDrag) => <ExploreCard card={card} didDrag={didDrag} navigate={navigate} />}
-          />
+          {exploreCards.length === 0 ? (
+            <>
+              <SkeletonCard height={200} radius={22} />
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', marginTop: '14px' }}>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} style={{ height: '5px', width: i === 0 ? '20px' : '5px', borderRadius: '9px', background: '#2a2a2a' }} />
+                ))}
+              </div>
+            </>
+          ) : (
+            <SwipeCarousel
+              items={exploreCards}
+              sidePadding={24}
+              initialIndex={parseInt(sessionStorage.getItem('explore_index') || '0', 10)}
+              onIndexChange={(i) => sessionStorage.setItem('explore_index', String(i))}
+              renderItem={(card, didDrag) => <ExploreCard card={card} didDrag={didDrag} navigate={navigate} />}
+            />
+          )}
         </div>
       </div>
 
