@@ -41,9 +41,11 @@ export default function MidweekPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const popupRef = useRef(null)
+  const mapRef = useRef(null)
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [mapReady, setMapReady] = useState(false)
   const [selectedId, setSelectedId] = useState(() => location.state?.selectedGroupId ?? null)
   const [going, setGoing] = useState(
     () => isRsvped('midweek') && String(getMidweekGroupId()) === String(location.state?.selectedGroupId ?? null),
@@ -77,6 +79,19 @@ export default function MidweekPage() {
     setSelectedId(id)
     setGoing(isRsvped('midweek') && String(getMidweekGroupId()) === String(id))
   }
+
+  useEffect(() => {
+    if (groups.filter((g) => g.lat != null && g.lng != null).length > 0) {
+      const t = setTimeout(() => setMapReady(true), 100)
+      return () => clearTimeout(t)
+    }
+  }, [groups])
+
+  useEffect(() => {
+    if (!mapRef.current) return
+    const t = setTimeout(() => { mapRef.current.invalidateSize() }, 300)
+    return () => clearTimeout(t)
+  }, [mapReady])
 
   useEffect(() => {
     if (location.state?.selectedGroupId && popupRef.current) {
@@ -151,9 +166,15 @@ export default function MidweekPage() {
           <ErrorState />
         ) : (
           <>
-            {groups.filter((g) => g.lat != null && g.lng != null).length > 0 && (
-              <div style={{ height: '220px', borderRadius: '16px', overflow: 'hidden' }}>
-                <MapContainer center={MADRID_CENTER} zoom={12} className="h-full w-full">
+            {mapReady && (
+              <div style={{ borderRadius: '14px', overflow: 'hidden' }}>
+                <MapContainer
+                  key={groups.length}
+                  ref={mapRef}
+                  center={MADRID_CENTER}
+                  zoom={12}
+                  style={{ height: '220px', width: '100%' }}
+                >
                   <TileLayer
                     url={TILE_URL}
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
