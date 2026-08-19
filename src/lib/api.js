@@ -25,6 +25,10 @@ export async function registerUser(userData) {
     age_range: userData.ageRange,
     interests: userData.interests,
     notifications: userData.notifications,
+    privacy_accepted: true,
+    marketing_consent: userData.marketingConsent ?? false,
+    profiling_consent: userData.profilingConsent ?? false,
+    privacy_policy_version: 'v1.0',
   }
 
   console.log('Inserting user to DB:', insertPayload)
@@ -36,6 +40,17 @@ export async function registerUser(userData) {
     .single()
 
   console.log('DB insert result:', { data: dbUser, error: dbError })
+
+  if (!dbError && dbUser) {
+    const consentsState = {
+      privacy_accepted: true,
+      marketing_consent: userData.marketingConsent ?? false,
+      profiling_consent: userData.profilingConsent ?? false,
+      timestamp: new Date().toISOString(),
+      privacy_policy_version: 'v1.0',
+    }
+    await logGdprConsent(dbUser.id, consentsState, 'registration')
+  }
 
   return { user: dbUser, authId, error: dbError }
 }
@@ -1201,4 +1216,55 @@ export async function getExploreCard(route) {
     .limit(1)
     .maybeSingle()
   return { data, error }
+}
+
+// GDPR
+
+export async function logGdprConsent(userId, consentsState, action = 'registration') {
+  let ip = 'unknown'
+  try {
+    const res = await fetch('https://api.ipify.org?format=json')
+    const json = await res.json()
+    ip = json.ip
+  } catch (e) {}
+
+  const { data, error } = await supabase
+    .from('gdpr_consent_logs')
+    .insert({
+      user_id: userId,
+      ip_address: ip,
+      privacy_policy_version: 'v1.0',
+      consents_state: consentsState,
+      action,
+    })
+  return { data, error }
+}
+
+export async function updateUserConsents(userId, consents) {
+  const { error } = await supabase
+    .from('users')
+    .update({
+      marketing_consent: consents.marketing,
+      profiling_consent: consents.profiling,
+      privacy_policy_version: 'v1.0',
+    })
+    .eq('id', userId)
+
+  if (!error) {
+    await logGdprConsent(userId, consents, 'update')
+  }
+  return { error }
+}
+
+export async function revokeAllConsents(userId) {
+  const consents = { privacy_accepted: true, marketing: false, profiling: false }
+  const { error } = await supabase
+    .from('users')
+    .update({ marketing_consent: false, profiling_consent: false })
+    .eq('id', userId)
+
+  if (!error) {
+    await logGdprConsent(userId, consents, 'revoke')
+  }
+  return { error }
 }

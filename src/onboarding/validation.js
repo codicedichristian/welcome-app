@@ -1,4 +1,4 @@
-export const TOTAL_STEPS = 8
+export const TOTAL_STEPS = 9
 
 export const initialFormData = {
   firstName: '',
@@ -11,6 +11,9 @@ export const initialFormData = {
   ageRange: '',
   interests: [],
   notifications: { email: false, whatsapp: false, app: false },
+  privacyAccepted: false,
+  marketingConsent: false,
+  profilingConsent: false,
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -34,6 +37,8 @@ export function isStepValid(step, data) {
       return data.interests.length > 0
     case 8:
       return true
+    case 9:
+      return data.privacyAccepted === true
     default:
       return false
   }

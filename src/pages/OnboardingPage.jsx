@@ -13,8 +13,9 @@ import SourceStep from '../onboarding/steps/SourceStep.jsx'
 import AgeRangeStep from '../onboarding/steps/AgeRangeStep.jsx'
 import InterestsStep from '../onboarding/steps/InterestsStep.jsx'
 import NotificationsStep from '../onboarding/steps/NotificationsStep.jsx'
+import ConsentStep from '../onboarding/steps/ConsentStep.jsx'
 
-const STEPS = [NameStep, EmailStep, PhoneStep, PasswordStep, SourceStep, AgeRangeStep, InterestsStep, NotificationsStep]
+const STEPS = [NameStep, EmailStep, PhoneStep, PasswordStep, SourceStep, AgeRangeStep, InterestsStep, NotificationsStep, ConsentStep]
 
 export default function OnboardingPage() {
   const navigate = useNavigate()

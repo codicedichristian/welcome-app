@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck } from 'lucide-react'
+import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck, ChevronRight } from 'lucide-react'
 import { INTERESTS_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
-import { saveSubscription, deleteSubscription } from '../lib/api.js'
+import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
 import { useUser } from '../lib/UserContext.js'
 
@@ -26,6 +26,19 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const [user, setUser] = useState(getStoredUser)
   const liveUser = useUser()
+  const [consents, setConsents] = useState({ marketing: false, profiling: false })
+
+  useEffect(() => {
+    if (!user.id) return
+    supabase
+      .from('users')
+      .select('marketing_consent, profiling_consent')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+      })
+  }, [user.id])
 
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
@@ -60,6 +73,12 @@ export default function ProfilePage() {
       await unsubscribeFromPush()
       await deleteSubscription(user.id)
     }
+  }
+
+  const toggleConsent = async (key) => {
+    const updated = { ...consents, [key]: !consents[key] }
+    setConsents(updated)
+    await updateUserConsents(user.id, { marketing: updated.marketing, profiling: updated.profiling })
   }
 
   const handleSignOut = async () => {
@@ -180,6 +199,38 @@ export default function ProfilePage() {
               </div>
             )
           })}
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Privacy &amp; Consents</h3>
+        <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
+          <button
+            type="button"
+            onClick={() => navigate('/privacy-policy')}
+            className="flex w-full items-center gap-3 border-b border-border px-4 py-4 text-left"
+          >
+            <ShieldCheck size={18} className="shrink-0 text-zinc-500" />
+            <span className="flex-1 text-[16px] text-primary">Privacy Policy</span>
+            <ChevronRight size={15} className="shrink-0 text-zinc-600" />
+          </button>
+          {[
+            { label: 'Marketing communications', key: 'marketing' },
+            { label: 'Personalised content', key: 'profiling' },
+          ].map((row, index) => (
+            <div key={row.key} className={`flex items-center justify-between px-4 py-4 ${index === 0 ? 'border-b border-border' : ''}`}>
+              <span className="text-[16px] text-primary">{row.label}</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={consents[row.key]}
+                onClick={() => toggleConsent(row.key)}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${consents[row.key] ? 'bg-primary' : 'bg-[#2a2a2a]'}`}
+              >
+                <span className={`absolute top-1 left-1 h-5 w-5 rounded-full transition-transform ${consents[row.key] ? 'translate-x-5 bg-bg' : 'translate-x-0 bg-zinc-500'}`} />
+              </button>
+            </div>
+          ))}
         </div>
       </section>
 

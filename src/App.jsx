@@ -45,6 +45,7 @@ import AdminMessages from './pages/admin/AdminMessages.jsx'
 import AdminSeasons from './pages/admin/AdminSeasons.jsx'
 import AdminExplore from './pages/admin/AdminExplore.jsx'
 import AdminTeams from './pages/admin/AdminTeams.jsx'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -92,6 +93,7 @@ export default function App() {
       {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
       <ScrollToTop />
       <Routes>
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/login" element={<LoginPage />} />
