@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Pencil, Trash2, ExternalLink, Headphones } from 'lucide-react'
 import { adminGetSundays, adminDeleteSummary, adminGetScheduleDates } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
@@ -76,6 +76,7 @@ export default function AdminSundays() {
                 <th className="px-4 py-3 font-normal">Speaker</th>
                 <th className="px-4 py-3 font-normal">Scripture</th>
                 <th className="px-4 py-3 font-normal">Video</th>
+                <th className="px-4 py-3 font-normal">Audio</th>
                 <th className="px-4 py-3 font-normal">Photos</th>
                 <th className="px-4 py-3 font-normal">Actions</th>
               </tr>
@@ -83,7 +84,7 @@ export default function AdminSundays() {
             <tbody>
               {sundays.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-zinc-500">
                     No Sunday summaries yet
                   </td>
                 </tr>
@@ -104,6 +105,21 @@ export default function AdminSundays() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ExternalLink size={14} />
+                        </a>
+                      ) : (
+                        <span className="text-zinc-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {s.audio_url ? (
+                        <a
+                          href={s.audio_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#5b8cff]"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Headphones size={14} />
                         </a>
                       ) : (
                         <span className="text-zinc-600">—</span>
