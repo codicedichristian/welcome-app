@@ -1292,3 +1292,42 @@ export async function revokeAllConsents(userId) {
   }
   return { error }
 }
+
+// ATTENDANCE
+
+export async function adminGetAttendance() {
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, name, type, recurring, event_date, start_time, event_rsvps(id)')
+    .order('name', { ascending: true })
+  if (error) return { data: null, error }
+
+  const rows = (data ?? []).map((ev) => ({
+    id: ev.id,
+    name: ev.name,
+    type: ev.type,
+    recurring: ev.recurring,
+    event_date: ev.event_date,
+    start_time: ev.start_time,
+    rsvp_count: ev.event_rsvps?.length ?? 0,
+  }))
+  return { data: rows, error: null }
+}
+
+export async function adminGetEventParticipants(eventId) {
+  const { data, error } = await supabase
+    .from('event_rsvps')
+    .select('created_at, users(first_name, last_name, email, phone)')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: true })
+  if (error) return { data: null, error }
+
+  const rows = (data ?? []).map((row) => ({
+    first_name: row.users?.first_name ?? '',
+    last_name: row.users?.last_name ?? '',
+    email: row.users?.email ?? '',
+    phone: row.users?.phone ?? '',
+    rsvped_at: row.created_at,
+  }))
+  return { data: rows, error: null }
+}

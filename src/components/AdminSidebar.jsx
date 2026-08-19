@@ -12,11 +12,13 @@ import {
   MessageSquare,
   Compass,
   ChevronLeft,
+  CheckSquare,
 } from 'lucide-react'
 
 const NAV = [
-  { label: 'Dashboard',  to: '/admin',           icon: LayoutDashboard, end: true },
+  { label: 'Dashboard',  to: '/admin',            icon: LayoutDashboard, end: true },
   { label: 'Events',     to: '/admin/events',     icon: CalendarDays },
+  { label: 'Attendance', to: '/admin/attendance', icon: CheckSquare },
   { label: 'News',       to: '/admin/news',       icon: Newspaper },
   { label: 'Explore',    to: '/admin/explore',    icon: Compass },
   { label: 'Midweek',    to: '/admin/midweek',    icon: Home },
