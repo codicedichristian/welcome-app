@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Pencil, Trash2, ExternalLink, Headphones } from 'lucide-react'
 import { adminGetSundays, adminDeleteSummary, adminGetScheduleDates } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
+import { safeUrl } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
@@ -96,9 +97,9 @@ export default function AdminSundays() {
                     <td className="px-4 py-3 text-zinc-400">{s.speaker || '—'}</td>
                     <td className="px-4 py-3 text-zinc-400">{s.scripture || '—'}</td>
                     <td className="px-4 py-3">
-                      {s.video_url ? (
+                      {safeUrl(s.video_url) ? (
                         <a
-                          href={s.video_url}
+                          href={safeUrl(s.video_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#5b8cff]"
@@ -111,9 +112,9 @@ export default function AdminSundays() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {s.audio_url ? (
+                      {safeUrl(s.audio_url) ? (
                         <a
-                          href={s.audio_url}
+                          href={safeUrl(s.audio_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#5b8cff]"
@@ -126,9 +127,9 @@ export default function AdminSundays() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {s.photos_url ? (
+                      {safeUrl(s.photos_url) ? (
                         <a
-                          href={s.photos_url}
+                          href={safeUrl(s.photos_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#5b8cff]"

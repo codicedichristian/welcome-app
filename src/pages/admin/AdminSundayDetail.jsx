@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, Save } from 'lucide-react'
 import { adminGetSummary, adminUpsertSummary, adminGetScheduleDates } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
+import { safeUrl, trimField } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 
@@ -46,7 +47,17 @@ export default function AdminSundayDetail() {
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
-    await adminUpsertSummary(scheduleId, form)
+    const payload = {
+      ...form,
+      title:       trimField(form.title),
+      speaker:     trimField(form.speaker),
+      scripture:   trimField(form.scripture),
+      description: trimField(form.description),
+      video_url:   safeUrl(form.video_url),
+      photos_url:  safeUrl(form.photos_url),
+      audio_url:   safeUrl(form.audio_url),
+    }
+    await adminUpsertSummary(scheduleId, payload)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)

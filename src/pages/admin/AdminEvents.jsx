@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { adminGetEvents, adminCreateEvent, adminUpdateEvent, adminDeleteEvent } from '../../lib/api.js'
 import { formatTime12h, capitalize } from '../../lib/format.js'
+import { safeUrl, trimField } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
@@ -88,18 +89,18 @@ function toFormState(event) {
 function toPayload(form) {
   const recurring = buildRecurring(form.recur_freq, form.recur_day, form.recur_week)
   return {
-    title: form.title,
-    type: form.type,
-    color: form.color,
-    icon: 'cross',
-    description: form.description,
-    location: form.location,
-    audience: form.audience,
+    title:       trimField(form.title),
+    type:        form.type,
+    color:       form.color,
+    icon:        'cross',
+    description: trimField(form.description),
+    location:    trimField(form.location),
+    audience:    trimField(form.audience),
     recurring,
-    event_date: form.recur_freq === 'none' ? form.event_date || null : null,
-    start_time: form.start_time || null,
-    end_time: form.end_time || null,
-    image_url: form.image_url || null,
+    event_date:  form.recur_freq === 'none' ? form.event_date || null : null,
+    start_time:  form.start_time || null,
+    end_time:    form.end_time || null,
+    image_url:   safeUrl(form.image_url),
   }
 }
 

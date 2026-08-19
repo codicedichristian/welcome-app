@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { adminGetNews, adminCreateNews, adminUpdateNews, adminDeleteNews } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
+import { safeUrl, trimField } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
@@ -48,7 +49,13 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        onSave(form)
+        onSave({
+          ...form,
+          title:     trimField(form.title),
+          body:      trimField(form.body),
+          image_url: safeUrl(form.image_url),
+          link_url:  safeUrl(form.link_url),
+        })
       }}
       className="flex flex-col gap-3"
     >

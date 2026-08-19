@@ -7,6 +7,7 @@ import {
 import { useUser } from '../lib/UserContext.js'
 import { getMyChurchData } from '../lib/api.js'
 import { formatShortDate } from '../lib/format.js'
+import { safeUrl } from '../lib/sanitize.js'
 
 const MEMBER_ROLES = ['member', 'leader', 'admin']
 
@@ -446,11 +447,11 @@ export default function MyChurchPage() {
           subtitle={sundaySub}
           detailLeft={lastSunday ? `Message: "${lastSunday.title ?? ''}"` : 'No sermons yet'}
           detailRight={
-            lastSunday?.video_url
+            safeUrl(lastSunday?.video_url)
               ? (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); window.open(lastSunday.video_url, '_blank') }}
+                  onClick={(e) => { e.stopPropagation(); window.open(safeUrl(lastSunday.video_url), '_blank') }}
                   style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#e5e5e2', whiteSpace: 'nowrap' }}
                 >
                   Watch again
