@@ -22,13 +22,24 @@ const COLOR_SWATCHES = [
   { name: 'Purple', hex: '#a78bfa' },
   { name: 'Orange', hex: '#f97316' },
 ]
-const RECURRING_OPTIONS = [
-  { value: 'none', label: 'None (one-off)' },
-  { value: 'weekly_sunday', label: 'Weekly (Sunday)' },
-  { value: 'weekly_monday', label: 'Weekly (Monday)' },
-  { value: 'weekly_wednesday', label: 'Weekly (Wednesday)' },
-  { value: 'biweekly_sunday', label: 'Biweekly (Sunday)' },
-]
+const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+const WEEKS = ['1st', '2nd', '3rd', '4th', 'last']
+
+function parseRecurring(value) {
+  if (!value || value === 'none') return { recur_freq: 'none', recur_day: 'sunday', recur_week: '1st' }
+  if (value.startsWith('weekly_')) return { recur_freq: 'weekly', recur_day: value.slice(7), recur_week: '1st' }
+  if (value.startsWith('monthly_')) {
+    const parts = value.slice(8).split('_')
+    return { recur_freq: 'monthly', recur_week: parts[0] ?? '1st', recur_day: parts[1] ?? 'sunday' }
+  }
+  return { recur_freq: 'none', recur_day: 'sunday', recur_week: '1st' }
+}
+
+function buildRecurring(recur_freq, recur_day, recur_week) {
+  if (recur_freq === 'weekly') return `weekly_${recur_day}`
+  if (recur_freq === 'monthly') return `monthly_${recur_week}_${recur_day}`
+  return null
+}
 
 function detectLocationType(loc) {
   if (!loc) return 'in_person'
@@ -44,7 +55,9 @@ const EMPTY_EVENT = {
   location: '',
   location_type: 'in_person',
   audience: 'Open to everyone',
-  recurring: 'none',
+  recur_freq: 'none',
+  recur_day: 'sunday',
+  recur_week: '1st',
   event_date: '',
   start_time: '',
   end_time: '',
@@ -53,6 +66,7 @@ const EMPTY_EVENT = {
 
 function toFormState(event) {
   const loc = event.location ?? ''
+  const { recur_freq, recur_day, recur_week } = parseRecurring(event.recurring)
   return {
     title: event.title ?? '',
     type: event.type ?? 'sunday',
@@ -61,7 +75,9 @@ function toFormState(event) {
     location: loc,
     location_type: detectLocationType(loc),
     audience: event.audience || 'Open to everyone',
-    recurring: event.recurring ?? 'none',
+    recur_freq,
+    recur_day,
+    recur_week,
     event_date: event.event_date ?? '',
     start_time: event.start_time?.slice(0, 5) ?? '',
     end_time: event.end_time?.slice(0, 5) ?? '',
@@ -70,6 +86,7 @@ function toFormState(event) {
 }
 
 function toPayload(form) {
+  const recurring = buildRecurring(form.recur_freq, form.recur_day, form.recur_week)
   return {
     title: form.title,
     type: form.type,
@@ -78,8 +95,8 @@ function toPayload(form) {
     description: form.description,
     location: form.location,
     audience: form.audience,
-    recurring: form.recurring === 'none' ? null : form.recurring,
-    event_date: form.recurring === 'none' ? form.event_date || null : null,
+    recurring,
+    event_date: form.recur_freq === 'none' ? form.event_date || null : null,
     start_time: form.start_time || null,
     end_time: form.end_time || null,
     image_url: form.image_url || null,
@@ -173,16 +190,34 @@ function EventForm({ initial, onSave, onCancel, saving }) {
       </Field>
 
       <Field label="Recurring">
-        <Select value={form.recurring} onChange={(e) => update({ recurring: e.target.value })}>
-          {RECURRING_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+        <Select value={form.recur_freq} onChange={(e) => update({ recur_freq: e.target.value })}>
+          <option value="none">None (one-off)</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
         </Select>
       </Field>
 
-      {form.recurring === 'none' && (
+      {form.recur_freq !== 'none' && (
+        <Field label="Day of week">
+          <Select value={form.recur_day} onChange={(e) => update({ recur_day: e.target.value })}>
+            {DAYS.map((d) => (
+              <option key={d} value={d}>{capitalize(d)}</option>
+            ))}
+          </Select>
+        </Field>
+      )}
+
+      {form.recur_freq === 'monthly' && (
+        <Field label="Week of month">
+          <Select value={form.recur_week} onChange={(e) => update({ recur_week: e.target.value })}>
+            {WEEKS.map((w) => (
+              <option key={w} value={w}>{w.charAt(0).toUpperCase() + w.slice(1)}</option>
+            ))}
+          </Select>
+        </Field>
+      )}
+
+      {form.recur_freq === 'none' && (
         <Field label="Event date">
           <Input type="date" value={form.event_date} onChange={(e) => update({ event_date: e.target.value })} required />
         </Field>
