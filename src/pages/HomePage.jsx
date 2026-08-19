@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useOutletContext } from 'react-router-dom'
-import { Bookmark, CalendarDays, Play, MapPin, Heart } from 'lucide-react'
+import { useNavigate, useOutletContext, useNavigationType } from 'react-router-dom'
+import { Bookmark, CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import { getEvents, getNews, getExploreCards } from '../lib/api.js'
@@ -89,6 +89,7 @@ function ExploreCard({ card, didDrag, navigate }) {
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const navType = useNavigationType()
   const outletContext = useOutletContext()
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})
   const user = useUser()
@@ -98,6 +99,8 @@ export default function HomePage() {
   const [news, setNews] = useState([])
   const [exploreCards, setExploreCards] = useState(FALLBACK_EXPLORE)
   const [showDonateModal, setShowDonateModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [fadeOut, setFadeOut] = useState(false)
   useScrollMemory('home')
 
   const qaCard = {
@@ -124,6 +127,21 @@ export default function HomePage() {
           to:         c.route,
         })))
       }
+      setFadeOut(true)
+      setTimeout(() => {
+        if (cancelled) return
+        setIsLoading(false)
+        if (navType === 'POP') {
+          const saved = sessionStorage.getItem('scroll_home')
+          if (saved) {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+              })
+            })
+          }
+        }
+      }, 300)
     }
     load()
     return () => { cancelled = true }
@@ -143,6 +161,22 @@ export default function HomePage() {
   const announcementItems = news.map((item, i) => ({ ...item, fullWidth: i % 3 === 0 }))
 
   return (
+    <>
+    {isLoading && (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: '#0a0a0a',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: '12px',
+        opacity: fadeOut ? 0 : 1,
+        transition: 'opacity 300ms ease',
+        pointerEvents: fadeOut ? 'none' : 'auto',
+      }}>
+        <Plus size={48} strokeWidth={1.5} color="#ffffff" />
+        <span style={{ fontSize: '28px', fontWeight: '800', color: '#fff', letterSpacing: '-0.02em' }}>Welcome</span>
+        <span style={{ fontSize: '13px', color: '#6e6e73' }}>Loading...</span>
+      </div>
+    )}
     <div
       className="page-transition"
       style={{ fontFamily: FONT, background: '#0a0a0a', minHeight: '100dvh', paddingBottom: '100px' }}
@@ -333,5 +367,6 @@ export default function HomePage() {
       </div>
 
     </div>
+    </>
   )
 }
