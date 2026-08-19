@@ -67,7 +67,16 @@ function ExploreCard({ card, didDrag, navigate }) {
       />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0) 55%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', left: '16px', bottom: '16px' }}>
-        <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.12)', color: ACCENT, fontSize: '12px', fontWeight: '700', padding: '4px 10px', borderRadius: '8px' }}>
+        <span style={{
+          display: 'inline-block',
+          background: (card.pill_color ?? ACCENT) + '22',
+          color: card.pill_color ?? ACCENT,
+          border: `1px solid ${(card.pill_color ?? ACCENT)}44`,
+          fontSize: '12px',
+          fontWeight: '700',
+          padding: '4px 10px',
+          borderRadius: '8px',
+        }}>
           {card.category}
         </span>
         <p style={{ fontSize: '26px', fontWeight: '700', color: '#ffffff', marginTop: '8px', lineHeight: 1.1 }}>
@@ -108,10 +117,11 @@ export default function HomePage() {
       setNews(nwRes.data?.length ? nwRes.data : fallbackNews)
       if (exRes.data?.length) {
         setExploreCards(exRes.data.map((c) => ({
-          image: c.image_url,
-          category: c.pill_label,
-          title: c.title,
-          to: c.route,
+          image:      c.image_url,
+          category:   c.pill_label,
+          pill_color: c.pill_color,
+          title:      c.title,
+          to:         c.route,
         })))
       }
     }
