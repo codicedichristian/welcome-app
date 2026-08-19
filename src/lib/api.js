@@ -1175,3 +1175,13 @@ export async function adminUpdateExploreCard(id, cardData) {
     .select()
   return { data, error }
 }
+
+export async function getExploreCard(route) {
+  const { data, error } = await supabase
+    .from('explore_cards')
+    .select('id, title, description, image_url, pill_label, pill_color, route, order_index')
+    .eq('route', route)
+    .limit(1)
+    .maybeSingle()
+  return { data, error }
+}

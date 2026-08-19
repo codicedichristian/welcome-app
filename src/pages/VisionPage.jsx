@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin } from 'lucide-react'
 import DetailPage from '../components/DetailPage.jsx'
+import { getExploreCard } from '../lib/api.js'
+
+const FALLBACK_IMAGE = 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365'
 
 const TILE_URL = 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
 
@@ -29,9 +32,17 @@ const WHITE_PIN = L.divIcon({
 })
 
 export default function VisionPage() {
+  const [heroImage, setHeroImage] = useState(FALLBACK_IMAGE)
+
+  useEffect(() => {
+    getExploreCard('/vision').then(({ data }) => {
+      if (data?.image_url) setHeroImage(data.image_url)
+    })
+  }, [])
+
   return (
     <DetailPage
-      image="https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80"
+      image={heroImage}
       title="Our Vision"
       description="We exist to see every person in Madrid and beyond experience the transforming love of Jesus Christ. We believe the local church is the hope of the world — a community of broken people made whole, sent out to serve their city and plant churches across the nations."
       backLabel="Home"
