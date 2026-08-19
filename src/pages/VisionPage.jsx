@@ -4,6 +4,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin } from 'lucide-react'
 import DetailPage from '../components/DetailPage.jsx'
+import BackRow from '../components/BackRow.jsx'
+import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getExploreCard } from '../lib/api.js'
 
 const FALLBACK_IMAGE = 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365'
@@ -32,16 +34,40 @@ const WHITE_PIN = L.divIcon({
   popupAnchor: [0, -8],
 })
 
+function VisionSkeleton() {
+  return (
+    <div style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
+      <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
+        <BackRow label="Home" fallback="/" />
+      </div>
+      <SkeletonCard height={260} radius={0} />
+      <div style={{ padding: '20px 22px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <SkeletonText width="55%" height={26} />
+        <SkeletonText height={15} />
+        <SkeletonText width="85%" height={15} />
+        <SkeletonText width="70%" height={15} />
+        <div style={{ marginTop: '8px' }}>
+          <SkeletonCard height={220} radius={16} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function VisionPage() {
-  const [heroImage, setHeroImage] = useState(FALLBACK_IMAGE)
-  const [description, setDescription] = useState(FALLBACK_DESCRIPTION)
+  const [heroImage, setHeroImage] = useState(null)
+  const [description, setDescription] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     getExploreCard('/vision').then(({ data }) => {
-      if (data?.image_url) setHeroImage(data.image_url)
-      if (data?.description) setDescription(data.description)
+      setHeroImage(data?.image_url || FALLBACK_IMAGE)
+      setDescription(data?.description || FALLBACK_DESCRIPTION)
+      setIsLoading(false)
     })
   }, [])
+
+  if (isLoading) return <VisionSkeleton />
 
   return (
     <DetailPage

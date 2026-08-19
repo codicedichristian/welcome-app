@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DetailPage from '../components/DetailPage.jsx'
+import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getSeasons, getExploreCard } from '../lib/api.js'
 
 function formatSeasonDate(dateStr) {
@@ -37,8 +38,8 @@ export default function SeasonsPage() {
       backPath="/"
     >
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-          <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {[0, 1, 2].map((i) => <SkeletonCard key={i} height={140} radius={20} />)}
         </div>
       ) : seasons.length === 0 ? (
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>

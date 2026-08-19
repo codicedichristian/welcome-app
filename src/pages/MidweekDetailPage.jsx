@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Check, Home } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
+import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getMidweekGroupDetail, rsvpMidweek } from '../lib/api.js'
 import { getStoredUser } from '../lib/user.js'
 import { isRsvped, addRsvp, getMidweekGroupId, setMidweekGroupId } from '../lib/rsvp.js'
@@ -52,9 +53,12 @@ export default function MidweekDetailPage() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 'calc(env(safe-area-inset-top) + 80px)' }}>
-          <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
-        </div>
+        <>
+          <SkeletonCard height={260} radius={0} />
+          <div style={{ padding: '0 22px', marginTop: '16px' }}>
+            <SkeletonCard height={120} radius={20} />
+          </div>
+        </>
       ) : !group ? (
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 'calc(env(safe-area-inset-top) + 80px)' }}>
           <p style={{ color: '#4a4a47', fontSize: '15px' }}>Group not found.</p>

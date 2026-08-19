@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import DetailPage from '../components/DetailPage.jsx'
+import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getExploreCard, getServiceTeams } from '../lib/api.js'
 
 export default function TeamsPage() {
   const [heroImage, setHeroImage] = useState(null)
   const [description, setDescription] = useState(null)
   const [teams, setTeams] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -15,6 +17,7 @@ export default function TeamsPage() {
       if (cardData?.image_url) setHeroImage(cardData.image_url)
       if (cardData?.description) setDescription(cardData.description)
       if (teamsData?.length) setTeams(teamsData)
+      setIsLoading(false)
     })
   }, [])
 
@@ -27,7 +30,9 @@ export default function TeamsPage() {
       backPath="/"
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {teams.map((team) => (
+        {isLoading ? (
+          [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} height={100} radius={20} />)
+        ) : teams.map((team) => (
           <div
             key={team.id}
             style={{

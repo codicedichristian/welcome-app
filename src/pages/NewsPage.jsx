@@ -4,7 +4,7 @@ import { Megaphone } from 'lucide-react'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
-import Spinner from '../components/Spinner.jsx'
+import { SkeletonText } from '../components/SkeletonCard.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 
 export default function NewsPage() {
@@ -38,7 +38,16 @@ export default function NewsPage() {
   return (
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
       {loading ? (
-        <Spinner />
+        <div className="mt-2 flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-[14px] border border-border bg-surface p-4" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <SkeletonText width="30%" height={24} radius={99} />
+              <SkeletonText width="80%" height={18} />
+              <SkeletonText height={14} />
+              <SkeletonText width="65%" height={14} />
+            </div>
+          ))}
+        </div>
       ) : error ? (
         <ErrorState />
       ) : news.length === 0 ? (

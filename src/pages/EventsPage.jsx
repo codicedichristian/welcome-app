@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
-import { getEvents } from '../lib/api.js'
-import { rsvpEvent } from '../lib/api.js'
+import { getEvents, rsvpEvent } from '../lib/api.js'
+import { SkeletonText } from '../components/SkeletonCard.jsx'
 import { events as fallbackEvents } from '../data/events.js'
 import { getOccurrencesInMonth } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
@@ -360,7 +360,18 @@ export default function EventsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '14px' }}>
           {loading ? (
-            <p style={{ color: '#6e6e73', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>Loading…</p>
+            [0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#111113', border: '1px solid #1e1e22', borderRadius: '18px', padding: '10px' }}
+              >
+                <div style={{ width: '64px', height: '64px', borderRadius: '14px', flexShrink: 0, background: 'linear-gradient(90deg,#1a1a1a 25%,#2a2a2a 50%,#1a1a1a 75%)', backgroundSize: '200% 100%', animation: 'skeleton-shimmer 1.5s infinite' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <SkeletonText width="70%" height={16} />
+                  <SkeletonText width="50%" height={12} />
+                </div>
+              </div>
+            ))
           ) : selEvents.length === 0 ? (
             <div
               style={{

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { PlayCircle, Headphones, Camera } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
+import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getLatestSundaySummary } from '../lib/api.js'
 
 function formatSundayDate(dateStr) {
@@ -64,8 +65,14 @@ export default function LastSundayPage() {
       <BackRow label="Home" />
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
-          <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
+        <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <SkeletonText width="38%" height={11} />
+          <SkeletonText width="68%" height={28} />
+          <SkeletonText width="35%" height={14} />
+          <div style={{ marginTop: '12px' }}>
+            <SkeletonCard height={120} radius={20} />
+          </div>
+          {[0, 1, 2].map((i) => <SkeletonCard key={i} height={54} radius={16} />)}
         </div>
       ) : !summary ? (
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
 import DetailPage from '../components/DetailPage.jsx'
+import BackRow from '../components/BackRow.jsx'
+import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getSeasonSundays } from '../lib/api.js'
 
 function formatDate(dateStr) {
@@ -14,6 +16,24 @@ function formatSundayRow(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr + 'T00:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+}
+
+function SeasonSkeleton() {
+  return (
+    <div style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
+      <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
+        <BackRow label="Sunday Series" fallback="/seasons" />
+      </div>
+      <SkeletonCard height={200} radius={0} />
+      <div style={{ padding: '20px 22px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <SkeletonText width="60%" height={26} />
+        <SkeletonText width="40%" height={13} />
+        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[0, 1, 2].map((i) => <SkeletonCard key={i} height={62} radius={14} />)}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function SundaysInSeason({ seasonId }) {
@@ -34,7 +54,9 @@ function SundaysInSeason({ seasonId }) {
         Sundays in this series
       </p>
       {loading ? (
-        <p style={{ color: '#4a4a47', fontSize: '15px', textAlign: 'center', paddingTop: '20px' }}>Loading…</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[0, 1, 2].map((i) => <SkeletonCard key={i} height={62} radius={14} />)}
+        </div>
       ) : sundays.length === 0 ? (
         <p style={{ color: '#6b6b68', fontSize: '14px', textAlign: 'center', paddingTop: '16px' }}>No sermons added yet</p>
       ) : (
@@ -75,6 +97,7 @@ function SundaysInSeason({ seasonId }) {
 export default function SeasonDetailPage() {
   const { id } = useParams()
   const [season, setSeason] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     getSeasonSundays(id).then(({ data }) => {
@@ -87,8 +110,11 @@ export default function SeasonDetailPage() {
           description: data[0].season_description ?? null,
         })
       }
+      setIsLoading(false)
     })
   }, [id])
+
+  if (isLoading) return <SeasonSkeleton />
 
   const subtitle = season?.start_date
     ? `${formatDate(season.start_date)}${season.end_date ? ` – ${formatDate(season.end_date)}` : ''}`
