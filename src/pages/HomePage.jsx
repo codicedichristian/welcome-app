@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Bookmark, CalendarDays, Play, MapPin, Heart } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
-import { getEvents, getNews } from '../lib/api.js'
+import { getEvents, getNews, getExploreCards } from '../lib/api.js'
 import { events as fallbackEvents } from '../data/events.js'
 import { news as fallbackNews } from '../data/news.js'
 import { getNextOccurrence, normalizeEvent } from '../lib/events.js'
@@ -12,12 +12,12 @@ import { useUser } from '../lib/UserContext.js'
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 const ACCENT = '#6d3ee0'
 
-const EXPLORE_CARDS = [
-  { image: 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365', category: 'Vision', title: 'Our Vision', to: '/vision' },
-  { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', category: 'Leadership', title: 'Meet the Pastors', to: '/pastors'  },
-  { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', category: 'Community', title: 'Midweeks',          to: '/midweek'  },
-  { image: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80', category: 'Sermons',    title: 'Sundays',          to: '/seasons'  },
-  { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80', category: 'Serve',      title: 'Service Teams',    to: '/teams'    },
+const FALLBACK_EXPLORE = [
+  { image: 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365', category: 'Vision',     title: 'Our Vision',       to: '/vision'   },
+  { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',                    category: 'Leadership', title: 'Meet the Pastors', to: '/pastors'  },
+  { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',                    category: 'Community',  title: 'Midweeks',         to: '/midweek'  },
+  { image: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80',                    category: 'Sermons',    title: 'Sundays',          to: '/seasons'  },
+  { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',                    category: 'Serve',      title: 'Service Teams',    to: '/teams'    },
 ]
 
 const NEWS_DOT = {
@@ -87,6 +87,7 @@ export default function HomePage() {
 
   const [events, setEvents] = useState([])
   const [news, setNews] = useState([])
+  const [exploreCards, setExploreCards] = useState(FALLBACK_EXPLORE)
   const [showDonateModal, setShowDonateModal] = useState(false)
   useScrollMemory('home')
 
@@ -101,10 +102,18 @@ export default function HomePage() {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      const [evRes, nwRes] = await Promise.all([getEvents(), getNews()])
+      const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
       if (cancelled) return
       setEvents(evRes.data?.length ? evRes.data : fallbackEvents)
       setNews(nwRes.data?.length ? nwRes.data : fallbackNews)
+      if (exRes.data?.length) {
+        setExploreCards(exRes.data.map((c) => ({
+          image: c.image_url,
+          category: c.pill_label,
+          title: c.title,
+          to: c.route,
+        })))
+      }
     }
     load()
     return () => { cancelled = true }
@@ -192,7 +201,7 @@ export default function HomePage() {
         </p>
         <div style={{ marginTop: '14px' }}>
           <SwipeCarousel
-            items={EXPLORE_CARDS}
+            items={exploreCards}
             sidePadding={24}
             renderItem={(card, didDrag) => <ExploreCard card={card} didDrag={didDrag} navigate={navigate} />}
           />

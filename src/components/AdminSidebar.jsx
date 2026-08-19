@@ -9,6 +9,7 @@ import {
   Layers,
   Users,
   MessageSquare,
+  Compass,
   ChevronLeft,
 } from 'lucide-react'
 
@@ -16,6 +17,7 @@ const NAV = [
   { label: 'Dashboard',  to: '/admin',           icon: LayoutDashboard, end: true },
   { label: 'Events',     to: '/admin/events',     icon: CalendarDays },
   { label: 'News',       to: '/admin/news',       icon: Newspaper },
+  { label: 'Explore',    to: '/admin/explore',    icon: Compass },
   { label: 'Midweek',    to: '/admin/midweek',    icon: Home },
   { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
   { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },

@@ -1149,3 +1149,29 @@ export async function adminDeleteSeason(id) {
   const { error } = await supabase.from('seasons').delete().eq('id', id)
   return { error }
 }
+
+export async function getExploreCards() {
+  const { data, error } = await supabase
+    .from('explore_cards')
+    .select('*')
+    .eq('active', true)
+    .order('order_index', { ascending: true })
+  return { data, error }
+}
+
+export async function adminGetExploreCards() {
+  const { data, error } = await supabase
+    .from('explore_cards')
+    .select('*')
+    .order('order_index', { ascending: true })
+  return { data, error }
+}
+
+export async function adminUpdateExploreCard(id, cardData) {
+  const { data, error } = await supabase
+    .from('explore_cards')
+    .update(cardData)
+    .eq('id', id)
+    .select()
+  return { data, error }
+}

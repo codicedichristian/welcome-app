@@ -42,6 +42,7 @@ import AdminEvents from './pages/admin/AdminEvents.jsx'
 import AdminMidweek from './pages/admin/AdminMidweek.jsx'
 import AdminMessages from './pages/admin/AdminMessages.jsx'
 import AdminSeasons from './pages/admin/AdminSeasons.jsx'
+import AdminExplore from './pages/admin/AdminExplore.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -133,6 +134,7 @@ export default function App() {
             <Route path="admin/midweek" element={<AdminMidweek />} />
             <Route path="admin/messages" element={<AdminMessages />} />
             <Route path="admin/seasons" element={<AdminSeasons />} />
+            <Route path="admin/explore" element={<AdminExplore />} />
           </Route>
         </Route>
       </Routes>
