@@ -37,25 +37,9 @@ export default function TeamsPage() {
               padding: '18px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '14px',
-                  background: `${team.color ?? '#a78bfa'}26`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <i className={team.icon} style={{ fontSize: '20px', color: team.color ?? '#a78bfa' }} />
-              </div>
-              <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', marginLeft: '12px', flex: 1 }}>
-                {team.name}
-              </p>
-            </div>
+            <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff' }}>
+              {team.name}
+            </p>
 
             {team.description && (
               <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>
