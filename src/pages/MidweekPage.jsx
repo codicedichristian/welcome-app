@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Clock, Check, Home, ChevronRight } from 'lucide-react'
-import { getMidweekGroups, rsvpMidweek, getExploreCard } from '../lib/api.js'
+import { getMidweekGroups, rsvpMidweek } from '../lib/api.js'
 import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent, getNextWednesday } from '../lib/events.js'
@@ -46,8 +46,6 @@ export default function MidweekPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [mapReady, setMapReady] = useState(false)
-  const [pageDescription, setPageDescription] = useState(null)
-  const [heroImage, setHeroImage] = useState(null)
   const [selectedId, setSelectedId] = useState(() => location.state?.selectedGroupId ?? null)
   const [going, setGoing] = useState(
     () => isRsvped('midweek') && String(getMidweekGroupId()) === String(location.state?.selectedGroupId ?? null),
@@ -57,10 +55,7 @@ export default function MidweekPage() {
     let cancelled = false
 
     async function load() {
-      const [{ data, error: apiError }, { data: cardData }] = await Promise.all([
-        getMidweekGroups(),
-        getExploreCard('/midweeks'),
-      ])
+      const { data, error: apiError } = await getMidweekGroups()
       if (cancelled) return
 
       if (apiError || !data || data.length === 0) {
@@ -69,15 +64,11 @@ export default function MidweekPage() {
       } else {
         setGroups(data)
       }
-      if (cardData?.description) setPageDescription(cardData.description)
-      if (cardData?.image_url) setHeroImage(cardData.image_url)
       setLoading(false)
     }
 
     load()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [])
 
   const selectedGroup = groups.find((group) => String(group.id) === String(selectedId))
@@ -128,54 +119,23 @@ export default function MidweekPage() {
   }
 
   return (
-    <div className="page-transition" style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
-      {/* Back row over hero */}
+    <div
+      className="page-transition"
+      style={{
+        background: '#0a0b0a',
+        minHeight: '100dvh',
+        paddingTop: 'calc(env(safe-area-inset-top) + 56px)',
+        paddingBottom: '40px',
+      }}
+    >
       <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
         <BackRow label="Midweeks" fallback="/midweeks" />
       </div>
 
-      {/* Hero */}
-      {heroImage ? (
-        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-          <img
-            src={heroImage}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(10,11,10,0.85) 100%)',
-            }}
-          />
-          <div style={{ position: 'absolute', left: '22px', bottom: '20px' }}>
-            <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em' }}>
-              Find your group
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 56px)', padding: '0 22px' }}>
-          <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginTop: 'calc(env(safe-area-inset-top) + 56px)' }}>
-            Midweeks
-          </p>
-        </div>
-      )}
-
-      {/* Body */}
-      <div style={{ padding: '20px 22px 0' }}>
-        {pageDescription && (
-          <p style={{ fontSize: '15px', color: '#c9c9c6', lineHeight: 1.6, marginBottom: '16px' }}>
-            {pageDescription}
-          </p>
-        )}
-
-        {!heroImage && (
-          <p style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff', marginTop: pageDescription ? '16px' : '0', marginBottom: '16px' }}>
-            Find your group
-          </p>
-        )}
+      <div style={{ padding: '0 22px' }}>
+        <p style={{ fontSize: '26px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '20px' }}>
+          Find your group
+        </p>
 
         {loading ? (
           <Spinner />
