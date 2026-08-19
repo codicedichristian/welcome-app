@@ -171,7 +171,7 @@ export default function EventDetailPage() {
         <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '16px', zIndex: 10 }}>
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => window.history.back()}
             style={{
               width: '36px',
               height: '36px',

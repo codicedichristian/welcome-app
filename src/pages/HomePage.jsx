@@ -12,6 +12,10 @@ import { useUser } from '../lib/UserContext.js'
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 const ACCENT = '#f97316'
 
+let cachedEvents = null
+let cachedNews = null
+let cachedExploreCards = null
+
 const FALLBACK_EXPLORE = [
   { image: 'https://framerusercontent.com/images/RLmGvYtKErutAy2pF3l7ZVZMoc.jpg?width=2048&height=1365', category: 'Vision',     title: 'Our Vision',       to: '/vision'   },
   { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',                    category: 'Leadership', title: 'Meet the Pastors', to: '/pastors'  },
@@ -112,35 +116,48 @@ export default function HomePage() {
   const qaSub = { fontSize: '10px', color: '#555', marginTop: '2px', marginBottom: 0 }
 
   useEffect(() => {
+    // Cache hit — render immediately, no loading overlay
+    if (cachedEvents && cachedNews && cachedExploreCards) {
+      setEvents(cachedEvents)
+      setNews(cachedNews)
+      setExploreCards(cachedExploreCards)
+      setIsLoading(false)
+      if (navType === 'POP') {
+        const saved = sessionStorage.getItem('scroll_home')
+        if (saved) {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+            })
+          })
+        }
+      }
+      return
+    }
+
     let cancelled = false
     async function load() {
       const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
       if (cancelled) return
-      setEvents(evRes.data?.length ? evRes.data : fallbackEvents)
-      setNews(nwRes.data?.length ? nwRes.data : fallbackNews)
-      if (exRes.data?.length) {
-        setExploreCards(exRes.data.map((c) => ({
-          image:      c.image_url,
-          category:   c.pill_label,
-          pill_color: c.pill_color,
-          title:      c.title,
-          to:         c.route,
-        })))
-      }
+
+      const finalEvents = evRes.data?.length ? evRes.data : fallbackEvents
+      const finalNews = nwRes.data?.length ? nwRes.data : fallbackNews
+      const finalExplore = exRes.data?.length
+        ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, to: c.route }))
+        : FALLBACK_EXPLORE
+
+      cachedEvents = finalEvents
+      cachedNews = finalNews
+      cachedExploreCards = finalExplore
+
+      setEvents(finalEvents)
+      setNews(finalNews)
+      setExploreCards(finalExplore)
+
       setFadeOut(true)
       setTimeout(() => {
         if (cancelled) return
         setIsLoading(false)
-        if (navType === 'POP') {
-          const saved = sessionStorage.getItem('scroll_home')
-          if (saved) {
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
-              })
-            })
-          }
-        }
       }, 300)
     }
     load()
