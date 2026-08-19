@@ -14,6 +14,7 @@ export default function SeasonsPage() {
   const [seasons, setSeasons] = useState([])
   const [loading, setLoading] = useState(true)
   const [heroImage, setHeroImage] = useState(null)
+  const [description, setDescription] = useState(null)
 
   useEffect(() => {
     Promise.all([
@@ -22,6 +23,7 @@ export default function SeasonsPage() {
     ]).then(([{ data: seasonsData }, { data: cardData }]) => {
       setSeasons(seasonsData ?? [])
       if (cardData?.image_url) setHeroImage(cardData.image_url)
+      if (cardData?.description) setDescription(cardData.description)
       setLoading(false)
     })
   }, [])
@@ -30,6 +32,7 @@ export default function SeasonsPage() {
     <DetailPage
       image={heroImage ?? undefined}
       title="Sunday Series"
+      description={description ?? undefined}
       backLabel="Home"
       backPath="/"
     >

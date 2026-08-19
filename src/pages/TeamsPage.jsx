@@ -42,10 +42,12 @@ const TEAMS = [
 
 export default function TeamsPage() {
   const [heroImage, setHeroImage] = useState(null)
+  const [description, setDescription] = useState(null)
 
   useEffect(() => {
     getExploreCard('/teams').then(({ data }) => {
       if (data?.image_url) setHeroImage(data.image_url)
+      if (data?.description) setDescription(data.description)
     })
   }, [])
 
@@ -53,6 +55,7 @@ export default function TeamsPage() {
     <DetailPage
       image={heroImage ?? undefined}
       title="Service Teams"
+      description={description ?? undefined}
       backLabel="Home"
       backPath="/"
     >
