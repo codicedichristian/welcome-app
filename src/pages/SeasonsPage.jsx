@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import BackRow from '../components/BackRow.jsx'
-import { getSeasons } from '../lib/api.js'
+import DetailPage from '../components/DetailPage.jsx'
+import { getSeasons, getExploreCard } from '../lib/api.js'
 
 function formatSeasonDate(dateStr) {
   if (!dateStr) return ''
@@ -13,41 +13,26 @@ export default function SeasonsPage() {
   const navigate = useNavigate()
   const [seasons, setSeasons] = useState([])
   const [loading, setLoading] = useState(true)
+  const [heroImage, setHeroImage] = useState(null)
 
   useEffect(() => {
-    getSeasons().then(({ data }) => {
-      setSeasons(data ?? [])
+    Promise.all([
+      getSeasons(),
+      getExploreCard('/seasons'),
+    ]).then(([{ data: seasonsData }, { data: cardData }]) => {
+      setSeasons(seasonsData ?? [])
+      if (cardData?.image_url) setHeroImage(cardData.image_url)
       setLoading(false)
     })
   }, [])
 
   return (
-    <div
-      className="page-transition"
-      style={{
-        background: '#0a0b0a',
-        minHeight: '100dvh',
-        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
-        paddingLeft: '22px',
-        paddingRight: '22px',
-        paddingBottom: '40px',
-      }}
+    <DetailPage
+      image={heroImage ?? undefined}
+      title="Sunday Series"
+      backLabel="Home"
+      backPath="/"
     >
-      <BackRow label="Home" />
-
-      <h1
-        style={{
-          fontSize: '24px',
-          fontWeight: '800',
-          color: '#ffffff',
-          letterSpacing: '-0.01em',
-          marginTop: '20px',
-          marginBottom: '24px',
-        }}
-      >
-        Sunday Series
-      </h1>
-
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
           <p style={{ color: '#4a4a47', fontSize: '15px' }}>Loading…</p>
@@ -126,6 +111,6 @@ export default function SeasonsPage() {
           ))}
         </div>
       )}
-    </div>
+    </DetailPage>
   )
 }

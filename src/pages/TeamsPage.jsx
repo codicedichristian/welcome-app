@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Music, Camera, Volume2, Smartphone, Settings } from 'lucide-react'
-import BackRow from '../components/BackRow.jsx'
+import DetailPage from '../components/DetailPage.jsx'
+import { getExploreCard } from '../lib/api.js'
 
 const TEAMS = [
   {
@@ -39,33 +41,21 @@ const TEAMS = [
 ]
 
 export default function TeamsPage() {
+  const [heroImage, setHeroImage] = useState(null)
+
+  useEffect(() => {
+    getExploreCard('/teams').then(({ data }) => {
+      if (data?.image_url) setHeroImage(data.image_url)
+    })
+  }, [])
+
   return (
-    <div
-      className="page-transition"
-      style={{
-        background: '#0a0b0a',
-        minHeight: '100dvh',
-        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
-        paddingLeft: '22px',
-        paddingRight: '22px',
-        paddingBottom: '40px',
-      }}
+    <DetailPage
+      image={heroImage ?? undefined}
+      title="Service Teams"
+      backLabel="Home"
+      backPath="/"
     >
-      <BackRow label="Home" />
-
-      <h1
-        style={{
-          fontSize: '24px',
-          fontWeight: '800',
-          color: '#ffffff',
-          letterSpacing: '-0.01em',
-          marginTop: '20px',
-          marginBottom: '24px',
-        }}
-      >
-        Our Teams
-      </h1>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {TEAMS.map((team) => {
           const Icon = team.icon
@@ -107,6 +97,6 @@ export default function TeamsPage() {
           )
         })}
       </div>
-    </div>
+    </DetailPage>
   )
 }
