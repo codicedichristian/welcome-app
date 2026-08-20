@@ -65,6 +65,20 @@ export default function ProfilePage() {
     })
   }, [user.notif_email, user.notif_whatsapp, user.notif_app])
 
+  // Sync local state from context when onboarding sheet saves new values
+  useEffect(() => {
+    if (!liveUser) return
+    setUser((prev) => ({
+      ...prev,
+      ...(liveUser.ageRange && { age_range: liveUser.ageRange }),
+      ...(liveUser.phone && liveUser.phone !== 'pending' && { phone: liveUser.phone }),
+      ...(liveUser.interests?.length && { interests: liveUser.interests }),
+      ...(liveUser.notifEmail != null && { notif_email: liveUser.notifEmail }),
+      ...(liveUser.notifWhatsapp != null && { notif_whatsapp: liveUser.notifWhatsapp }),
+      ...(liveUser.notifApp != null && { notif_app: liveUser.notifApp }),
+    }))
+  }, [liveUser?.ageRange, liveUser?.phone, liveUser?.interests, liveUser?.notifEmail, liveUser?.notifWhatsapp, liveUser?.notifApp])
+
   useEffect(() => {
     console.log('[Profile Pills] localUser.interests raw:', user?.interests)
     console.log('[Profile Pills] userInterests:', normalizeInterests(user?.interests))
