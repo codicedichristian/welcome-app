@@ -69,8 +69,11 @@ export default function App() {
     }
   }, [location.state])
 
-  // On every app open: refresh user, increment open count (once per 30 min window), decide whether to show sheet.
+  const userId = user?.id
+
+  // Runs once when a logged-in userId is available — not on every re-render or hot-reload.
   useEffect(() => {
+    if (!userId) return
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
       setUser(freshUser)
@@ -83,13 +86,16 @@ export default function App() {
         last_counted_at: localStorage.getItem('last_counted_at'),
       })
 
-      if (!freshUser.onboardingCompleted) {
+      // Strict check: null (old rows) treated as false, not as true
+      const isComplete = freshUser.onboardingCompleted === true
+
+      if (!isComplete) {
         setOnboardingMissing({ interests: true, phone: true })
         setShowOnboardingSheet(true)
         return
       }
 
-      // Only count once per 30-minute window so refreshes don't increment
+      // Count once per 2s window (testing; change to 30 * 60 * 1000 for prod)
       const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
       if (Date.now() - lastCounted <= 2000) return
 
@@ -108,9 +114,11 @@ export default function App() {
           setOnboardingMissing({ interests: missingInterests, phone: missingPhone })
           setShowOnboardingSheet(true)
         }
+        // if nothing missing → do NOT show sheet
       }
+      // else → not a %5 open → do NOT show sheet
     })
-  }, [])
+  }, [userId])
 
   useEffect(() => {
     const hideTimer = setTimeout(() => setSplashVisible(false), 1500)
