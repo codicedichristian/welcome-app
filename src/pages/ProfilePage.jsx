@@ -15,6 +15,12 @@ function getStoredUser() {
   }
 }
 
+const normInterest = (s) => String(s).trim().toLowerCase()
+const interestSelected = (interests, interest) => {
+  if (!interests || !Array.isArray(interests)) return false
+  return interests.map(normInterest).includes(normInterest(interest))
+}
+
 function formatMemberSince(isoDate) {
   if (!isoDate) return ''
   const date = new Date(isoDate)
@@ -50,6 +56,14 @@ export default function ProfilePage() {
       })
   }, [])
 
+  useEffect(() => {
+    console.log('[Profile] rendering interests:', {
+      userInterests: user?.interests,
+      type: typeof user?.interests,
+      isArray: Array.isArray(user?.interests),
+    })
+  }, [user.interests])
+
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
 
@@ -60,8 +74,10 @@ export default function ProfilePage() {
 
   const toggleInterest = async (interest) => {
     const current = user.interests ?? []
-    const updated = current.includes(interest)
-      ? current.filter((item) => item !== interest)
+    const norm = normInterest(interest)
+    const isCurrentlySelected = current.some(i => normInterest(i) === norm)
+    const updated = isCurrentlySelected
+      ? current.filter(i => normInterest(i) !== norm)
       : [...current, interest]
 
     // Optimistic local update
@@ -167,7 +183,7 @@ export default function ProfilePage() {
         <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Interests</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           {INTERESTS_OPTIONS.map((interest) => {
-            const selected = user.interests?.includes(interest)
+            const selected = interestSelected(user.interests, interest)
             return (
               <button
                 key={interest}
