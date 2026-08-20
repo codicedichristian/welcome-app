@@ -78,14 +78,15 @@ export default function App() {
       if (!freshUser) return
       setUser(freshUser)
 
-      // Increment count once per 30-minute window so refreshes don't count
-      const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
-      const now = Date.now()
+      // Increment count once per browser session (sessionStorage clears on tab/browser close)
       let count = parseInt(localStorage.getItem('app_open_count') || '0', 10)
-      if (now - lastCounted > 30 * 60 * 1000) {
+      if (!sessionStorage.getItem('session_started')) {
         count = count + 1
         localStorage.setItem('app_open_count', String(count))
-        localStorage.setItem('last_counted_at', String(now))
+        sessionStorage.setItem('session_started', 'true')
+        console.log('[Onboarding] new session, count now:', count)
+      } else {
+        console.log('[Onboarding] same session, count unchanged:', count)
       }
 
       const interestsMissing = (
@@ -101,7 +102,6 @@ export default function App() {
         interests: freshUser.interests,
         phone: freshUser.phone,
         app_open_count: count,
-        last_counted_at: lastCounted,
         interestsMissing,
         phoneMissing,
         anythingMissing,
