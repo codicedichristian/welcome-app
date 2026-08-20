@@ -3,6 +3,7 @@ import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
+import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
 
 const COUNTRY_CODES = [
   { code: '+39', flag: '🇮🇹' },
@@ -32,23 +33,29 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
   const user = getStoredUser()
   const sections = sectionsToShow
 
-  // Sheet slide-up animation
   const [visible, setVisible] = useState(false)
-
-  // Section navigation: -1 = intro, 0…n = section index
   const [currentSection, setCurrentSection] = useState(-1)
   const [animKey, setAnimKey] = useState(0)
-  const [slideDir, setSlideDir] = useState(1) // 1 = from right, -1 = from left
+  const [slideDir, setSlideDir] = useState(1)
 
-  // Interests — pre-populated with migrated DB values so periodic-check sheet shows current state
+  // Interests
   const [interests, setInterests] = useState(() => migrateInterests(user.interests))
   const [customTag, setCustomTag] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [shake, setShake] = useState(false)
 
+  // Age range
+  const [ageRange, setAgeRange] = useState(user.ageRange || user.age_range || '')
+
   // Phone
   const [countryCode, setCountryCode] = useState('+39')
   const [phone, setPhone] = useState('')
+  const [phoneSkipped, setPhoneSkipped] = useState(false)
+
+  // Notifications
+  const [notifEmail, setNotifEmail] = useState(user.notifEmail ?? user.notif_email ?? false)
+  const [notifWhatsapp, setNotifWhatsapp] = useState(user.notifWhatsapp ?? user.notif_whatsapp ?? false)
+  const [notifApp, setNotifApp] = useState(user.notifApp ?? user.notif_app ?? false)
 
   const [saving, setSaving] = useState(false)
 
@@ -70,13 +77,26 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
     setCurrentSection(n)
   }
 
-  const handleComplete = async (phoneVal) => {
+  const goNextOrComplete = () => {
+    const isLast = currentSection === sections.length - 1
+    if (isLast) handleComplete()
+    else goTo(currentSection + 1)
+  }
+
+  const handleComplete = async () => {
     setSaving(true)
 
     const finalInterests = sections.includes('interests') ? interests.filter(Boolean) : undefined
-    let finalPhone = sections.includes('phone') ? (phoneVal ?? 'pending') : undefined
+    const finalAgeRange = sections.includes('age_range') ? (ageRange || null) : undefined
+    const finalNotifEmail = sections.includes('notifications') ? notifEmail : undefined
+    const finalNotifWhatsapp = sections.includes('notifications') ? notifWhatsapp : undefined
+    const finalNotifApp = sections.includes('notifications') ? notifApp : undefined
 
-    // FIX 5: never overwrite a real phone with 'pending'
+    let finalPhone = sections.includes('phone')
+      ? (phoneSkipped || !phone.trim() ? 'pending' : `${countryCode}${phone.trim()}`)
+      : undefined
+
+    // Never overwrite a real phone with 'pending'
     if (finalPhone !== undefined) {
       const { data: currentData } = await supabase.from('users').select('phone').eq('id', user.id).single()
       if (currentData?.phone && currentData.phone !== 'pending') {
@@ -84,11 +104,13 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
       }
     }
 
-    console.log('[Onboarding] saving interests:', finalInterests)
-
     const updatePayload = { onboarding_completed: true }
     if (finalInterests !== undefined) updatePayload.interests = finalInterests
+    if (finalAgeRange !== undefined) updatePayload.age_range = finalAgeRange
     if (finalPhone !== undefined) updatePayload.phone = finalPhone
+    if (finalNotifEmail !== undefined) updatePayload.notif_email = finalNotifEmail
+    if (finalNotifWhatsapp !== undefined) updatePayload.notif_whatsapp = finalNotifWhatsapp
+    if (finalNotifApp !== undefined) updatePayload.notif_app = finalNotifApp
 
     const { data, error } = await supabase
       .from('users')
@@ -98,20 +120,14 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
 
     console.log('[Onboarding] save result:', { data, error })
 
-    // Sync localStorage immediately so profile page doesn't show stale data
-    const syncedUser = {
-      ...getStoredUser(),
-      onboardingCompleted: true,
-      ...(finalInterests !== undefined && { interests: finalInterests }),
-      ...(finalPhone !== undefined && { phone: finalPhone }),
-    }
-    localStorage.setItem('welcome_user', JSON.stringify(syncedUser))
-
-    // Propagate to App.jsx user state so UserContext is also fresh
     onSave({
       onboardingCompleted: true,
       ...(finalInterests !== undefined && { interests: finalInterests }),
+      ...(finalAgeRange !== undefined && { ageRange: finalAgeRange }),
       ...(finalPhone !== undefined && { phone: finalPhone }),
+      ...(finalNotifEmail !== undefined && { notifEmail: finalNotifEmail }),
+      ...(finalNotifWhatsapp !== undefined && { notifWhatsapp: finalNotifWhatsapp }),
+      ...(finalNotifApp !== undefined && { notifApp: finalNotifApp }),
     })
 
     setSaving(false)
@@ -124,20 +140,11 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
       setTimeout(() => setShake(false), 600)
       return
     }
-    const isLast = sections.indexOf('interests') === sections.length - 1
-    if (isLast) {
-      handleComplete(undefined)
-    } else {
-      goTo(currentSection + 1)
-    }
+    goNextOrComplete()
   }
 
   const toggleInterest = (i) => {
-    setInterests((prev) => {
-      const next = prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
-      console.log('[Onboarding] interests state:', next)
-      return next
-    })
+    setInterests((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i])
   }
 
   const addCustomTag = () => {
@@ -149,7 +156,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
   }
 
   const sectionName = currentSection >= 0 ? sections[currentSection] : null
-  const stepNum = currentSection + 1 // 1-indexed
+  const stepNum = currentSection + 1
   const totalSteps = sections.length
   const canGoBack = currentSection > 0
   const animClass = slideDir === 1 ? 'animate-slide-in-right' : 'animate-slide-in-left'
@@ -195,26 +202,29 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
     </button>
   )
 
+  const navRow = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+      {canGoBack ? backBtn : <div style={{ width: 28, flexShrink: 0 }} />}
+      <p style={stepLabel}>Step {stepNum} of {totalSteps}</p>
+    </div>
+  )
+
   return (
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 9000 }}
       onTouchStart={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
-      {/* Dark backdrop — NOT dismissible by tap */}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
 
-      {/* Sheet */}
       <div style={sheetStyle}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
-        {/* Drag handle */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12, marginBottom: 8, flexShrink: 0 }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: '#333' }} />
         </div>
 
-        {/* Animated section container — key changes on every navigation to replay animation */}
         <div
           key={animKey}
           className={currentSection === -1 ? '' : animClass}
@@ -251,21 +261,14 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
           {/* ── INTERESTS ── */}
           {sectionName === 'interests' && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              {/* Scrollable chip area */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
-                {/* Nav row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                  {canGoBack ? backBtn : <div style={{ width: 28, flexShrink: 0 }} />}
-                  <p style={stepLabel}>Step {stepNum} of {totalSteps}</p>
-                </div>
-
+                {navRow}
                 <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
                   What interests you?
                 </h2>
                 <p style={{ fontSize: 15, color: '#666', margin: '0 0 22px', lineHeight: 1.5 }}>
                   Choose as many as you like
                 </p>
-
                 <div style={{
                   display: 'flex', flexWrap: 'wrap', gap: 8, paddingBottom: 16,
                   animation: shake ? 'shake-x 0.5s ease-in-out' : 'none',
@@ -288,7 +291,6 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                       {interest}
                     </button>
                   ))}
-
                   {showCustomInput ? (
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
@@ -327,19 +329,73 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   )}
                 </div>
               </div>
-
-              {/* Fixed Next button */}
               <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 16px)', flexShrink: 0 }}>
                 <button
                   type="button"
                   onClick={handleNextInterests}
                   disabled={saving}
+                  style={{ width: '100%', height: 52, background: '#f97316', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer' }}
+                >
+                  {saving ? 'Saving...' : 'Next'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── AGE RANGE ── */}
+          {sectionName === 'age_range' && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
+                {navRow}
+                <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+                  How old are you?
+                </h2>
+                <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', lineHeight: 1.5 }}>
+                  Helps us tailor content for you
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {AGE_RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setAgeRange(option)}
+                      style={{
+                        width: '100%', height: 52, borderRadius: 14,
+                        border: ageRange === option ? 'none' : '1.5px solid #333',
+                        background: ageRange === option ? '#f97316' : 'transparent',
+                        color: ageRange === option ? '#fff' : '#aaa',
+                        fontSize: 16, fontWeight: ageRange === option ? 700 : 400,
+                        cursor: 'pointer', textAlign: 'left', paddingLeft: 20,
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 16px)', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={goNextOrComplete}
+                  disabled={saving || !ageRange}
                   style={{
-                    width: '100%', height: 52, background: '#f97316', color: '#fff',
-                    fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer',
+                    width: '100%', height: 52,
+                    background: saving || !ageRange ? '#1e1e1e' : '#f97316',
+                    color: saving || !ageRange ? '#555' : '#fff',
+                    fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none',
+                    cursor: saving || !ageRange ? 'not-allowed' : 'pointer',
+                    marginBottom: 10, transition: 'background 200ms, color 200ms',
                   }}
                 >
                   {saving ? 'Saving...' : 'Next'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAgeRange(''); goNextOrComplete() }}
+                  disabled={saving}
+                  style={{ width: '100%', background: 'none', border: 'none', color: '#555', fontSize: 14, cursor: 'pointer', padding: '6px 0' }}
+                >
+                  Skip for now
                 </button>
               </div>
             </div>
@@ -348,15 +404,8 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
           {/* ── PHONE ── */}
           {sectionName === 'phone' && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              {/* Scrollable content */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
-                {/* Nav row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  {canGoBack ? backBtn : <div style={{ width: 28, flexShrink: 0 }} />}
-                  <p style={stepLabel}>Step {stepNum} of {totalSteps}</p>
-                </div>
-
-                {/* Centered body */}
+                {navRow}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 20 }}>
                   <WhatsAppIcon />
                   <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: '16px 0 8px', textAlign: 'center', letterSpacing: '-0.02em' }}>
@@ -365,7 +414,6 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', textAlign: 'center', lineHeight: 1.5 }}>
                     Get event invites and reminders directly on WhatsApp
                   </p>
-
                   <div style={{ width: '100%', display: 'flex', gap: 10, marginBottom: 8 }}>
                     <select
                       value={countryCode}
@@ -385,7 +433,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                       inputMode="tel"
                       placeholder="Phone number"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => { setPhone(e.target.value); setPhoneSkipped(false) }}
                       style={{
                         flex: 1, height: 52, background: '#1a1a1a', border: '1px solid #333',
                         borderRadius: 12, color: '#fff', fontSize: 16,
@@ -393,18 +441,15 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                       }}
                     />
                   </div>
-
                   <p style={{ fontSize: 12, color: '#444', textAlign: 'center', lineHeight: 1.5, width: '100%', marginBottom: 4 }}>
                     We'll only message you for events and important updates
                   </p>
                 </div>
               </div>
-
-              {/* Fixed bottom buttons */}
               <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 16px)', flexShrink: 0 }}>
                 <button
                   type="button"
-                  onClick={() => handleComplete(phone.trim() ? `${countryCode}${phone.trim()}` : 'pending')}
+                  onClick={() => { setPhoneSkipped(false); goNextOrComplete() }}
                   disabled={saving || !phone.trim()}
                   style={{
                     width: '100%', height: 52,
@@ -412,19 +457,69 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                     color: saving || !phone.trim() ? '#555' : '#fff',
                     fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none',
                     cursor: saving || !phone.trim() ? 'not-allowed' : 'pointer',
-                    marginBottom: 10,
-                    transition: 'background 200ms, color 200ms',
+                    marginBottom: 10, transition: 'background 200ms, color 200ms',
                   }}
                 >
                   {saving ? 'Saving...' : 'Save my number'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleComplete('pending')}
+                  onClick={() => { setPhoneSkipped(true); goNextOrComplete() }}
                   disabled={saving}
                   style={{ width: '100%', background: 'none', border: 'none', color: '#555', fontSize: 14, cursor: 'pointer', padding: '6px 0' }}
                 >
                   Skip for now
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── NOTIFICATIONS ── */}
+          {sectionName === 'notifications' && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
+                {navRow}
+                <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+                  Stay in the loop
+                </h2>
+                <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', lineHeight: 1.5 }}>
+                  Choose how you want to hear from us
+                </p>
+                {[
+                  { label: 'Email', value: notifEmail, set: setNotifEmail },
+                  { label: 'WhatsApp', value: notifWhatsapp, set: setNotifWhatsapp },
+                  { label: 'App notifications', value: notifApp, set: setNotifApp },
+                ].map((row) => (
+                  <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20 }}>
+                    <span style={{ fontSize: 16, color: '#fff' }}>{row.label}</span>
+                    <div
+                      onClick={() => row.set((v) => !v)}
+                      style={{
+                        width: 48, height: 28, borderRadius: 999,
+                        backgroundColor: row.value ? '#ffffff' : '#2a2a2a',
+                        position: 'relative', cursor: 'pointer', flexShrink: 0,
+                        transition: 'background-color 200ms',
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute', top: 4,
+                        left: row.value ? 24 : 4,
+                        width: 20, height: 20, borderRadius: '50%',
+                        backgroundColor: row.value ? '#000000' : '#555555',
+                        transition: 'left 200ms',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: '12px 24px calc(env(safe-area-inset-bottom) + 16px)', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={goNextOrComplete}
+                  disabled={saving}
+                  style={{ width: '100%', height: 52, background: '#f97316', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer' }}
+                >
+                  {saving ? 'Saving...' : 'Done'}
                 </button>
               </div>
             </div>

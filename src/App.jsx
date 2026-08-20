@@ -65,7 +65,7 @@ export default function App() {
   // Triggered by LoginPage navigation state when onboarding_completed is false
   useEffect(() => {
     if (location.state?.showOnboarding) {
-      setOnboardingMissing(['interests', 'phone'])
+      setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
       setShowOnboardingSheet(true)
     }
   }, [location.state])
@@ -92,11 +92,13 @@ export default function App() {
 
       const sectionsToShow = []
       if (normalizeInterests(freshUser.interests).length === 0) sectionsToShow.push('interests')
+      if (!freshUser.ageRange) sectionsToShow.push('age_range')
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
 
       console.log('[Onboarding Check]', {
         onboarding_completed: freshUser.onboardingCompleted,
         interests: freshUser.interests,
+        ageRange: freshUser.ageRange,
         phone: freshUser.phone,
         app_open_count: count,
         sectionsToShow,
@@ -104,7 +106,7 @@ export default function App() {
 
       // Case A: onboarding never completed — always show all sections
       if (freshUser.onboardingCompleted !== true) {
-        setOnboardingMissing(['interests', 'phone'])
+        setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
         return
       }
