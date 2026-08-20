@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Cross, Check, Plus } from 'lucide-react'
 import { registerVisitor } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
-import { INTERESTS_OPTIONS } from '../onboarding/options.js'
 
 const VIDEO_SRC =
   'https://vive.sfo2.cdn.digitaloceanspaces.com/2026/website/Hero%20Videos/2026_Website%20Hero%201280x720_Mobile.mp4'
@@ -80,7 +79,7 @@ function ProgressBar({ step }) {
       <div
         style={{
           height: '100%',
-          width: `${(step / 5) * 100}%`,
+          width: `${(step / 4) * 100}%`,
           background: '#f97316',
           borderRadius: 2,
           transition: 'width 300ms ease',
@@ -336,48 +335,11 @@ function Screen1({ form, update }) {
 function Screen2({ form, update }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={headingStyle}>Quanti anni hai?</h2>
-      <input
-        type="number"
-        inputMode="numeric"
-        placeholder="Es. 27"
-        min={1}
-        max={120}
-        value={form.age}
-        onChange={(e) => update({ age: e.target.value })}
-        style={inputStyle}
-      />
-    </div>
-  )
-}
-
-function Screen3({ form, update }) {
-  const toggleInterest = (interest) => {
-    const next = form.interests.includes(interest)
-      ? form.interests.filter((i) => i !== interest)
-      : [...form.interests, interest]
-    update({ interests: next })
-  }
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28, overflowY: 'auto' }}>
-      <div>
-        <h2 style={{ ...headingStyle, marginBottom: 16 }}>Cosa ti interessa?</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {INTERESTS_OPTIONS.map((opt) => (
-            <Chip key={opt} label={opt} selected={form.interests.includes(opt)} onToggle={() => toggleInterest(opt)} />
-          ))}
-        </div>
-      </div>
-      <div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', margin: '0 0 14px', letterSpacing: '-0.01em' }}>
-          Come ci hai conosciuto?
-        </h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {HOW_FOUND.map((opt) => (
-            <Chip key={opt} label={opt} selected={form.howFoundUs === opt} onToggle={() => update({ howFoundUs: opt })} />
-          ))}
-        </div>
+      <h2 style={headingStyle}>Come ci hai conosciuto?</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        {HOW_FOUND.map((opt) => (
+          <Chip key={opt} label={opt} selected={form.howFoundUs === opt} onToggle={() => update({ howFoundUs: opt })} />
+        ))}
       </div>
     </div>
   )
@@ -511,8 +473,6 @@ export default function WelcomeFlowPage() {
 
   const [form, setForm] = useState({
     fullName: '',
-    age: '',
-    interests: [],
     howFoundUs: '',
     email: '',
     password: '',
@@ -532,10 +492,9 @@ export default function WelcomeFlowPage() {
   const canContinue = () => {
     switch (screen) {
       case 1: return form.fullName.trim().length > 0
-      case 2: return form.age !== '' && Number(form.age) >= 1 && Number(form.age) <= 120
-      case 3: return form.interests.length > 0 && form.howFoundUs !== ''
-      case 4: return EMAIL_RE.test(form.email) && form.password.length >= 6
-      case 5: return form.privacyAccepted
+      case 2: return form.howFoundUs !== ''
+      case 3: return EMAIL_RE.test(form.email) && form.password.length >= 6
+      case 4: return form.privacyAccepted
       default: return true
     }
   }
@@ -551,11 +510,11 @@ export default function WelcomeFlowPage() {
     }
     setSaving(false)
     setDirection(1)
-    setScreen(6)
+    setScreen(5)
   }
 
   if (screen === 0) return <SplashScreen onStart={() => goTo(1)} onLogin={() => navigate('/login')} />
-  if (screen === 6) return <SuccessScreen onEnter={() => navigate('/login', { replace: true })} />
+  if (screen === 5) return <SuccessScreen onEnter={() => navigate('/login', { replace: true })} />
 
   const animClass = direction === 1 ? 'animate-slide-in-right' : 'animate-slide-in-left'
 
@@ -591,7 +550,7 @@ export default function WelcomeFlowPage() {
       </div>
 
       <p style={{ fontSize: 13, color: '#555', marginTop: 6, marginBottom: 0 }}>
-        Passo {screen} di 5
+        Passo {screen} di 4
       </p>
 
       {/* Animated step */}
@@ -602,9 +561,8 @@ export default function WelcomeFlowPage() {
       >
         {screen === 1 && <Screen1 form={form} update={update} />}
         {screen === 2 && <Screen2 form={form} update={update} />}
-        {screen === 3 && <Screen3 form={form} update={update} />}
-        {screen === 4 && <Screen4 form={form} update={update} />}
-        {screen === 5 && <Screen5 form={form} update={update} />}
+        {screen === 3 && <Screen4 form={form} update={update} />}
+        {screen === 4 && <Screen5 form={form} update={update} />}
       </div>
 
       {error && (
@@ -615,9 +573,9 @@ export default function WelcomeFlowPage() {
 
       <OrangeButton
         disabled={!canContinue() || saving}
-        onClick={screen === 5 ? handleSubmit : () => goTo(screen + 1)}
+        onClick={screen === 4 ? handleSubmit : () => goTo(screen + 1)}
       >
-        {screen === 5 ? (saving ? 'Creando account…' : 'Crea il mio account') : 'Continua'}
+        {screen === 4 ? (saving ? 'Creando account…' : 'Crea il mio account') : 'Continua'}
       </OrangeButton>
     </div>
   )

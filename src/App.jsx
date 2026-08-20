@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import OnboardingSheet from './components/OnboardingSheet.jsx'
+import PhoneReminderSheet from './components/PhoneReminderSheet.jsx'
 import { UserContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
@@ -56,7 +58,14 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(!isPublicRoute)
   const [splashVisible, setSplashVisible] = useState(!isPublicRoute)
   const [showPWAPrompt, setShowPWAPrompt] = useState(shouldShowPWAPrompt)
+  const [showOnboardingSheet, setShowOnboardingSheet] = useState(false)
+  const [showPhoneSheet, setShowPhoneSheet] = useState(false)
   const [user, setUser] = useState(() => getStoredUser())
+
+  useEffect(() => {
+    if (location.state?.showOnboarding) setShowOnboardingSheet(true)
+    if (location.state?.showPhoneReminder) setShowPhoneSheet(true)
+  }, [location.state])
 
   // Always refresh role from Supabase on mount — localStorage is cache only.
   useEffect(() => {
@@ -94,6 +103,8 @@ export default function App() {
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
       {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
+      {showOnboardingSheet && <OnboardingSheet onComplete={() => setShowOnboardingSheet(false)} />}
+      {showPhoneSheet && <PhoneReminderSheet onComplete={() => setShowPhoneSheet(false)} />}
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

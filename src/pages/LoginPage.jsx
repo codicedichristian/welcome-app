@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Cross } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
-import { getUserByAuthId } from '../lib/api.js'
+import { getUserByAuthId, incrementLoginCount } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
 import PasswordField from '../onboarding/components/PasswordField.jsx'
 import TextField from '../onboarding/components/TextField.jsx'
@@ -54,8 +54,21 @@ export default function LoginPage() {
       return
     }
 
+    const newCount = (profile.login_count || 0) + 1
+    await incrementLoginCount(profile.id, newCount)
     localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(profile, data.user.id)))
-    navigate('/', { replace: true })
+
+    const needsOnboarding = !profile.onboarding_completed
+    const needsPhoneReminder =
+      profile.onboarding_completed && profile.phone === 'pending' && newCount % 10 === 0
+
+    if (needsOnboarding) {
+      navigate('/', { replace: true, state: { showOnboarding: true } })
+    } else if (needsPhoneReminder) {
+      navigate('/', { replace: true, state: { showPhoneReminder: true } })
+    } else {
+      navigate('/', { replace: true })
+    }
   }
 
   const handleResetSubmit = async (e) => {

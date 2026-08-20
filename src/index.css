@@ -89,6 +89,17 @@ textarea {
   100% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
 /* Skeleton shimmer */
 @keyframes skeleton-shimmer {
   0%   { background-position: 200% 0 }

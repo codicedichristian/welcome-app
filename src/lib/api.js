@@ -22,8 +22,6 @@ export async function registerVisitor(form) {
       first_name: firstName,
       last_name: lastName,
       email: form.email,
-      age_range: String(form.age),
-      interests: form.interests,
       how_found_us: form.howFoundUs,
       privacy_accepted: true,
       marketing_consent: form.marketingConsent ?? false,
@@ -46,6 +44,23 @@ export async function registerVisitor(form) {
   }
 
   return { user: dbUser, authId, error: dbError }
+}
+
+export async function incrementLoginCount(userId, newCount) {
+  return supabase.from('users').update({ login_count: newCount }).eq('id', userId)
+}
+
+export async function updateUserOnboarding(userId, { age, interests, phone }) {
+  return supabase.from('users').update({
+    age_range: String(age),
+    interests,
+    phone,
+    onboarding_completed: true,
+  }).eq('id', userId)
+}
+
+export async function updateUserPhone(userId, phone) {
+  return supabase.from('users').update({ phone }).eq('id', userId)
 }
 
 export async function registerUser(userData) {
