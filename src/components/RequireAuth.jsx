@@ -7,5 +7,5 @@ export default function RequireAuth() {
 
   if (status === 'loading') return <Spinner />
   if (status === 'authenticated') return <Outlet />
-  return <Navigate to="/login" replace />
+  return <Navigate to="/welcome" replace />
 }

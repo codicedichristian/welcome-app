@@ -2,6 +2,52 @@ import { supabase } from './supabase.js'
 
 // AUTH
 
+// New visitor registration for the pre-login welcome flow
+export async function registerVisitor(form) {
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: form.email,
+    password: form.password,
+  })
+  if (authError) return { user: null, authId: null, error: authError }
+
+  const authId = authData.user?.id
+  const nameParts = form.fullName.trim().split(' ')
+  const firstName = nameParts[0]
+  const lastName = nameParts.slice(1).join(' ') || ''
+
+  const { data: dbUser, error: dbError } = await supabase
+    .from('users')
+    .insert({
+      auth_id: authId,
+      first_name: firstName,
+      last_name: lastName,
+      email: form.email,
+      age_range: String(form.age),
+      interests: form.interests,
+      how_found_us: form.howFoundUs,
+      privacy_accepted: true,
+      marketing_consent: form.marketingConsent ?? false,
+      profiling_consent: form.profilingConsent ?? false,
+      privacy_policy_version: 'v1.0',
+      role: 'visitor',
+    })
+    .select()
+    .single()
+
+  if (!dbError && dbUser) {
+    await logGdprConsent(dbUser.id, {
+      privacy_accepted: true,
+      marketing_consent: form.marketingConsent ?? false,
+      profiling_consent: form.profilingConsent ?? false,
+      how_found_us: form.howFoundUs,
+      timestamp: new Date().toISOString(),
+      privacy_policy_version: 'v1.0',
+    }, 'registration')
+  }
+
+  return { user: dbUser, authId, error: dbError }
+}
+
 export async function registerUser(userData) {
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: userData.email,

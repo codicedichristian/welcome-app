@@ -7,8 +7,8 @@ import PWAInstallPrompt, { shouldShowPWAPrompt } from './components/PWAInstallPr
 import AppLayout from './layouts/AppLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated.jsx'
-import OnboardingPage from './pages/OnboardingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import WelcomeFlowPage from './pages/WelcomeFlowPage.jsx'
 import HomePage from './pages/HomePage.jsx'
 import EventsPage from './pages/EventsPage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
@@ -96,7 +96,7 @@ export default function App() {
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route element={<RedirectIfAuthenticated />}>
-          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/welcome" element={<WelcomeFlowPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
         <Route element={<RequireAuth />}>
