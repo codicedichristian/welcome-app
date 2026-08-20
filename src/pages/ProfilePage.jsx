@@ -74,6 +74,7 @@ export default function ProfilePage() {
   const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
 
   const handleInterestToggle = async (pill) => {
+    if (!user.id) { console.error('[Profile] user.id not loaded yet — skipping interest save'); return }
     const current = normalizeInterests(user?.interests)
     const updated = current
       .map((i) => i.toLowerCase().trim())
@@ -101,13 +102,17 @@ export default function ProfilePage() {
   }
 
   const handleNotifToggle = async (key) => {
+    const id = user.id
+    console.log('[Profile] handleNotifToggle key:', key, 'user.id:', id)
+    if (!id) { console.error('[Profile] user.id not loaded yet — skipping save'); return }
+
     const updated = { ...notifications, [key]: !notifications[key] }
     setNotifications(updated)
 
     const { error } = await supabase
       .from('users')
       .update({ notif_email: updated.email, notif_whatsapp: updated.whatsapp, notif_app: updated.app })
-      .eq('id', user.id)
+      .eq('id', id)
 
     console.log('[Profile] notif saved:', updated, error?.message || 'OK')
 
@@ -127,6 +132,7 @@ export default function ProfilePage() {
   }
 
   const toggleConsent = async (key) => {
+    if (!user.id) { console.error('[Profile] user.id not loaded yet — skipping consent save'); return }
     const updated = { ...consents, [key]: !consents[key] }
     setConsents(updated)
     await updateUserConsents(user.id, { marketing: updated.marketing, profiling: updated.profiling })
