@@ -153,23 +153,12 @@ function SplashScreen({ onStart, onLogin }) {
             fontSize: 52,
             fontWeight: 700,
             color: '#ffffff',
-            margin: 0,
+            margin: '0 0 12px',
             letterSpacing: '-0.02em',
           }}
         >
-          Welcome
+          Vive Church
         </h1>
-
-        <p
-          style={{
-            fontSize: 16,
-            color: 'rgba(255,255,255,0.55)',
-            margin: '0 0 12px',
-            textAlign: 'center',
-          }}
-        >
-          Una comunità che ti aspetta
-        </p>
 
         <button
           type="button"
@@ -263,9 +252,10 @@ function SuccessScreen({ onEnter }) {
           textAlign: 'center',
           marginTop: 10,
           marginBottom: 40,
+          lineHeight: 1.5,
         }}
       >
-        Siamo felici di averti con noi
+        Siamo felici di averti con noi! Controlla la tua email e conferma il tuo account per accedere
       </p>
 
       {showPWAHint && (
@@ -319,7 +309,7 @@ function SuccessScreen({ onEnter }) {
         </div>
       )}
 
-      <OrangeButton onClick={onEnter}>Entra nell'app</OrangeButton>
+      <OrangeButton onClick={onEnter}>OK, vado a confermare</OrangeButton>
     </div>
   )
 }
@@ -559,14 +549,13 @@ export default function WelcomeFlowPage() {
       setSaving(false)
       return
     }
-    localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(user, authId)))
     setSaving(false)
     setDirection(1)
     setScreen(6)
   }
 
   if (screen === 0) return <SplashScreen onStart={() => goTo(1)} onLogin={() => navigate('/login')} />
-  if (screen === 6) return <SuccessScreen onEnter={() => navigate('/', { replace: true })} />
+  if (screen === 6) return <SuccessScreen onEnter={() => navigate('/login', { replace: true })} />
 
   const animClass = direction === 1 ? 'animate-slide-in-right' : 'animate-slide-in-left'
 
