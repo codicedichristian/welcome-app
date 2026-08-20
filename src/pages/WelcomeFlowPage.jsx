@@ -478,7 +478,7 @@ function Screen5({ form, update }) {
         e i Termini di utilizzo
       </ConsentRow>
       <ConsentRow checked={form.marketingConsent} onChange={(v) => update({ marketingConsent: v })}>
-        Accetto di ricevere comunicazioni dalla chiesa
+        Voglio essere il primo a sapere — eventi, annunci e momenti che non vorrai perderti
       </ConsentRow>
       <ConsentRow checked={form.profilingConsent} onChange={(v) => update({ profilingConsent: v })}>
         Accetto l'uso dei miei dati per personalizzare l'esperienza
