@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck, ChevronRight } from 'lucide-react'
-import { INTERESTS_OPTIONS } from '../onboarding/options.js'
+import { INTERESTS, migrateInterests } from '../constants/interests.js'
+import { normalizeInterests } from '../utils/normalizeInterests.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
@@ -36,11 +37,18 @@ export default function RightPanel({ isOpen, onClose }) {
       if (fresh.id) {
         supabase
           .from('users')
-          .select('marketing_consent, profiling_consent')
+          .select('*')
           .eq('id', fresh.id)
           .single()
           .then(({ data }) => {
-            if (data) setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+            if (!data) return
+            setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+            const migrated = migrateInterests(data.interests)
+            setUser((prev) => {
+              const next = { ...prev, ...data, interests: migrated }
+              localStorage.setItem('welcome_user', JSON.stringify(next))
+              return next
+            })
           })
       }
     }
@@ -54,12 +62,18 @@ export default function RightPanel({ isOpen, onClose }) {
     setUser(next)
   }
 
-  const toggleInterest = (interest) => {
-    const interests = user.interests ?? []
-    const updated = interests.includes(interest)
-      ? interests.filter((i) => i !== interest)
-      : [...interests, interest]
-    persist({ ...user, interests: updated })
+  const toggleInterest = async (interest) => {
+    const current = normalizeInterests(user?.interests)
+    const norm = interest.toLowerCase().trim()
+    const updated = current.map((i) => i.toLowerCase().trim()).includes(norm)
+      ? current.filter((i) => i.toLowerCase().trim() !== norm)
+      : [...current, interest]
+    setUser((prev) => {
+      const next = { ...prev, interests: updated }
+      localStorage.setItem('welcome_user', JSON.stringify(next))
+      return next
+    })
+    await supabase.from('users').update({ interests: updated }).eq('id', user.id)
   }
 
   const toggleNotification = async (key) => {
@@ -212,21 +226,27 @@ export default function RightPanel({ isOpen, onClose }) {
           <section className="mt-6">
             <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Interests</h3>
             <div className="mt-2 flex flex-wrap gap-2">
-              {INTERESTS_OPTIONS.map((interest) => {
-                const selected = user.interests?.includes(interest)
-                return (
-                  <button
-                    key={interest}
-                    type="button"
-                    onClick={() => toggleInterest(interest)}
-                    className={`rounded-full border px-4 py-2 text-[16px] transition-colors ${
-                      selected ? 'border-primary text-primary' : 'border-border text-[#333333]'
-                    }`}
-                  >
-                    {interest}
-                  </button>
-                )
-              })}
+              {(() => {
+                const userInterests = normalizeInterests(user.interests)
+                return INTERESTS.map((interest) => {
+                  const selected = userInterests
+                    .map((i) => i.toLowerCase().trim())
+                    .includes(interest.toLowerCase().trim())
+                  return (
+                    <button
+                      key={interest}
+                      type="button"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => toggleInterest(interest)}
+                      className={`rounded-full border px-4 py-2 text-[16px] transition-colors ${
+                        selected ? 'border-primary text-primary' : 'border-border text-[#333333]'
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  )
+                })
+              })()}
             </div>
           </section>
 

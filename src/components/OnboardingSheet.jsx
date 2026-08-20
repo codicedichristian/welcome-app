@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
-import { normalizeInterests } from '../utils/normalizeInterests.js'
-
-const PRESET_INTERESTS = [
-  'Worship', 'Prayer', 'Bible study', 'Youth', 'Kids ministry',
-  'Missions', 'Community', 'Music', 'Arts & Creative',
-  'Social action', 'Leadership', 'Marriage & Family', 'Small groups',
-]
+import { INTERESTS, migrateInterests } from '../constants/interests.js'
 
 const COUNTRY_CODES = [
   { code: '+39', flag: '🇮🇹' },
@@ -51,8 +45,8 @@ export default function OnboardingSheet({ missing, onComplete, onSave }) {
   const [animKey, setAnimKey] = useState(0)
   const [slideDir, setSlideDir] = useState(1) // 1 = from right, -1 = from left
 
-  // Interests — pre-populated from existing DB values so periodic-check sheet shows current state
-  const [interests, setInterests] = useState(() => normalizeInterests(user.interests))
+  // Interests — pre-populated with migrated DB values so periodic-check sheet shows current state
+  const [interests, setInterests] = useState(() => migrateInterests(user.interests))
   const [customTag, setCustomTag] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [shake, setShake] = useState(false)
@@ -272,7 +266,7 @@ export default function OnboardingSheet({ missing, onComplete, onSave }) {
                   display: 'flex', flexWrap: 'wrap', gap: 8, paddingBottom: 16,
                   animation: shake ? 'shake-x 0.5s ease-in-out' : 'none',
                 }}>
-                  {[...PRESET_INTERESTS, ...interests.filter((i) => !PRESET_INTERESTS.includes(i))].map((interest) => (
+                  {[...INTERESTS, ...interests.filter((i) => !INTERESTS.map((x) => x.toLowerCase()).includes(i.toLowerCase()))].map((interest) => (
                     <button
                       key={interest}
                       type="button"

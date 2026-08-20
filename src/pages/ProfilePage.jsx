@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck, ChevronRight } from 'lucide-react'
-import { INTERESTS_OPTIONS } from '../onboarding/options.js'
+import { INTERESTS, migrateInterests } from '../constants/interests.js'
 import { normalizeInterests } from '../utils/normalizeInterests.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
@@ -41,8 +41,15 @@ export default function ProfilePage() {
       .then(({ data, error }) => {
         if (error || !data) return
         setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+        const migrated = migrateInterests(data.interests)
+        const raw = normalizeInterests(data.interests)
+        // Save migrated values back to DB if any names changed
+        if (JSON.stringify(migrated) !== JSON.stringify(raw)) {
+          supabase.from('users').update({ interests: migrated }).eq('id', id)
+          console.log('[Interests] migrated old values to new:', migrated)
+        }
         setUser((prev) => {
-          const next = { ...prev, ...data, interests: normalizeInterests(data.interests) }
+          const next = { ...prev, ...data, interests: migrated }
           localStorage.setItem('welcome_user', JSON.stringify(next))
           return next
         })
@@ -182,7 +189,7 @@ export default function ProfilePage() {
         <div className="mt-2 flex flex-wrap gap-2">
           {(() => {
             const userInterests = normalizeInterests(user.interests)
-            return INTERESTS_OPTIONS.map((pill) => {
+            return INTERESTS.map((pill) => {
               const selected = userInterests
                 .map((i) => i.toLowerCase().trim())
                 .includes(pill.toLowerCase().trim())

@@ -1,4 +1,4 @@
-import { normalizeInterests } from '../utils/normalizeInterests.js'
+import { migrateInterests } from '../constants/interests.js'
 
 export function getStoredUser() {
   try {
@@ -18,7 +18,7 @@ export function toStoredUser(profile, authId) {
     email: profile.email,
     phone: profile.phone,
     ageRange: profile.age_range,
-    interests: normalizeInterests(profile.interests),
+    interests: migrateInterests(profile.interests),
     onboardingCompleted: profile.onboarding_completed,
     notifications: profile.notifications,
     role: profile.role,
