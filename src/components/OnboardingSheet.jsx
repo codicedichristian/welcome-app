@@ -28,14 +28,9 @@ function WhatsAppIcon() {
 
 const isPWA = window.matchMedia('(display-mode: standalone)').matches
 
-// missing: { interests: boolean, phone: boolean }
-export default function OnboardingSheet({ missing, onComplete, onSave }) {
+export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) {
   const user = getStoredUser()
-
-  // Ordered list of sections to show this session
-  const sections = []
-  if (missing.interests) sections.push('interests')
-  if (missing.phone) sections.push('phone')
+  const sections = sectionsToShow
 
   // Sheet slide-up animation
   const [visible, setVisible] = useState(false)
@@ -58,6 +53,7 @@ export default function OnboardingSheet({ missing, onComplete, onSave }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
+    if (sectionsToShow.length === 0) { onComplete(); return }
     requestAnimationFrame(() => setVisible(true))
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -77,8 +73,16 @@ export default function OnboardingSheet({ missing, onComplete, onSave }) {
   const handleComplete = async (phoneVal) => {
     setSaving(true)
 
-    const finalInterests = missing.interests ? interests.filter(Boolean) : undefined
-    const finalPhone = missing.phone ? (phoneVal ?? 'pending') : undefined
+    const finalInterests = sections.includes('interests') ? interests.filter(Boolean) : undefined
+    let finalPhone = sections.includes('phone') ? (phoneVal ?? 'pending') : undefined
+
+    // FIX 5: never overwrite a real phone with 'pending'
+    if (finalPhone !== undefined) {
+      const { data: currentData } = await supabase.from('users').select('phone').eq('id', user.id).single()
+      if (currentData?.phone && currentData.phone !== 'pending') {
+        finalPhone = currentData.phone
+      }
+    }
 
     console.log('[Onboarding] saving interests:', finalInterests)
 
