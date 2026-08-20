@@ -128,7 +128,7 @@ export default function LoginPage() {
             Forgot password?
           </button>
 
-          <button type="button" onClick={() => navigate('/onboarding')} className="mt-4 text-center text-xs text-zinc-500">
+          <button type="button" onClick={() => navigate('/welcome')} className="mt-4 text-center text-xs text-zinc-500">
             New here? Create account
           </button>
         </form>

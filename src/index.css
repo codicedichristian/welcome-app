@@ -82,6 +82,19 @@ textarea {
   display: none;
 }
 
+/* Welcome flow checkmark pop-in */
+@keyframes welcome-check-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0 }
+  100% { background-position: -200% 0 }
+}
+
 /* Page transition: fade + slight slide up */
 @keyframes page-enter {
   from {

@@ -9,8 +9,8 @@ import AdminLayout from './layouts/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated.jsx'
-import OnboardingPage from './pages/OnboardingPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import WelcomeFlowPage from './pages/WelcomeFlowPage.jsx'
 import HomePage from './pages/HomePage.jsx'
 import EventsPage from './pages/EventsPage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
@@ -88,7 +88,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route element={<RedirectIfAuthenticated />}>
-          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/welcome" element={<WelcomeFlowPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
         <Route element={<RequireAuth />}>
