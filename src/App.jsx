@@ -69,21 +69,23 @@ export default function App() {
     }
   }, [location.state])
 
-  // On every app open: refresh user, increment open count, decide whether to show sheet.
+  // On every app open: refresh user, increment open count (once per session), decide whether to show sheet.
   useEffect(() => {
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
       setUser(freshUser)
 
-      const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
-      localStorage.setItem('app_open_count', String(count))
-
       if (!freshUser.onboardingCompleted) {
-        // Handles the case where app is re-opened mid-onboarding (before sheet was completed)
         setOnboardingMissing({ interests: true, phone: true })
         setShowOnboardingSheet(true)
         return
       }
+
+      // Guard: only increment and check once per browser session (not on every hot-reload or refresh)
+      if (sessionStorage.getItem('session_counted')) return
+      const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
+      localStorage.setItem('app_open_count', String(count))
+      sessionStorage.setItem('session_counted', 'true')
 
       if (count % 5 === 0) {
         const missingInterests = !freshUser.interests || freshUser.interests.length === 0

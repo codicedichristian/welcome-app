@@ -31,6 +31,8 @@ function WhatsAppIcon() {
   )
 }
 
+const isPWA = window.matchMedia('(display-mode: standalone)').matches
+
 // missing: { interests: boolean, phone: boolean }
 export default function OnboardingSheet({ missing, onComplete }) {
   const user = getStoredUser()
@@ -119,6 +121,31 @@ export default function OnboardingSheet({ missing, onComplete }) {
   const canGoBack = currentSection > 0
   const animClass = slideDir === 1 ? 'animate-slide-in-right' : 'animate-slide-in-left'
 
+  const sheetStyle = {
+    position: 'absolute',
+    bottom: 0,
+    background: '#111111',
+    transition: 'transform 400ms ease-out',
+    display: 'flex', flexDirection: 'column',
+    overflow: 'hidden',
+    overscrollBehavior: 'contain',
+    touchAction: 'pan-y',
+    ...(isPWA
+      ? {
+          left: 0, right: 0, height: '88vh',
+          borderRadius: '20px 20px 0 0',
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        }
+      : {
+          left: '50%', width: '100%', maxWidth: 480, maxHeight: '70vh',
+          borderRadius: 20,
+          transform: visible
+            ? 'translateX(-50%) translateY(0)'
+            : 'translateX(-50%) translateY(100%)',
+        }
+    ),
+  }
+
   const stepLabel = {
     fontSize: 11, fontWeight: 600, color: '#555',
     textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0,
@@ -145,18 +172,7 @@ export default function OnboardingSheet({ missing, onComplete }) {
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
 
       {/* Sheet */}
-      <div
-        style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '88vh', background: '#111111',
-          borderRadius: '20px 20px 0 0',
-          transform: visible ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 400ms ease-out',
-          display: 'flex', flexDirection: 'column',
-          overflow: 'hidden',
-          overscrollBehavior: 'contain',
-          touchAction: 'pan-y',
-        }}
+      <div style={sheetStyle}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
       >
