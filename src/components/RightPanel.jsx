@@ -319,15 +319,23 @@ export default function RightPanel({ isOpen, onClose }) {
               ].map((row, index) => (
                 <div key={row.key} className={`flex items-center justify-between px-4 py-4 ${index === 0 ? 'border-b border-border' : ''}`}>
                   <span className="text-[16px] text-primary">{row.label}</span>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={consents[row.key]}
+                  <div
                     onClick={() => toggleConsent(row.key)}
-                    className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${consents[row.key] ? 'bg-primary' : 'bg-[#2a2a2a]'}`}
+                    style={{
+                      width: 48, height: 28, borderRadius: 999,
+                      backgroundColor: consents[row.key] ? '#ffffff' : '#2a2a2a',
+                      position: 'relative', cursor: 'pointer', flexShrink: 0,
+                      transition: 'background-color 200ms',
+                    }}
                   >
-                    <span className={`absolute top-1 left-1 h-5 w-5 rounded-full transition-transform ${consents[row.key] ? 'translate-x-5 bg-bg' : 'translate-x-0 bg-zinc-500'}`} />
-                  </button>
+                    <div style={{
+                      position: 'absolute', top: 4,
+                      left: consents[row.key] ? 24 : 4,
+                      width: 20, height: 20, borderRadius: '50%',
+                      backgroundColor: consents[row.key] ? '#000000' : '#555555',
+                      transition: 'left 200ms',
+                    }} />
+                  </div>
                 </div>
               ))}
             </div>
