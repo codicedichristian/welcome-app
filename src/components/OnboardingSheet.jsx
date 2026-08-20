@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
-import { updateUserOnboarding } from '../lib/api.js'
+import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
 
 const PRESET_INTERESTS = [
@@ -34,7 +34,7 @@ function WhatsAppIcon() {
 const isPWA = window.matchMedia('(display-mode: standalone)').matches
 
 // missing: { interests: boolean, phone: boolean }
-export default function OnboardingSheet({ missing, onComplete }) {
+export default function OnboardingSheet({ missing, onComplete, onSave }) {
   const user = getStoredUser()
 
   // Ordered list of sections to show this session
@@ -81,10 +81,40 @@ export default function OnboardingSheet({ missing, onComplete }) {
 
   const handleComplete = async (phoneVal) => {
     setSaving(true)
-    const payload = {}
-    if (missing.interests) payload.interests = interests
-    if (missing.phone) payload.phone = phoneVal ?? 'pending'
-    await updateUserOnboarding(user.id, payload)
+
+    const finalInterests = missing.interests ? interests.filter(Boolean) : undefined
+    const finalPhone = missing.phone ? (phoneVal ?? 'pending') : undefined
+
+    console.log('[Onboarding] saving interests:', finalInterests)
+
+    const updatePayload = { onboarding_completed: true }
+    if (finalInterests !== undefined) updatePayload.interests = finalInterests
+    if (finalPhone !== undefined) updatePayload.phone = finalPhone
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updatePayload)
+      .eq('id', user.id)
+      .select()
+
+    console.log('[Onboarding] save result:', { data, error })
+
+    // Sync localStorage immediately so profile page doesn't show stale data
+    const syncedUser = {
+      ...getStoredUser(),
+      onboardingCompleted: true,
+      ...(finalInterests !== undefined && { interests: finalInterests }),
+      ...(finalPhone !== undefined && { phone: finalPhone }),
+    }
+    localStorage.setItem('welcome_user', JSON.stringify(syncedUser))
+
+    // Propagate to App.jsx user state so UserContext is also fresh
+    onSave({
+      onboardingCompleted: true,
+      ...(finalInterests !== undefined && { interests: finalInterests }),
+      ...(finalPhone !== undefined && { phone: finalPhone }),
+    })
+
     setSaving(false)
     close(onComplete)
   }
@@ -104,7 +134,11 @@ export default function OnboardingSheet({ missing, onComplete }) {
   }
 
   const toggleInterest = (i) => {
-    setInterests((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]))
+    setInterests((prev) => {
+      const next = prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+      console.log('[Onboarding] interests state:', next)
+      return next
+    })
   }
 
   const addCustomTag = () => {

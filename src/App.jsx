@@ -160,6 +160,7 @@ export default function App() {
         <OnboardingSheet
           missing={onboardingMissing}
           onComplete={() => setShowOnboardingSheet(false)}
+          onSave={(updates) => setUser((prev) => ({ ...prev, ...updates }))}
         />
       )}
       <ScrollToTop />
