@@ -46,17 +46,11 @@ export async function registerVisitor(form) {
   return { user: dbUser, authId, error: dbError }
 }
 
-export async function updateUserOnboarding(userId, { age, interests, phone }) {
+export async function updateUserOnboarding(userId, updates) {
   return supabase.from('users').update({
-    age_range: String(age),
-    interests,
-    phone,
+    ...updates,
     onboarding_completed: true,
   }).eq('id', userId)
-}
-
-export async function updateUserPhone(userId, phone) {
-  return supabase.from('users').update({ phone }).eq('id', userId)
 }
 
 export async function registerUser(userData) {

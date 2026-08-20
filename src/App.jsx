@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import OnboardingSheet from './components/OnboardingSheet.jsx'
-import PhoneReminderSheet from './components/PhoneReminderSheet.jsx'
 import { UserContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
@@ -59,15 +58,18 @@ export default function App() {
   const [splashVisible, setSplashVisible] = useState(!isPublicRoute)
   const [showPWAPrompt, setShowPWAPrompt] = useState(shouldShowPWAPrompt)
   const [showOnboardingSheet, setShowOnboardingSheet] = useState(false)
-  const [showPhoneSheet, setShowPhoneSheet] = useState(false)
+  const [onboardingMissing, setOnboardingMissing] = useState({ interests: true, phone: true })
   const [user, setUser] = useState(() => getStoredUser())
 
+  // Triggered by LoginPage navigation state when onboarding_completed is false
   useEffect(() => {
-    if (location.state?.showOnboarding) setShowOnboardingSheet(true)
+    if (location.state?.showOnboarding) {
+      setOnboardingMissing({ interests: true, phone: true })
+      setShowOnboardingSheet(true)
+    }
   }, [location.state])
 
-  // Always refresh role from Supabase on mount — localStorage is cache only.
-  // Also increments app_open_count and checks whether to show phone reminder.
+  // On every app open: refresh user, increment open count, decide whether to show sheet.
   useEffect(() => {
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
@@ -76,17 +78,20 @@ export default function App() {
       const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
       localStorage.setItem('app_open_count', String(count))
 
-      if (count % 10 === 0) {
-        supabase
-          .from('users')
-          .select('phone')
-          .eq('id', freshUser.id)
-          .single()
-          .then(({ data }) => {
-            if (data && (!data.phone || data.phone === 'pending')) {
-              setShowPhoneSheet(true)
-            }
-          })
+      if (!freshUser.onboardingCompleted) {
+        // Handles the case where app is re-opened mid-onboarding (before sheet was completed)
+        setOnboardingMissing({ interests: true, phone: true })
+        setShowOnboardingSheet(true)
+        return
+      }
+
+      if (count % 5 === 0) {
+        const missingInterests = !freshUser.interests || freshUser.interests.length === 0
+        const missingPhone = !freshUser.phone || freshUser.phone === 'pending'
+        if (missingInterests || missingPhone) {
+          setOnboardingMissing({ interests: missingInterests, phone: missingPhone })
+          setShowOnboardingSheet(true)
+        }
       }
     })
   }, [])
@@ -120,8 +125,12 @@ export default function App() {
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
       {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
-      {showOnboardingSheet && <OnboardingSheet onComplete={() => setShowOnboardingSheet(false)} />}
-      {showPhoneSheet && <PhoneReminderSheet onComplete={() => setShowPhoneSheet(false)} />}
+      {showOnboardingSheet && (
+        <OnboardingSheet
+          missing={onboardingMissing}
+          onComplete={() => setShowOnboardingSheet(false)}
+        />
+      )}
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
