@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
+import { normalizeInterests } from '../utils/normalizeInterests.js'
 
 const PRESET_INTERESTS = [
   'Worship', 'Prayer', 'Bible study', 'Youth', 'Kids ministry',
@@ -50,8 +51,8 @@ export default function OnboardingSheet({ missing, onComplete, onSave }) {
   const [animKey, setAnimKey] = useState(0)
   const [slideDir, setSlideDir] = useState(1) // 1 = from right, -1 = from left
 
-  // Interests
-  const [interests, setInterests] = useState([])
+  // Interests — pre-populated from existing DB values so periodic-check sheet shows current state
+  const [interests, setInterests] = useState(() => normalizeInterests(user.interests))
   const [customTag, setCustomTag] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [shake, setShake] = useState(false)

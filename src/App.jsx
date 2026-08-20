@@ -27,6 +27,7 @@ import SeasonsPage from './pages/SeasonsPage.jsx'
 import MidweeksDescriptionPage from './pages/MidweeksDescriptionPage.jsx'
 import SeasonDetailPage from './pages/SeasonDetailPage.jsx'
 import { getStoredUser } from './lib/user.js'
+import { normalizeInterests } from './utils/normalizeInterests.js'
 import { subscribeToPush } from './lib/push.js'
 import { saveSubscription } from './lib/api.js'
 import { supabase } from './lib/supabase.js'
@@ -89,11 +90,7 @@ export default function App() {
         console.log('[Onboarding] same session, count unchanged:', count)
       }
 
-      const interestsMissing = (
-        !freshUser.interests ||
-        !Array.isArray(freshUser.interests) ||
-        freshUser.interests.length === 0
-      )
+      const interestsMissing = normalizeInterests(freshUser.interests).length === 0
       const phoneMissing = !freshUser.phone || freshUser.phone === 'pending'
       const anythingMissing = interestsMissing || phoneMissing
 

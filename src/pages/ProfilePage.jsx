@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, MessageCircle, Bell, ShieldCheck, ChevronRight } from 'lucide-react'
 import { INTERESTS_OPTIONS } from '../onboarding/options.js'
+import { normalizeInterests } from '../utils/normalizeInterests.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
@@ -46,22 +47,18 @@ export default function ProfilePage() {
       .then(({ data }) => {
         if (!data) return
         setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
-        if (data.interests) {
-          setUser((prev) => {
-            const next = { ...prev, interests: data.interests }
-            localStorage.setItem('welcome_user', JSON.stringify(next))
-            return next
-          })
-        }
+        const normalized = normalizeInterests(data.interests)
+        setUser((prev) => {
+          const next = { ...prev, interests: normalized }
+          localStorage.setItem('welcome_user', JSON.stringify(next))
+          return next
+        })
       })
   }, [])
 
   useEffect(() => {
-    console.log('[Profile] rendering interests:', {
-      userInterests: user?.interests,
-      type: typeof user?.interests,
-      isArray: Array.isArray(user?.interests),
-    })
+    console.log('[Profile] raw interests:', user?.interests)
+    console.log('[Profile] normalized interests:', normalizeInterests(user?.interests))
   }, [user.interests])
 
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
@@ -183,7 +180,9 @@ export default function ProfilePage() {
         <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Interests</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           {INTERESTS_OPTIONS.map((interest) => {
-            const selected = interestSelected(user.interests, interest)
+            const selected = normalizeInterests(user.interests)
+              .map((i) => i.toLowerCase())
+              .includes(interest.toLowerCase())
             return (
               <button
                 key={interest}

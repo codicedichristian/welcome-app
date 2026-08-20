@@ -1,3 +1,5 @@
+import { normalizeInterests } from '../utils/normalizeInterests.js'
+
 export function getStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('welcome_user')) ?? {}
@@ -16,7 +18,7 @@ export function toStoredUser(profile, authId) {
     email: profile.email,
     phone: profile.phone,
     ageRange: profile.age_range,
-    interests: profile.interests,
+    interests: normalizeInterests(profile.interests),
     onboardingCompleted: profile.onboarding_completed,
     notifications: profile.notifications,
     role: profile.role,
