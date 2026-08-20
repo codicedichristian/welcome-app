@@ -71,52 +71,59 @@ export default function App() {
 
   const userId = user?.id
 
-  // Runs once when a logged-in userId is available — not on every re-render or hot-reload.
+  // Runs once per user session — only when a logged-in userId is available at mount.
   useEffect(() => {
     if (!userId) return
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
       setUser(freshUser)
 
-      console.log('[Onboarding]', {
+      // Increment count once per 30-minute window so refreshes don't count
+      const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
+      const now = Date.now()
+      let count = parseInt(localStorage.getItem('app_open_count') || '0', 10)
+      if (now - lastCounted > 30 * 60 * 1000) {
+        count = count + 1
+        localStorage.setItem('app_open_count', String(count))
+        localStorage.setItem('last_counted_at', String(now))
+      }
+
+      const interestsMissing = (
+        !freshUser.interests ||
+        !Array.isArray(freshUser.interests) ||
+        freshUser.interests.length === 0
+      )
+      const phoneMissing = !freshUser.phone || freshUser.phone === 'pending'
+      const anythingMissing = interestsMissing || phoneMissing
+
+      console.log('[Onboarding Check]', {
         onboarding_completed: freshUser.onboardingCompleted,
         interests: freshUser.interests,
         phone: freshUser.phone,
-        app_open_count: localStorage.getItem('app_open_count'),
-        last_counted_at: localStorage.getItem('last_counted_at'),
+        app_open_count: count,
+        last_counted_at: lastCounted,
+        interestsMissing,
+        phoneMissing,
+        anythingMissing,
       })
 
-      // Strict check: null (old rows) treated as false, not as true
-      const isComplete = freshUser.onboardingCompleted === true
-
-      if (!isComplete) {
+      // Case A: onboarding never completed (null or false) — show all sections
+      if (freshUser.onboardingCompleted !== true) {
         setOnboardingMissing({ interests: true, phone: true })
         setShowOnboardingSheet(true)
         return
       }
 
-      // Count once per 2s window (testing; change to 30 * 60 * 1000 for prod)
-      const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
-      if (Date.now() - lastCounted <= 2000) return
-
-      const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
-      localStorage.setItem('app_open_count', String(count))
-      localStorage.setItem('last_counted_at', String(Date.now()))
-
-      if (count % 5 === 0) {
-        const missingInterests = (
-          !freshUser.interests ||
-          !Array.isArray(freshUser.interests) ||
-          freshUser.interests.length === 0
-        )
-        const missingPhone = !freshUser.phone || freshUser.phone === 'pending'
-        if (missingInterests || missingPhone) {
-          setOnboardingMissing({ interests: missingInterests, phone: missingPhone })
-          setShowOnboardingSheet(true)
-        }
-        // if nothing missing → do NOT show sheet
+      // Case B: every 5th open, show sheet only if something is still missing
+      // count > 0 guard prevents 0 % 5 === 0 false trigger on very first open
+      if (count > 0 && count % 5 === 0 && anythingMissing) {
+        setOnboardingMissing({ interests: interestsMissing, phone: phoneMissing })
+        setShowOnboardingSheet(true)
+        return
       }
-      // else → not a %5 open → do NOT show sheet
+
+      // Case C: all good — do not show sheet
+      setShowOnboardingSheet(false)
     })
   }, [userId])
 

@@ -51,7 +51,7 @@ export async function updateUserOnboarding(userId, updates) {
     ...updates,
     onboarding_completed: true,
   }).eq('id', userId)
-  console.log('[Onboarding] set complete:', error ? error.message : 'OK')
+  console.log('[Onboarding] save result:', error ? error.message : 'OK')
   return { error }
 }
 
