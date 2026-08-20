@@ -91,8 +91,7 @@ export default function App() {
 
       // Only count once per 30-minute window so refreshes don't increment
       const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
-      const thirtyMin = 30 * 60 * 1000
-      if (Date.now() - lastCounted <= thirtyMin) return
+      if (Date.now() - lastCounted <= 2000) return
 
       const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
       localStorage.setItem('app_open_count', String(count))
