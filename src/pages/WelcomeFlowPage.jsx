@@ -186,7 +186,7 @@ function SplashScreen({ onStart, onLogin }) {
             cursor: 'pointer',
           }}
         >
-          Inizia
+          Entra a far parte della nostra famiglia
         </button>
 
         <button
