@@ -77,7 +77,9 @@ export async function registerUser(userData) {
     phone: userData.phone,
     age_range: userData.ageRange,
     interests: userData.interests,
-    notifications: userData.notifications,
+    notif_email: userData.notif_email ?? false,
+    notif_whatsapp: userData.notif_whatsapp ?? false,
+    notif_app: userData.notif_app ?? false,
     privacy_accepted: true,
     marketing_consent: userData.marketingConsent ?? false,
     profiling_consent: userData.profilingConsent ?? false,
@@ -130,7 +132,9 @@ export async function updateUser(userId, userData) {
         phone: userData.phone,
         age_range: userData.ageRange,
         interests: userData.interests,
-        notifications: userData.notifications,
+        notif_email: userData.notif_email,
+        notif_whatsapp: userData.notif_whatsapp,
+        notif_app: userData.notif_app,
       })
       .eq('id', userId)
       .select()

@@ -20,7 +20,9 @@ export function toStoredUser(profile, authId) {
     ageRange: profile.age_range,
     interests: migrateInterests(profile.interests),
     onboardingCompleted: profile.onboarding_completed,
-    notifications: profile.notifications,
+    notifEmail: profile.notif_email,
+    notifWhatsapp: profile.notif_whatsapp,
+    notifApp: profile.notif_app,
     role: profile.role,
     registeredAt: profile.created_at,
   }

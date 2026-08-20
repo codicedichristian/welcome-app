@@ -54,7 +54,7 @@ export default function OnboardingPage() {
 
       localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(user, authId)))
 
-      if (formData.notifications.app) {
+      if (formData.notif_app) {
         const subscription = await subscribeToPush()
         if (subscription) {
           const result = await saveSubscription(user.id, subscription)
