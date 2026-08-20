@@ -16,12 +16,6 @@ function getStoredUser() {
   }
 }
 
-const normInterest = (s) => String(s).trim().toLowerCase()
-const interestSelected = (interests, interest) => {
-  if (!interests || !Array.isArray(interests)) return false
-  return interests.map(normInterest).includes(normInterest(interest))
-}
-
 function formatMemberSince(isoDate) {
   if (!isoDate) return ''
   const date = new Date(isoDate)
@@ -35,21 +29,20 @@ export default function ProfilePage() {
   const liveUser = useUser()
   const [consents, setConsents] = useState({ marketing: false, profiling: false })
 
-  // Fresh fetch on mount — interests and consents may be stale in localStorage
+  // Fresh fetch on mount — always read from DB, not stale localStorage
   useEffect(() => {
     const id = user.id
     if (!id) return
     supabase
       .from('users')
-      .select('interests, marketing_consent, profiling_consent')
+      .select('*')
       .eq('id', id)
       .single()
-      .then(({ data }) => {
-        if (!data) return
+      .then(({ data, error }) => {
+        if (error || !data) return
         setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
-        const normalized = normalizeInterests(data.interests)
         setUser((prev) => {
-          const next = { ...prev, interests: normalized }
+          const next = { ...prev, ...data, interests: normalizeInterests(data.interests) }
           localStorage.setItem('welcome_user', JSON.stringify(next))
           return next
         })
@@ -57,8 +50,8 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    console.log('[Profile] raw interests:', user?.interests)
-    console.log('[Profile] normalized interests:', normalizeInterests(user?.interests))
+    console.log('[Profile Pills] localUser.interests raw:', user?.interests)
+    console.log('[Profile Pills] userInterests:', normalizeInterests(user?.interests))
   }, [user.interests])
 
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
@@ -69,23 +62,31 @@ export default function ProfilePage() {
     setUser(next)
   }
 
-  const toggleInterest = async (interest) => {
-    const current = user.interests ?? []
-    const norm = normInterest(interest)
-    const isCurrentlySelected = current.some(i => normInterest(i) === norm)
-    const updated = isCurrentlySelected
-      ? current.filter(i => normInterest(i) !== norm)
-      : [...current, interest]
+  const handleInterestToggle = async (pill) => {
+    const current = normalizeInterests(user?.interests)
+    const updated = current
+      .map((i) => i.toLowerCase().trim())
+      .includes(pill.toLowerCase().trim())
+      ? current.filter((i) => i.toLowerCase().trim() !== pill.toLowerCase().trim())
+      : [...current, pill]
 
-    // Optimistic local update
-    persist({ ...user, interests: updated })
+    console.log('[Profile] toggling:', pill)
+    console.log('[Profile] updated interests:', updated)
 
-    // Persist to Supabase immediately (no Save button)
-    const { error } = await supabase
+    // Optimistic update — functional form avoids stale closure on rapid taps
+    setUser((prev) => {
+      const next = { ...prev, interests: updated }
+      localStorage.setItem('welcome_user', JSON.stringify(next))
+      return next
+    })
+
+    const { data, error } = await supabase
       .from('users')
       .update({ interests: updated })
       .eq('id', user.id)
-    console.log('[Profile] interests saved:', updated, error ? error.message : 'OK')
+      .select()
+
+    console.log('[Profile] save result:', { data, error })
   }
 
   const toggleNotification = async (key) => {
@@ -179,23 +180,27 @@ export default function ProfilePage() {
       <section className="mt-6">
         <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Interests</h3>
         <div className="mt-2 flex flex-wrap gap-2">
-          {INTERESTS_OPTIONS.map((interest) => {
-            const selected = normalizeInterests(user.interests)
-              .map((i) => i.toLowerCase())
-              .includes(interest.toLowerCase())
-            return (
-              <button
-                key={interest}
-                type="button"
-                onClick={() => toggleInterest(interest)}
-                className={`rounded-full border px-4 py-2 text-[16px] transition-colors ${
-                  selected ? 'border-primary text-primary' : 'border-border text-[#333333]'
-                }`}
-              >
-                {interest}
-              </button>
-            )
-          })}
+          {(() => {
+            const userInterests = normalizeInterests(user.interests)
+            return INTERESTS_OPTIONS.map((pill) => {
+              const selected = userInterests
+                .map((i) => i.toLowerCase().trim())
+                .includes(pill.toLowerCase().trim())
+              return (
+                <button
+                  key={pill}
+                  type="button"
+                  onClick={() => handleInterestToggle(pill)}
+                  style={{ cursor: 'pointer' }}
+                  className={`rounded-full border px-4 py-2 text-[16px] transition-colors ${
+                    selected ? 'border-primary text-primary' : 'border-border text-[#333333]'
+                  }`}
+                >
+                  {pill}
+                </button>
+              )
+            })
+          })()}
         </div>
       </section>
 
