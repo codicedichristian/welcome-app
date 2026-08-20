@@ -1,33 +1,75 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BackRow from '../components/BackRow.jsx'
 import TextField from '../onboarding/components/TextField.jsx'
 import OptionButton from '../onboarding/components/OptionButton.jsx'
 import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
-
-function getStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem('welcome_user')) ?? {}
-  } catch {
-    return {}
-  }
-}
+import { supabase } from '../lib/supabase.js'
 
 export default function EditInfoPage() {
   const navigate = useNavigate()
-  const [user] = useState(getStoredUser)
+  const [userId, setUserId] = useState(null)
   const [form, setForm] = useState({
-    firstName: user.firstName ?? '',
-    lastName: user.lastName ?? '',
-    email: user.email ?? '',
-    phone: user.phone ?? '',
-    ageRange: user.ageRange ?? '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    ageRange: '',
   })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user?.email) return
+
+      const { data } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email, phone, age_range')
+        .eq('email', session.user.email)
+        .single()
+
+      if (!data) return
+
+      setUserId(data.id)
+      setForm({
+        firstName: data.first_name ?? '',
+        lastName: data.last_name ?? '',
+        email: data.email ?? '',
+        phone: data.phone ?? '',
+        ageRange: data.age_range ?? '',
+      })
+    }
+    load()
+  }, [])
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }))
 
-  const handleSave = () => {
-    localStorage.setItem('welcome_user', JSON.stringify({ ...user, ...form }))
+  const handleSave = async () => {
+    if (!userId) return
+    setSaving(true)
+    setError('')
+
+    const { error: saveError } = await supabase
+      .from('users')
+      .update({
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        phone: form.phone || null,
+        age_range: form.ageRange || null,
+      })
+      .eq('id', userId)
+
+    setSaving(false)
+
+    if (saveError) {
+      setError('Failed to save. Please try again.')
+      console.error('[EditInfo] save error:', saveError.message)
+      return
+    }
+
     navigate('/profile')
   }
 
@@ -92,14 +134,17 @@ export default function EditInfoPage() {
             ))}
           </div>
         </div>
+
+        {error && <p className="text-[14px] text-red-400">{error}</p>}
       </div>
 
       <button
         type="button"
         onClick={handleSave}
-        className="mt-6 w-full rounded-xl bg-primary py-4 text-[16px] font-medium text-bg"
+        disabled={saving || !userId}
+        className="mt-6 w-full rounded-xl bg-primary py-4 text-[16px] font-medium text-bg disabled:opacity-40"
       >
-        Save changes
+        {saving ? 'Saving...' : 'Save changes'}
       </button>
     </div>
   )
