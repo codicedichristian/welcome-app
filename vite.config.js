@@ -14,7 +14,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg', 'icon-192.svg', 'icon-512.svg'],
+      includeAssets: ['favicon-light.png', 'favicon-dark.png', 'favicon.svg', 'logo.svg', 'icon-192.svg', 'icon-512.svg'],
       workbox: {
         importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
@@ -56,27 +56,27 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icon-192.svg',
+            src: '/favicon-dark.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icon-192.svg',
+            src: '/favicon-dark.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'maskable',
           },
           {
-            src: '/icon-512.svg',
+            src: '/favicon-dark.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/icon-512.svg',
+            src: '/favicon-dark.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'maskable',
           },
         ],
