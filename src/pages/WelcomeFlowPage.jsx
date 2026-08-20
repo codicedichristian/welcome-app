@@ -448,7 +448,7 @@ function ConsentRow({ checked, onChange, required, children }) {
       >
         {checked && <Check size={14} color="#ffffff" strokeWidth={3} />}
       </div>
-      <span style={{ fontSize: 14, color: required ? '#ffffff' : '#9a9a97', lineHeight: 1.5 }}>
+      <span style={{ fontSize: 14, color: '#ffffff', lineHeight: 1.5 }}>
         {children}
         {required && <span style={{ color: '#f97316' }}> *</span>}
       </span>
@@ -460,18 +460,18 @@ function Screen5({ form, update }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <h2 style={headingStyle}>Quasi fatto!</h2>
+      <ConsentRow checked={form.marketingConsent} onChange={(v) => update({ marketingConsent: v })}>
+        Voglio essere il primo a sapere — eventi, annunci e momenti che non vorrai perderti
+      </ConsentRow>
+      <ConsentRow checked={form.profilingConsent} onChange={(v) => update({ profilingConsent: v })}>
+        Accetto di ricevere aggiornamenti e inviti dedicati agli eventi
+      </ConsentRow>
       <ConsentRow checked={form.privacyAccepted} onChange={(v) => update({ privacyAccepted: v })} required>
         Accetto la{' '}
         <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#f97316' }}>
           Privacy Policy
         </a>{' '}
         e i Termini di utilizzo
-      </ConsentRow>
-      <ConsentRow checked={form.marketingConsent} onChange={(v) => update({ marketingConsent: v })}>
-        Voglio essere il primo a sapere — eventi, annunci e momenti che non vorrai perderti
-      </ConsentRow>
-      <ConsentRow checked={form.profilingConsent} onChange={(v) => update({ profilingConsent: v })}>
-        Accetto l'uso dei miei dati per personalizzare l'esperienza
       </ConsentRow>
     </div>
   )
