@@ -28,17 +28,27 @@ export default function ProfilePage() {
   const liveUser = useUser()
   const [consents, setConsents] = useState({ marketing: false, profiling: false })
 
+  // Fresh fetch on mount — interests and consents may be stale in localStorage
   useEffect(() => {
-    if (!user.id) return
+    const id = user.id
+    if (!id) return
     supabase
       .from('users')
-      .select('marketing_consent, profiling_consent')
-      .eq('id', user.id)
+      .select('interests, marketing_consent, profiling_consent')
+      .eq('id', id)
       .single()
       .then(({ data }) => {
-        if (data) setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+        if (!data) return
+        setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+        if (data.interests) {
+          setUser((prev) => {
+            const next = { ...prev, interests: data.interests }
+            localStorage.setItem('welcome_user', JSON.stringify(next))
+            return next
+          })
+        }
       })
-  }, [user.id])
+  }, [])
 
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
@@ -48,12 +58,21 @@ export default function ProfilePage() {
     setUser(next)
   }
 
-  const toggleInterest = (interest) => {
-    const interests = user.interests ?? []
-    const updated = interests.includes(interest)
-      ? interests.filter((item) => item !== interest)
-      : [...interests, interest]
+  const toggleInterest = async (interest) => {
+    const current = user.interests ?? []
+    const updated = current.includes(interest)
+      ? current.filter((item) => item !== interest)
+      : [...current, interest]
+
+    // Optimistic local update
     persist({ ...user, interests: updated })
+
+    // Persist to Supabase immediately (no Save button)
+    const { error } = await supabase
+      .from('users')
+      .update({ interests: updated })
+      .eq('id', user.id)
+    console.log('[Profile] interests saved:', updated, error ? error.message : 'OK')
   }
 
   const toggleNotification = async (key) => {
