@@ -69,11 +69,19 @@ export default function App() {
     }
   }, [location.state])
 
-  // On every app open: refresh user, increment open count (once per session), decide whether to show sheet.
+  // On every app open: refresh user, increment open count (once per 30 min window), decide whether to show sheet.
   useEffect(() => {
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
       setUser(freshUser)
+
+      console.log('[Onboarding]', {
+        onboarding_completed: freshUser.onboardingCompleted,
+        interests: freshUser.interests,
+        phone: freshUser.phone,
+        app_open_count: localStorage.getItem('app_open_count'),
+        last_counted_at: localStorage.getItem('last_counted_at'),
+      })
 
       if (!freshUser.onboardingCompleted) {
         setOnboardingMissing({ interests: true, phone: true })
@@ -81,14 +89,21 @@ export default function App() {
         return
       }
 
-      // Guard: only increment and check once per browser session (not on every hot-reload or refresh)
-      if (sessionStorage.getItem('session_counted')) return
+      // Only count once per 30-minute window so refreshes don't increment
+      const lastCounted = parseInt(localStorage.getItem('last_counted_at') || '0', 10)
+      const thirtyMin = 30 * 60 * 1000
+      if (Date.now() - lastCounted <= thirtyMin) return
+
       const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
       localStorage.setItem('app_open_count', String(count))
-      sessionStorage.setItem('session_counted', 'true')
+      localStorage.setItem('last_counted_at', String(Date.now()))
 
       if (count % 5 === 0) {
-        const missingInterests = !freshUser.interests || freshUser.interests.length === 0
+        const missingInterests = (
+          !freshUser.interests ||
+          !Array.isArray(freshUser.interests) ||
+          freshUser.interests.length === 0
+        )
         const missingPhone = !freshUser.phone || freshUser.phone === 'pending'
         if (missingInterests || missingPhone) {
           setOnboardingMissing({ interests: missingInterests, phone: missingPhone })

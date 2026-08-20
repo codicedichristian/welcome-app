@@ -47,10 +47,12 @@ export async function registerVisitor(form) {
 }
 
 export async function updateUserOnboarding(userId, updates) {
-  return supabase.from('users').update({
+  const { error } = await supabase.from('users').update({
     ...updates,
     onboarding_completed: true,
   }).eq('id', userId)
+  console.log('[Onboarding] set complete:', error ? error.message : 'OK')
+  return { error }
 }
 
 export async function registerUser(userData) {
