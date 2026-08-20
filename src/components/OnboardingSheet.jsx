@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Check, ChevronDown, Plus, X } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, Plus, X } from 'lucide-react'
 import { updateUserOnboarding } from '../lib/api.js'
 import { getStoredUser } from '../lib/user.js'
 
@@ -225,22 +225,38 @@ export default function OnboardingSheet({ onComplete }) {
           overflow: 'hidden',
         }}
       >
-        {/* handle + dots */}
-        <div style={{ paddingTop: 10, paddingBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 40, height: 4, borderRadius: 2, background: '#2a2a2a' }} />
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{
-                  height: 6,
-                  width: i === section ? 20 : 6,
-                  borderRadius: 3,
-                  background: i === section ? '#f97316' : '#2a2a2a',
-                  transition: 'width 300ms ease, background 300ms ease',
-                }}
-              />
-            ))}
+        {/* handle + nav row */}
+        <div style={{ paddingTop: 10, paddingBottom: 14, flexShrink: 0 }}>
+          {/* drag handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: '#2a2a2a' }} />
+          </div>
+          {/* back arrow + step dots */}
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {section > 0 && (
+              <button
+                type="button"
+                onClick={() => goTo(section - 1)}
+                style={{ position: 'absolute', left: 16, background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: 4, display: 'flex', alignItems: 'center' }}
+                aria-label="Back"
+              >
+                <ArrowLeft size={20} />
+              </button>
+            )}
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 6,
+                    width: i === section ? 20 : 6,
+                    borderRadius: 3,
+                    background: i === section ? '#f97316' : '#2a2a2a',
+                    transition: 'width 300ms ease, background 300ms ease',
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
 

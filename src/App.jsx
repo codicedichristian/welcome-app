@@ -64,13 +64,30 @@ export default function App() {
 
   useEffect(() => {
     if (location.state?.showOnboarding) setShowOnboardingSheet(true)
-    if (location.state?.showPhoneReminder) setShowPhoneSheet(true)
   }, [location.state])
 
   // Always refresh role from Supabase on mount — localStorage is cache only.
+  // Also increments app_open_count and checks whether to show phone reminder.
   useEffect(() => {
     getCurrentUserWithRole().then((freshUser) => {
-      if (freshUser) setUser(freshUser)
+      if (!freshUser) return
+      setUser(freshUser)
+
+      const count = (parseInt(localStorage.getItem('app_open_count'), 10) || 0) + 1
+      localStorage.setItem('app_open_count', String(count))
+
+      if (count % 10 === 0) {
+        supabase
+          .from('users')
+          .select('phone')
+          .eq('id', freshUser.id)
+          .single()
+          .then(({ data }) => {
+            if (data && (!data.phone || data.phone === 'pending')) {
+              setShowPhoneSheet(true)
+            }
+          })
+      }
     })
   }, [])
 

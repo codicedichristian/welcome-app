@@ -46,10 +46,6 @@ export async function registerVisitor(form) {
   return { user: dbUser, authId, error: dbError }
 }
 
-export async function incrementLoginCount(userId, newCount) {
-  return supabase.from('users').update({ login_count: newCount }).eq('id', userId)
-}
-
 export async function updateUserOnboarding(userId, { age, interests, phone }) {
   return supabase.from('users').update({
     age_range: String(age),
