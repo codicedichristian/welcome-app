@@ -8,14 +8,6 @@ import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
 import { useUser } from '../lib/UserContext.js'
 
-function getStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem('welcome_user')) ?? {}
-  } catch {
-    return {}
-  }
-}
-
 function WhatsAppIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -34,36 +26,34 @@ function formatMemberSince(isoDate) {
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const [user, setUser] = useState(getStoredUser)
+  const [user, setUser] = useState({})
   const liveUser = useUser()
   const [consents, setConsents] = useState({ marketing: false, profiling: false })
   const [notifications, setNotifications] = useState({ email: true, whatsapp: false, app: true })
 
-  // Fresh fetch on mount — always read from DB, not stale localStorage
   useEffect(() => {
-    const id = user.id
-    if (!id) return
-    supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) return
-        setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
-        const migrated = migrateInterests(data.interests)
-        const raw = normalizeInterests(data.interests)
-        // Save migrated values back to DB if any names changed
-        if (JSON.stringify(migrated) !== JSON.stringify(raw)) {
-          supabase.from('users').update({ interests: migrated }).eq('id', id)
-          console.log('[Interests] migrated old values to new:', migrated)
-        }
-        setUser((prev) => {
-          const next = { ...prev, ...data, interests: migrated }
-          localStorage.setItem('welcome_user', JSON.stringify(next))
-          return next
-        })
-      })
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user?.email) return
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', session.user.email)
+        .single()
+
+      if (error || !data) return
+
+      const migrated = migrateInterests(data.interests)
+      const raw = normalizeInterests(data.interests)
+      if (JSON.stringify(migrated) !== JSON.stringify(raw)) {
+        await supabase.from('users').update({ interests: migrated }).eq('id', data.id)
+      }
+
+      setUser({ ...data, interests: migrated })
+      setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+    }
+    load()
   }, [])
 
   // Sync notification toggles when fresh DB data arrives
@@ -80,13 +70,8 @@ export default function ProfilePage() {
     console.log('[Profile Pills] userInterests:', normalizeInterests(user?.interests))
   }, [user.interests])
 
-  const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
-  const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
-
-  const persist = (next) => {
-    localStorage.setItem('welcome_user', JSON.stringify(next))
-    setUser(next)
-  }
+  const initials = `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
 
   const handleInterestToggle = async (pill) => {
     const current = normalizeInterests(user?.interests)
@@ -158,7 +143,7 @@ export default function ProfilePage() {
     { icon: User, label: 'Full name', value: fullName },
     { icon: Mail, label: 'Email', value: user.email },
     { icon: Phone, label: 'Phone', value: user.phone },
-    { icon: Cake, label: 'Age range', value: user.ageRange },
+    { icon: Cake, label: 'Age range', value: user.age_range },
   ]
 
   const notifRows = [
@@ -185,7 +170,7 @@ export default function ProfilePage() {
           {initials}
         </div>
         <p className="mt-3 text-[18px] font-medium text-primary">{fullName}</p>
-        <p className="mt-1 text-[13px] text-zinc-500">{formatMemberSince(user.registeredAt)}</p>
+        <p className="mt-1 text-[13px] text-zinc-500">{formatMemberSince(user.created_at)}</p>
       </div>
 
       <section className="mt-8">
