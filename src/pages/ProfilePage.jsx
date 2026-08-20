@@ -102,8 +102,6 @@ export default function ProfilePage() {
 
   const handleNotifToggle = async (key) => {
     const updated = { ...notifications, [key]: !notifications[key] }
-
-    // Optimistic local update
     setNotifications(updated)
 
     const { error } = await supabase
@@ -111,18 +109,19 @@ export default function ProfilePage() {
       .update({ notif_email: updated.email, notif_whatsapp: updated.whatsapp, notif_app: updated.app })
       .eq('id', user.id)
 
-    console.log('[Profile] notif saved:', updated, error ? error.message : 'OK')
+    console.log('[Profile] notif saved:', updated, error?.message || 'OK')
 
-    setUser((prev) => ({ ...prev, notif_email: updated.email, notif_whatsapp: updated.whatsapp, notif_app: updated.app }))
-
-    // Handle push subscription when app notifications are toggled
     if (key === 'app') {
-      if (updated.app) {
-        const subscription = await subscribeToPush()
-        if (subscription) saveSubscription(user.id, subscription)
-      } else {
-        await unsubscribeFromPush()
-        await deleteSubscription(user.id)
+      try {
+        if (updated.app) {
+          const subscription = await subscribeToPush()
+          if (subscription) await saveSubscription(user.id, subscription)
+        } else {
+          await unsubscribeFromPush()
+          await deleteSubscription(user.id)
+        }
+      } catch (e) {
+        console.warn('[Profile] push subscription error (non-fatal):', e.message)
       }
     }
   }
@@ -229,6 +228,8 @@ export default function ProfilePage() {
           {notifRows.map((row, index) => (
             <div
               key={row.key}
+              onClick={() => handleNotifToggle(row.key)}
+              style={{ cursor: 'pointer' }}
               className={`flex items-center justify-between px-4 py-4 ${
                 index !== notifRows.length - 1 ? 'border-b border-border' : ''
               }`}
@@ -241,7 +242,7 @@ export default function ProfilePage() {
                 type="button"
                 role="switch"
                 aria-checked={notifications[row.key]}
-                onClick={() => handleNotifToggle(row.key)}
+                onClick={(e) => { e.stopPropagation(); handleNotifToggle(row.key) }}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
                   notifications[row.key] ? 'bg-primary' : 'bg-[#2a2a2a]'
                 }`}
