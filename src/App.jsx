@@ -94,12 +94,16 @@ export default function App() {
       if (normalizeInterests(freshUser.interests).length === 0) sectionsToShow.push('interests')
       if (!freshUser.ageRange) sectionsToShow.push('age_range')
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
+      if (!freshUser.notifEmail && !freshUser.notifWhatsapp && !freshUser.notifApp) sectionsToShow.push('notifications')
 
       console.log('[Onboarding Check]', {
         onboarding_completed: freshUser.onboardingCompleted,
         interests: freshUser.interests,
         ageRange: freshUser.ageRange,
         phone: freshUser.phone,
+        notifEmail: freshUser.notifEmail,
+        notifWhatsapp: freshUser.notifWhatsapp,
+        notifApp: freshUser.notifApp,
         app_open_count: count,
         sectionsToShow,
       })
