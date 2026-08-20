@@ -77,15 +77,26 @@ export default function RightPanel({ isOpen, onClose }) {
   }
 
   const toggleNotification = async (key) => {
-    const value = !user.notifications?.[key]
-    persist({ ...user, notifications: { ...user.notifications, [key]: value } })
-    if (key !== 'app') return
-    if (value) {
-      const subscription = await subscribeToPush()
-      if (subscription) saveSubscription(user.id, subscription)
-    } else {
-      await unsubscribeFromPush()
-      await deleteSubscription(user.id)
+    const notifKey = { email: 'notif_email', whatsapp: 'notif_whatsapp', app: 'notif_app' }[key]
+    const current = { email: user.notif_email ?? true, whatsapp: user.notif_whatsapp ?? false, app: user.notif_app ?? true }
+    const updated = { ...current, [key]: !current[key] }
+
+    setUser((prev) => ({ ...prev, notif_email: updated.email, notif_whatsapp: updated.whatsapp, notif_app: updated.app }))
+
+    await supabase.from('users').update({ [notifKey]: updated[key] }).eq('id', user.id)
+
+    if (key === 'app') {
+      try {
+        if (updated.app) {
+          const subscription = await subscribeToPush()
+          if (subscription) saveSubscription(user.id, subscription)
+        } else {
+          await unsubscribeFromPush()
+          await deleteSubscription(user.id)
+        }
+      } catch (e) {
+        console.warn('[RightPanel] push subscription error:', e.message)
+      }
     }
   }
 
@@ -254,7 +265,8 @@ export default function RightPanel({ isOpen, onClose }) {
             <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Notifications</h3>
             <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
               {notificationRows.map((row, index) => {
-                const checked = user.notifications?.[row.key] ?? false
+                const notifState = { email: user.notif_email ?? true, whatsapp: user.notif_whatsapp ?? false, app: user.notif_app ?? true }
+                const checked = notifState[row.key]
                 return (
                   <div
                     key={row.key}
@@ -266,21 +278,23 @@ export default function RightPanel({ isOpen, onClose }) {
                       <row.icon size={18} className="text-zinc-500" />
                       <span className="text-[16px] text-primary">{row.label}</span>
                     </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={checked}
+                    <div
                       onClick={() => toggleNotification(row.key)}
-                      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-                        checked ? 'bg-primary' : 'bg-[#2a2a2a]'
-                      }`}
+                      style={{
+                        width: 48, height: 28, borderRadius: 999,
+                        backgroundColor: checked ? '#ffffff' : '#2a2a2a',
+                        position: 'relative', cursor: 'pointer', flexShrink: 0,
+                        transition: 'background-color 200ms',
+                      }}
                     >
-                      <span
-                        className={`absolute top-1 left-1 h-5 w-5 rounded-full transition-transform ${
-                          checked ? 'translate-x-5 bg-bg' : 'translate-x-0 bg-zinc-500'
-                        }`}
-                      />
-                    </button>
+                      <div style={{
+                        position: 'absolute', top: 4,
+                        left: checked ? 24 : 4,
+                        width: 20, height: 20, borderRadius: '50%',
+                        backgroundColor: checked ? '#000000' : '#555555',
+                        transition: 'left 200ms',
+                      }} />
+                    </div>
                   </div>
                 )
               })}
