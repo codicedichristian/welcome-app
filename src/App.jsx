@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { UserContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
@@ -51,8 +51,10 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true)
-  const [splashVisible, setSplashVisible] = useState(true)
+  const location = useLocation()
+  const isPublicRoute = location.pathname === '/welcome' || location.pathname === '/login'
+  const [showSplash, setShowSplash] = useState(!isPublicRoute)
+  const [splashVisible, setSplashVisible] = useState(!isPublicRoute)
   const [showPWAPrompt, setShowPWAPrompt] = useState(shouldShowPWAPrompt)
   const [user, setUser] = useState(() => getStoredUser())
 
