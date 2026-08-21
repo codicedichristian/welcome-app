@@ -149,7 +149,7 @@ export default function EventsPage() {
       >
         <button
           type="button"
-          onClick={() => { window.location.href = '/' }}
+          onClick={() => navigate('/')}
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <ArrowLeft size={18} color="#8e8e93" />

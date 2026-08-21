@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { CalendarX, ArrowLeft } from 'lucide-react'
 import { getUserRsvps, getUserMidweekRsvp } from '../lib/api.js'
 import { getEventById } from '../data/events.js'
@@ -21,6 +22,7 @@ function withMidweekGroup(event, group) {
 }
 
 export default function MyEventsPage() {
+  const navigate = useNavigate()
   const [myEvents, setMyEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -63,7 +65,7 @@ export default function MyEventsPage() {
     <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
       <button
         type="button"
-        onClick={() => { window.location.href = '/' }}
+        onClick={() => navigate('/')}
         className="flex items-center gap-1.5"
       >
         <ArrowLeft size={18} className="text-[#666666]" />

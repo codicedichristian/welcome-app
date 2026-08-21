@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
-import { getStoredUser } from '../lib/user.js'
+import { getStoredUser, toStoredUser } from '../lib/user.js'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
 import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
 
@@ -112,23 +112,36 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
     if (finalNotifWhatsapp !== undefined) updatePayload.notif_whatsapp = finalNotifWhatsapp
     if (finalNotifApp !== undefined) updatePayload.notif_app = finalNotifApp
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('users')
       .update(updatePayload)
       .eq('id', user.id)
-      .select()
 
-    console.log('[Onboarding] save result:', { data, error })
+    console.log('[Onboarding] save result:', { error })
 
-    onSave({
-      onboardingCompleted: true,
-      ...(finalInterests !== undefined && { interests: finalInterests }),
-      ...(finalAgeRange !== undefined && { ageRange: finalAgeRange }),
-      ...(finalPhone !== undefined && { phone: finalPhone }),
-      ...(finalNotifEmail !== undefined && { notifEmail: finalNotifEmail }),
-      ...(finalNotifWhatsapp !== undefined && { notifWhatsapp: finalNotifWhatsapp }),
-      ...(finalNotifApp !== undefined && { notifApp: finalNotifApp }),
-    })
+    // Re-fetch the full updated row so localStorage and context are fully fresh
+    const { data: freshRow } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (freshRow) {
+      const stored = toStoredUser(freshRow, user.authId)
+      localStorage.setItem('welcome_user', JSON.stringify(stored))
+      onSave(stored)
+    } else {
+      // Fallback to partial update if re-fetch fails
+      onSave({
+        onboardingCompleted: true,
+        ...(finalInterests !== undefined && { interests: finalInterests }),
+        ...(finalAgeRange !== undefined && { ageRange: finalAgeRange }),
+        ...(finalPhone !== undefined && { phone: finalPhone }),
+        ...(finalNotifEmail !== undefined && { notifEmail: finalNotifEmail }),
+        ...(finalNotifWhatsapp !== undefined && { notifWhatsapp: finalNotifWhatsapp }),
+        ...(finalNotifApp !== undefined && { notifApp: finalNotifApp }),
+      })
+    }
 
     setSaving(false)
     close(onComplete)
