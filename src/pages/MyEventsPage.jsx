@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { CalendarX } from 'lucide-react'
-import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import { getUserRsvps, getUserMidweekRsvp } from '../lib/api.js'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
@@ -23,7 +22,6 @@ function withMidweekGroup(event, group) {
 }
 
 export default function MyEventsPage() {
-  useScrollMemory()
   const [myEvents, setMyEvents] = useState([])
   const [loading, setLoading] = useState(true)
 

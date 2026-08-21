@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import { Megaphone } from 'lucide-react'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -9,7 +8,6 @@ import { SkeletonText } from '../components/SkeletonCard.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 
 export default function NewsPage() {
-  useScrollMemory()
   const navigate = useNavigate()
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)

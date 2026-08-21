@@ -1,18 +1,21 @@
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigationType } from 'react-router-dom'
 
 export function useScrollMemory(key) {
   const location = useLocation()
+  const navType = useNavigationType()
   const storageKey = `scroll_${key || location.pathname}`
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(storageKey)
-    if (saved) {
-      requestAnimationFrame(() => {
+    if (navType === 'POP') {
+      const saved = sessionStorage.getItem(storageKey)
+      if (saved) {
         requestAnimationFrame(() => {
-          window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+          })
         })
-      })
+      }
     }
 
     const saveScroll = () => {
@@ -23,5 +26,5 @@ export function useScrollMemory(key) {
     return () => {
       window.removeEventListener('scroll', saveScroll)
     }
-  }, [storageKey])
+  }, [navType, storageKey])
 }
