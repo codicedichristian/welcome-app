@@ -11,7 +11,7 @@ export function useScrollMemory(key) {
   useEffect(() => {
     let timer
 
-    const flag = sessionStorage.getItem('returning_to_home') === 'true'
+    const flag = key === 'home' && sessionStorage.getItem('returning_to_home') === 'true'
     const shouldRestore = navType === 'POP' || flag
     if (shouldRestore) {
       if (flag) sessionStorage.removeItem('returning_to_home')

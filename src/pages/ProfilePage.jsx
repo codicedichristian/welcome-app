@@ -194,7 +194,7 @@ export default function ProfilePage() {
         <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>Settings</span>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/', { replace: true })}
           style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: 8 }}
         >
           <X size={22} />

@@ -9,7 +9,7 @@ function MidweeksSkeleton() {
   return (
     <div style={{ background: '#0a0b0a', minHeight: '100dvh', paddingBottom: '40px' }}>
       <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: '22px', zIndex: 10 }}>
-        <BackRow label="Explore" fallback="/home" />
+        <BackRow label="Explore" fallback="/" />
       </div>
       <SkeletonCard height={200} radius={0} />
       <div style={{ padding: '20px 22px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -48,7 +48,7 @@ export default function MidweeksDescriptionPage() {
       title={title}
       description={description ?? undefined}
       backLabel="Explore"
-      backPath="/home"
+      backPath="/"
     >
       <button
         type="button"
