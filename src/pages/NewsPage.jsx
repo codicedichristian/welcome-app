@@ -48,7 +48,7 @@ export default function NewsPage() {
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
       <button
         type="button"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/', { replace: true })}
         className="mb-4 flex items-center gap-1.5"
       >
         <ArrowLeft size={18} className="text-[#666666]" />

@@ -74,7 +74,7 @@ export default function MyEventsPage() {
     <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
       <button
         type="button"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/', { replace: true })}
         className="flex items-center gap-1.5"
       >
         <ArrowLeft size={18} className="text-[#666666]" />

@@ -46,7 +46,7 @@ export default function FloatingNav() {
               key={to}
               type="button"
               aria-label={label}
-              onClick={() => navigate(to)}
+              onClick={() => navigate(to, { replace: true })}
               style={{
                 width: '52px',
                 height: '44px',
