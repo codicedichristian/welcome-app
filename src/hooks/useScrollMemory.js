@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
+import { getScrollY, setScrollY } from '../utils/scroll.js'
 
 export function useScrollMemory(key) {
   const location = useLocation()
@@ -12,14 +13,14 @@ export function useScrollMemory(key) {
       if (saved) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+            setScrollY(parseInt(saved, 10))
           })
         })
       }
     }
 
     const saveScroll = () => {
-      sessionStorage.setItem(storageKey, String(window.scrollY))
+      sessionStorage.setItem(storageKey, String(getScrollY()))
     }
     window.addEventListener('scroll', saveScroll, { passive: true })
 
