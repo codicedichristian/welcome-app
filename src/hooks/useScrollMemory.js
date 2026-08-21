@@ -9,7 +9,10 @@ export function useScrollMemory(key) {
   const storageKey = `scroll_${key || location.pathname}`
 
   useEffect(() => {
-    if (navType === 'POP') {
+    const flag = sessionStorage.getItem('returning_to_home') === 'true'
+    const shouldRestore = navType === 'POP' || flag
+    if (shouldRestore) {
+      if (flag) sessionStorage.removeItem('returning_to_home')
       const saved = sessionStorage.getItem(storageKey)
       if (saved) {
         requestAnimationFrame(() => {
