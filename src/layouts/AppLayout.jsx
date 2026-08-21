@@ -16,7 +16,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-dvh bg-bg text-primary">
 <main style={{ paddingBottom: showNav ? 'calc(90px + env(safe-area-inset-bottom))' : undefined }}>
-        <div key={location.key} className="animate-fade-in">
+        <div className="animate-fade-in">
           <Outlet context={{ openRightPanel: openRight }} />
         </div>
       </main>

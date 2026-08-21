@@ -9,17 +9,18 @@ export function useScrollMemory(key) {
   const storageKey = `scroll_${key || location.pathname}`
 
   useEffect(() => {
+    let timer
+
     const flag = sessionStorage.getItem('returning_to_home') === 'true'
     const shouldRestore = navType === 'POP' || flag
     if (shouldRestore) {
       if (flag) sessionStorage.removeItem('returning_to_home')
       const saved = sessionStorage.getItem(storageKey)
       if (saved) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
-          })
-        })
+        timer = setTimeout(() => {
+          window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+          document.documentElement.scrollTop = parseInt(saved, 10)
+        }, 150)
       }
     }
 
@@ -29,6 +30,7 @@ export function useScrollMemory(key) {
     window.addEventListener('scroll', saveScroll, { passive: true })
 
     return () => {
+      clearTimeout(timer)
       window.removeEventListener('scroll', saveScroll)
     }
   }, [navType, storageKey])
