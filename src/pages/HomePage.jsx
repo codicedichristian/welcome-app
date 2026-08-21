@@ -176,6 +176,15 @@ export default function HomePage() {
     }
   }, [isLoading])
 
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href)
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   const upcoming = events
     .map((event) => ({ event, date: getNextOccurrence(event) }))
     .filter((item) => item.date)

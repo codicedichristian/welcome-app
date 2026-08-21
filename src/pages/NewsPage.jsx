@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Megaphone } from 'lucide-react'
+import { ArrowLeft, Megaphone } from 'lucide-react'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
@@ -35,8 +35,25 @@ export default function NewsPage() {
     }
   }, [])
 
+  useEffect(() => {
+    window.history.pushState(null, '', window.location.href)
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   return (
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="mb-4 flex items-center gap-1.5"
+      >
+        <ArrowLeft size={18} className="text-[#666666]" />
+        <span className="text-[14px] text-[#444444]">Home</span>
+      </button>
       {loading ? (
         <div className="mt-2 flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
