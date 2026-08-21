@@ -4,8 +4,10 @@ import TextField from '../onboarding/components/TextField.jsx'
 import OptionButton from '../onboarding/components/OptionButton.jsx'
 import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
+import { useSetUser } from '../lib/UserContext.js'
 
 export default function EditInfoPage() {
+  const setContextUser = useSetUser()
   const [userId, setUserId] = useState(null)
   const [form, setForm] = useState({
     firstName: '',
@@ -49,15 +51,18 @@ export default function EditInfoPage() {
     setSaving(true)
     setError('')
 
+    const dbPayload = {
+      first_name: form.firstName,
+      last_name: form.lastName,
+      email: form.email,
+      phone: form.phone || null,
+      age_range: form.ageRange || null,
+    }
+    console.log('[EditInfo] saving:', dbPayload)
+
     const { error: saveError } = await supabase
       .from('users')
-      .update({
-        first_name: form.firstName,
-        last_name: form.lastName,
-        email: form.email,
-        phone: form.phone || null,
-        age_range: form.ageRange || null,
-      })
+      .update(dbPayload)
       .eq('id', userId)
 
     setSaving(false)
@@ -67,6 +72,20 @@ export default function EditInfoPage() {
       console.error('[EditInfo] save error:', saveError.message)
       return
     }
+
+    // Update localStorage so future sessions and context reads are fresh
+    const stored = JSON.parse(localStorage.getItem('welcome_user') || '{}')
+    const updatedFields = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone || null,
+      ageRange: form.ageRange || null,
+    }
+    localStorage.setItem('welcome_user', JSON.stringify({ ...stored, ...updatedFields }))
+
+    // Update React context so ProfilePage reflects changes immediately
+    setContextUser?.((prev) => ({ ...prev, ...updatedFields }))
 
     window.history.back()
   }

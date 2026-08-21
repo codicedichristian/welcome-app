@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, Bell, ShieldCheck, ChevronRight, X } from 'lucide-react'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
@@ -31,30 +31,35 @@ export default function ProfilePage() {
   const [consents, setConsents] = useState({ marketing: false, profiling: false })
   const [notifications, setNotifications] = useState({ email: true, whatsapp: false, app: true })
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user?.email) return
+  const loadFromDB = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user?.email) return
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', session.user.email)
-        .single()
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single()
 
-      if (error || !data) return
+    if (error || !data) return
 
-      const migrated = migrateInterests(data.interests)
-      const raw = normalizeInterests(data.interests)
-      if (JSON.stringify(migrated) !== JSON.stringify(raw)) {
-        await supabase.from('users').update({ interests: migrated }).eq('id', data.id)
-      }
-
-      setUser({ ...data, interests: migrated })
-      setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
+    const migrated = migrateInterests(data.interests)
+    const raw = normalizeInterests(data.interests)
+    if (JSON.stringify(migrated) !== JSON.stringify(raw)) {
+      await supabase.from('users').update({ interests: migrated }).eq('id', data.id)
     }
-    load()
+
+    setUser({ ...data, interests: migrated })
+    setConsents({ marketing: data.marketing_consent ?? false, profiling: data.profiling_consent ?? false })
   }, [])
+
+  // Re-fetch on every visit, including when returning from edit-info via bfcache on iOS
+  useEffect(() => {
+    const handleFocus = () => loadFromDB()
+    window.addEventListener('focus', handleFocus)
+    loadFromDB()
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [loadFromDB])
 
   // Sync notification toggles when fresh DB data arrives
   useEffect(() => {
@@ -65,11 +70,14 @@ export default function ProfilePage() {
     })
   }, [user.notif_email, user.notif_whatsapp, user.notif_app])
 
-  // Sync local state from context when onboarding sheet saves new values
+  // Sync local state from context when onboarding sheet or edit-info saves new values
   useEffect(() => {
     if (!liveUser) return
     setUser((prev) => ({
       ...prev,
+      ...(liveUser.firstName && { first_name: liveUser.firstName }),
+      ...(liveUser.lastName && { last_name: liveUser.lastName }),
+      ...(liveUser.email && { email: liveUser.email }),
       ...(liveUser.ageRange && { age_range: liveUser.ageRange }),
       ...(liveUser.phone && liveUser.phone !== 'pending' && { phone: liveUser.phone }),
       ...(liveUser.interests?.length && { interests: liveUser.interests }),
@@ -77,7 +85,7 @@ export default function ProfilePage() {
       ...(liveUser.notifWhatsapp != null && { notif_whatsapp: liveUser.notifWhatsapp }),
       ...(liveUser.notifApp != null && { notif_app: liveUser.notifApp }),
     }))
-  }, [liveUser?.ageRange, liveUser?.phone, liveUser?.interests, liveUser?.notifEmail, liveUser?.notifWhatsapp, liveUser?.notifApp])
+  }, [liveUser?.firstName, liveUser?.lastName, liveUser?.email, liveUser?.ageRange, liveUser?.phone, liveUser?.interests, liveUser?.notifEmail, liveUser?.notifWhatsapp, liveUser?.notifApp])
 
   useEffect(() => {
     console.log('[Profile Pills] localUser.interests raw:', user?.interests)

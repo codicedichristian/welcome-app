@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import OnboardingSheet from './components/OnboardingSheet.jsx'
-import { UserContext } from './lib/UserContext.js'
+import { UserContext, UserSetterContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
 import PWAInstallPrompt, { shouldShowPWAPrompt } from './components/PWAInstallPrompt.jsx'
@@ -153,6 +153,7 @@ export default function App() {
 
   return (
     <UserContext.Provider value={user}>
+    <UserSetterContext.Provider value={setUser}>
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
       {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
@@ -218,6 +219,7 @@ export default function App() {
         </Route>
       </Routes>
     </>
+    </UserSetterContext.Provider>
     </UserContext.Provider>
   )
 }
