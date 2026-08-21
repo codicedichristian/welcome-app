@@ -35,15 +35,6 @@ export default function NewsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    window.history.pushState(null, '', window.location.href)
-    const handlePopState = () => {
-      window.history.pushState(null, '', window.location.href)
-    }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
-
   return (
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
       <button
