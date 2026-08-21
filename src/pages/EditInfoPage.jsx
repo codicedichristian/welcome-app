@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import BackRow from '../components/BackRow.jsx'
+import { ArrowLeft, X } from 'lucide-react'
 import TextField from '../onboarding/components/TextField.jsx'
 import OptionButton from '../onboarding/components/OptionButton.jsx'
 import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
 import { supabase } from '../lib/supabase.js'
 
 export default function EditInfoPage() {
-  const navigate = useNavigate()
   const [userId, setUserId] = useState(null)
   const [form, setForm] = useState({
     firstName: '',
@@ -70,20 +68,39 @@ export default function EditInfoPage() {
       return
     }
 
-    navigate('/profile')
+    window.history.back()
   }
 
   return (
-    <div className="page-transition flex h-dvh flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      {/* Sticky header — always visible */}
-      <div className="flex shrink-0 items-center justify-between px-4 py-4 border-b border-border">
-        <BackRow label="Profile" />
-        <h1 className="text-[17px] font-semibold text-primary">Edit info</h1>
-        <div style={{ width: 60 }} />
+    <div className="page-transition flex h-dvh flex-col">
+      {/* Fixed header — always visible above content on iOS PWA */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        backgroundColor: '#0a0a0a', borderBottom: '1px solid #1e1e1e',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 8px',
+        height: 'calc(56px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
+      }}>
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: 8 }}
+        >
+          <ArrowLeft size={22} />
+        </button>
+        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>Edit Profile</span>
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: 8 }}
+        >
+          <X size={22} />
+        </button>
       </div>
 
-      {/* Scrollable form */}
-      <div className="flex-1 overflow-y-auto px-4 py-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* Scrollable form — top padding clears the fixed header */}
+      <div className="flex-1 overflow-y-auto px-4 py-6" style={{ WebkitOverflowScrolling: 'touch', paddingTop: 'calc(56px + env(safe-area-inset-top) + 24px)' }}>
         <div className="flex flex-col gap-4">
           <div>
             <p className="mb-2 text-[13px] uppercase tracking-[0.5px] text-inactive">First name</p>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Phone, Cake, Pencil, Bell, ShieldCheck, ChevronRight } from 'lucide-react'
+import { User, Mail, Phone, Cake, Pencil, Bell, ShieldCheck, ChevronRight, X } from 'lucide-react'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
 import { normalizeInterests } from '../utils/normalizeInterests.js'
 import { supabase } from '../lib/supabase.js'
@@ -172,7 +172,26 @@ export default function ProfilePage() {
   ]
 
   return (
-    <div className="page-transition px-4 pt-6 pb-8">
+    <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(56px + env(safe-area-inset-top) + 12px)' }}>
+      {/* Fixed header */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        backgroundColor: '#0a0a0a', borderBottom: '1px solid #1e1e1e',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 8px',
+        height: 'calc(56px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
+      }}>
+        <div style={{ width: 38 }} />
+        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>Settings</span>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: 8 }}
+        >
+          <X size={22} />
+        </button>
+      </div>
       {(liveUser.role === 'admin' || liveUser.role === 'leader') && (
         <button
           type="button"
