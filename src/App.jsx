@@ -72,11 +72,15 @@ export default function App() {
 
   const userId = user?.id
 
-  // Runs once per user session — only when a logged-in userId is available at mount.
+  // Runs once per session — only when a logged-in userId is available at mount.
   useEffect(() => {
     if (!userId) return
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
+
+      // Guard: only run the onboarding check once per session
+      if (sessionStorage.getItem('onboarding_checked')) return
+
       setUser(freshUser)
 
       // Increment count once per browser session (sessionStorage clears on tab/browser close)
@@ -112,18 +116,17 @@ export default function App() {
       if (freshUser.onboardingCompleted !== true) {
         setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
-        return
-      }
-
       // Case B: every 5th open, only if something is still missing
-      if (count > 0 && count % 5 === 0 && sectionsToShow.length > 0) {
+      } else if (count > 0 && count % 5 === 0 && sectionsToShow.length > 0) {
         setOnboardingMissing(sectionsToShow)
         setShowOnboardingSheet(true)
-        return
+      // Case C: all complete
+      } else {
+        setShowOnboardingSheet(false)
       }
 
-      // Case C: all complete
-      setShowOnboardingSheet(false)
+      // Mark as checked for this session — skipped on re-mounts caused by navigation
+      sessionStorage.setItem('onboarding_checked', 'true')
     })
   }, [userId])
 
