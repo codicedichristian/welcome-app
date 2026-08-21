@@ -143,6 +143,9 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
       })
     }
 
+    // Lock the flag at save time — prevents re-check on next mount
+    localStorage.setItem('onboarding_checked', 'true')
+
     setSaving(false)
     close(onComplete)
   }

@@ -64,22 +64,29 @@ export default function App() {
 
   // Triggered by LoginPage navigation state when onboarding_completed is false
   useEffect(() => {
-    if (location.state?.showOnboarding) {
-      setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
-      setShowOnboardingSheet(true)
-    }
+    if (!location.state?.showOnboarding) return
+    if (localStorage.getItem('onboarding_checked') === 'true') return
+    setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
+    setShowOnboardingSheet(true)
   }, [location.state])
 
   const userId = user?.id
 
-  // Runs once per session — only when a logged-in userId is available at mount.
+  // Runs once at app mount — userId captured from getStoredUser() at render time.
   useEffect(() => {
     if (!userId) return
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
 
-      // Guard: only run the onboarding check once per session
-      if (sessionStorage.getItem('onboarding_checked')) return
+      // Guard: flag lives in localStorage so it survives iOS PWA navigation clears
+      if (localStorage.getItem('onboarding_checked') === 'true') return
+
+      // Hard guard: DB is the source of truth — if complete, lock and never show again
+      if (freshUser.onboardingCompleted === true) {
+        setShowOnboardingSheet(false)
+        localStorage.setItem('onboarding_checked', 'true')
+        return
+      }
 
       setUser(freshUser)
 
@@ -125,10 +132,10 @@ export default function App() {
         setShowOnboardingSheet(false)
       }
 
-      // Mark as checked for this session — skipped on re-mounts caused by navigation
-      sessionStorage.setItem('onboarding_checked', 'true')
+      // Mark as checked — localStorage persists across sessions on iOS PWA
+      localStorage.setItem('onboarding_checked', 'true')
     })
-  }, [userId])
+  }, [])
 
   useEffect(() => {
     const hideTimer = setTimeout(() => setSplashVisible(false), 1500)
