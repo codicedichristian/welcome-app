@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useOutletContext, useNavigationType } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Bookmark, CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
@@ -94,17 +94,17 @@ function ExploreCard({ card, didDrag, navigate }) {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const navType = useNavigationType()
   const outletContext = useOutletContext()
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})
   const user = useUser()
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase()
 
-  const [events, setEvents] = useState([])
-  const [news, setNews] = useState([])
-  const [exploreCards, setExploreCards] = useState([])
+  // Initialize directly from cache so returning from detail pages renders instantly
+  const [events, setEvents] = useState(cachedEvents || [])
+  const [news, setNews] = useState(cachedNews || [])
+  const [exploreCards, setExploreCards] = useState(cachedExploreCards || [])
   const [showDonateModal, setShowDonateModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!cachedEvents || !cachedNews || !cachedExploreCards)
   const [fadeOut, setFadeOut] = useState(false)
   const eventsScrollRef = useRef(null)
   useScrollMemory('home')
@@ -118,50 +118,38 @@ export default function HomePage() {
   const qaSub = { fontSize: '10px', color: '#555', marginTop: '2px', marginBottom: 0 }
 
   useEffect(() => {
-    // Cache hit — render immediately, no loading overlay
-    if (cachedEvents && cachedNews && cachedExploreCards) {
-      setEvents(cachedEvents)
-      setNews(cachedNews)
-      setExploreCards(cachedExploreCards)
-      setIsLoading(false)
-      if (navType === 'POP') {
-        const saved = sessionStorage.getItem('scroll_home')
-        if (saved) {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
-            })
-          })
-        }
-      }
-      return
-    }
-
     let cancelled = false
-    async function load() {
-      const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
-      if (cancelled) return
 
-      const finalEvents = evRes.data?.length ? evRes.data : fallbackEvents
-      const finalNews = nwRes.data?.length ? nwRes.data : fallbackNews
-      const finalExplore = exRes.data?.length
+    const processResults = (evRes, nwRes, exRes) => {
+      const ev = evRes.data?.length ? evRes.data : fallbackEvents
+      const nw = nwRes.data?.length ? nwRes.data : fallbackNews
+      const ex = exRes.data?.length
         ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, to: c.route }))
         : FALLBACK_EXPLORE
-
-      cachedEvents = finalEvents
-      cachedNews = finalNews
-      cachedExploreCards = finalExplore
-
-      setEvents(finalEvents)
-      setNews(finalNews)
-      setExploreCards(finalExplore)
-
-      setFadeOut(true)
-      setTimeout(() => {
-        if (cancelled) return
-        setIsLoading(false)
-      }, 300)
+      return [ev, nw, ex]
     }
+
+    async function load() {
+      if (cachedEvents && cachedNews && cachedExploreCards) {
+        // Cache hit — content already rendered from state init, refresh silently in background
+        const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
+        if (cancelled) return
+        const [ev, nw, ex] = processResults(evRes, nwRes, exRes)
+        cachedEvents = ev; cachedNews = nw; cachedExploreCards = ex
+        setEvents(ev); setNews(nw); setExploreCards(ex)
+        return
+      }
+
+      // No cache — show skeleton until data arrives
+      const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
+      if (cancelled) return
+      const [ev, nw, ex] = processResults(evRes, nwRes, exRes)
+      cachedEvents = ev; cachedNews = nw; cachedExploreCards = ex
+      setEvents(ev); setNews(nw); setExploreCards(ex)
+      setFadeOut(true)
+      setTimeout(() => { if (!cancelled) setIsLoading(false) }, 300)
+    }
+
     load()
     return () => { cancelled = true }
   }, [])
