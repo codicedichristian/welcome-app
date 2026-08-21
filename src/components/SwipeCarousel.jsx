@@ -127,6 +127,7 @@ export default function SwipeCarousel({ items, renderItem, sidePadding = 22, ini
     <>
       <div
         ref={containerRef}
+        data-no-swipe="true"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}

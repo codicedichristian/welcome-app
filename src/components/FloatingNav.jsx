@@ -46,7 +46,13 @@ export default function FloatingNav() {
               key={to}
               type="button"
               aria-label={label}
-              onClick={() => navigate(to)}
+              onClick={() => {
+                if (location.pathname === to) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                } else {
+                  navigate(to)
+                }
+              }}
               style={{
                 width: '52px',
                 height: '44px',

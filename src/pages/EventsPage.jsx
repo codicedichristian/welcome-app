@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
 import { getEvents, rsvpEvent } from '../lib/api.js'
 import { SkeletonText } from '../components/SkeletonCard.jsx'
@@ -53,6 +54,7 @@ function dayLabel(date) {
 }
 
 export default function EventsPage() {
+  useScrollMemory()
   const navigate = useNavigate()
   const user = getStoredUser()
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
