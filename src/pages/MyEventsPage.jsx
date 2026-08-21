@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { CalendarX } from 'lucide-react'
+import { CalendarX, ArrowLeft } from 'lucide-react'
 import { getUserRsvps, getUserMidweekRsvp } from '../lib/api.js'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
-import BackRow from '../components/BackRow.jsx'
 import EventListItem from '../components/EventListItem.jsx'
 import Spinner from '../components/Spinner.jsx'
 
@@ -62,7 +61,14 @@ export default function MyEventsPage() {
 
   return (
     <div className="page-transition min-h-dvh bg-bg px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
-      <BackRow label="Home" />
+      <button
+        type="button"
+        onClick={() => { window.location.href = '/' }}
+        className="flex items-center gap-1.5"
+      >
+        <ArrowLeft size={18} className="text-[#666666]" />
+        <span className="text-[14px] text-[#444444]">Home</span>
+      </button>
 
       <h1 className="mt-4 text-[26px] font-bold text-primary">My Events</h1>
       <p className="mt-1 text-[13px] text-zinc-500">Events you're going to</p>
