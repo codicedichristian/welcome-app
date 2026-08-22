@@ -57,8 +57,16 @@ export function useScrollMemory(key) {
     }
     window.addEventListener('scroll', updateScroll, { passive: true })
 
+    const pollInterval = setInterval(() => {
+      const y = getScrollY()
+      if (y !== currentScrollY) {
+        currentScrollY = y
+      }
+    }, 200)
+
     return () => {
       clearTimeout(timer)
+      clearInterval(pollInterval)
       window.removeEventListener('scroll', updateScroll)
       sessionStorage.setItem(storageKey, String(currentScrollY))
     }
