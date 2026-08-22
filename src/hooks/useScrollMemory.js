@@ -86,7 +86,7 @@ export function useScrollMemory(key) {
       clearTimeout(timer)
       clearInterval(pollInterval)
       window.removeEventListener('scroll', updateScroll)
-      sessionStorage.setItem(storageKey, String(currentScrollY))
+      sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
     }
   }, [navType, storageKey])
 }
