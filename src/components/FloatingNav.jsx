@@ -52,6 +52,7 @@ export default function FloatingNav() {
                 if (to === '/') {
                   if (location.pathname !== '/' && location.pathname !== '/home') {
                     // Coming from another tab — HomePage is unmounted, read last known position
+                    console.log('[FloatingNav] coming from another tab, scroll_home_live:', sessionStorage.getItem('scroll_home_live'))
                     const liveScroll = sessionStorage.getItem('scroll_home_live')
                     if (liveScroll && parseInt(liveScroll) > 0) {
                       sessionStorage.setItem('scroll_home_saved', liveScroll)
