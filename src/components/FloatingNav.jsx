@@ -51,15 +51,14 @@ export default function FloatingNav() {
               onClick={() => {
                 if (to === '/') {
                   if (location.pathname !== '/' && location.pathname !== '/home') {
-                    // Coming from another tab — Home is not mounted, no scroll to read
-                  } else {
-                    // Already on Home — page is still mounted, read live position directly
-                    const currentScroll = getScrollY()
-                    if (currentScroll > 0) {
-                      sessionStorage.setItem('scroll_home_saved', String(currentScroll))
+                    // Coming from another tab — HomePage is unmounted, read last known position
+                    const liveScroll = sessionStorage.getItem('scroll_home_live')
+                    if (liveScroll && parseInt(liveScroll) > 0) {
+                      sessionStorage.setItem('scroll_home_saved', liveScroll)
                       sessionStorage.setItem('returning_to_home', 'true')
                     }
                   }
+                  // Already on Home — do nothing
                 }
                 navigate(to, { replace: true })
               }}
