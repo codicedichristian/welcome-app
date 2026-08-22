@@ -289,7 +289,7 @@ export default function HomePage() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '24px', paddingRight: '24px' }}>
           <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Upcoming events</span>
-          <button onClick={() => navigate('/events')} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
+          <button onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
         </div>
 
         {/* Cards row */}
@@ -382,7 +382,7 @@ export default function HomePage() {
       <div style={{ paddingTop: '30px', paddingLeft: '24px', paddingRight: '24px' }}>
         <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Quick access</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
-          <button type="button" onClick={() => navigate('/events')} style={qaCard}>
+          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={qaCard}>
             <CalendarDays size={24} color="#5b8cff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Events calendar</p><p style={qaSub}>All events</p></div>
           </button>
