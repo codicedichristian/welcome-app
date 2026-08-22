@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Home, CalendarDays, Megaphone, Bookmark } from 'lucide-react'
 
+const getScrollY = () => window.scrollY || document.documentElement.scrollTop || 0
+
 const TABS = [
   { to: '/', icon: Home, label: 'Home', exact: true },
   { to: '/events', icon: CalendarDays, label: 'Events' },
@@ -48,9 +50,16 @@ export default function FloatingNav() {
               aria-label={label}
               onClick={() => {
                 if (to === '/') {
-                  const liveScroll = sessionStorage.getItem('scroll_home_live')
-                  if (liveScroll) sessionStorage.setItem('scroll_home_saved', liveScroll)
-                  sessionStorage.setItem('returning_to_home', 'true')
+                  if (location.pathname !== '/' && location.pathname !== '/home') {
+                    // Coming from another tab — Home is not mounted, no scroll to read
+                  } else {
+                    // Already on Home — page is still mounted, read live position directly
+                    const currentScroll = getScrollY()
+                    if (currentScroll > 0) {
+                      sessionStorage.setItem('scroll_home_saved', String(currentScroll))
+                      sessionStorage.setItem('returning_to_home', 'true')
+                    }
+                  }
                 }
                 navigate(to, { replace: true })
               }}
