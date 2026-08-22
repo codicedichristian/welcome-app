@@ -21,7 +21,8 @@ export function useScrollMemory(key) {
       navType,
       storageKey,
       flag_raw: sessionStorage.getItem('returning_to_home'),
-      saved_raw: sessionStorage.getItem(storageKey),
+      saved_explicit: sessionStorage.getItem(`${storageKey}_saved`),
+      saved_live: sessionStorage.getItem(`${storageKey}_live`),
       windowScrollY: window.scrollY,
       docScrollTop: document.documentElement.scrollTop,
     })
@@ -37,7 +38,7 @@ export function useScrollMemory(key) {
       return () => {
         clearInterval(pollInterval)
         window.removeEventListener('scroll', updateScroll)
-        sessionStorage.setItem(storageKey, String(currentScrollY))
+        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
       }
     }
 
@@ -50,7 +51,8 @@ export function useScrollMemory(key) {
     if (shouldRestore) {
       restoredKeys.add(storageKey)
       if (flag) sessionStorage.removeItem('returning_to_home')
-      const saved = sessionStorage.getItem(storageKey)
+      const saved = sessionStorage.getItem(`${storageKey}_saved`) || sessionStorage.getItem(`${storageKey}_live`)
+      sessionStorage.removeItem(`${storageKey}_saved`)
 
       // LOG 3 — what value will be restored
       console.log('[useScrollMemory] saved position:', saved, '| will scroll:', saved !== null)
