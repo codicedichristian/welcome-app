@@ -3,6 +3,8 @@ import { useLocation, useNavigationType } from 'react-router-dom'
 
 const getScrollY = () => window.scrollY || document.documentElement.scrollTop || 0
 
+const restoredKeys = new Set()
+
 export function useScrollMemory(key) {
   const location = useLocation()
   const navType = useNavigationType()
@@ -10,6 +12,8 @@ export function useScrollMemory(key) {
 
   useEffect(() => {
     let timer
+    let currentScrollY = getScrollY()
+    let pollInterval
 
     // LOG 1 — effect entry
     console.log('[useScrollMemory] effect ran', {
@@ -22,6 +26,21 @@ export function useScrollMemory(key) {
       docScrollTop: document.documentElement.scrollTop,
     })
 
+    // Guard: only restore once per mount
+    if (restoredKeys.has(storageKey)) {
+      const updateScroll = () => { currentScrollY = getScrollY() }
+      window.addEventListener('scroll', updateScroll, { passive: true })
+      pollInterval = setInterval(() => {
+        const y = getScrollY()
+        if (y !== currentScrollY) currentScrollY = y
+      }, 200)
+      return () => {
+        clearInterval(pollInterval)
+        window.removeEventListener('scroll', updateScroll)
+        sessionStorage.setItem(storageKey, String(currentScrollY))
+      }
+    }
+
     const flag = key === 'home' && sessionStorage.getItem('returning_to_home') === 'true'
     const shouldRestore = navType === 'POP' || flag
 
@@ -29,6 +48,7 @@ export function useScrollMemory(key) {
     console.log('[useScrollMemory] shouldRestore:', shouldRestore, '| flag:', flag, '| navType:', navType)
 
     if (shouldRestore) {
+      restoredKeys.add(storageKey)
       if (flag) sessionStorage.removeItem('returning_to_home')
       const saved = sessionStorage.getItem(storageKey)
 
@@ -51,20 +71,16 @@ export function useScrollMemory(key) {
       }
     }
 
-    let currentScrollY = getScrollY()
-    const updateScroll = () => {
-      currentScrollY = getScrollY()
-    }
+    const updateScroll = () => { currentScrollY = getScrollY() }
     window.addEventListener('scroll', updateScroll, { passive: true })
 
-    const pollInterval = setInterval(() => {
+    pollInterval = setInterval(() => {
       const y = getScrollY()
-      if (y !== currentScrollY) {
-        currentScrollY = y
-      }
+      if (y !== currentScrollY) currentScrollY = y
     }, 200)
 
     return () => {
+      restoredKeys.delete(storageKey)
       clearTimeout(timer)
       clearInterval(pollInterval)
       window.removeEventListener('scroll', updateScroll)
