@@ -46,7 +46,14 @@ export default function FloatingNav() {
               key={to}
               type="button"
               aria-label={label}
-              onClick={() => navigate(to, { replace: true })}
+              onClick={() => {
+                if (to === '/') {
+                  const liveScroll = sessionStorage.getItem('scroll_home_live')
+                  if (liveScroll) sessionStorage.setItem('scroll_home_saved', liveScroll)
+                  sessionStorage.setItem('returning_to_home', 'true')
+                }
+                navigate(to, { replace: true })
+              }}
               style={{
                 width: '52px',
                 height: '44px',
