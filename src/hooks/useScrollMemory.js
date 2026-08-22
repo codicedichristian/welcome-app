@@ -47,18 +47,20 @@ export function useScrollMemory(key) {
           // LOG 5 — after scroll call
           console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
             '| docScrollTop:', document.documentElement.scrollTop)
-        }, 150)
+        }, 200)
       }
     }
 
-    const saveScroll = () => {
-      sessionStorage.setItem(storageKey, String(getScrollY()))
+    let currentScrollY = getScrollY()
+    const updateScroll = () => {
+      currentScrollY = getScrollY()
     }
-    window.addEventListener('scroll', saveScroll, { passive: true })
+    window.addEventListener('scroll', updateScroll, { passive: true })
 
     return () => {
       clearTimeout(timer)
-      window.removeEventListener('scroll', saveScroll)
+      window.removeEventListener('scroll', updateScroll)
+      sessionStorage.setItem(storageKey, String(currentScrollY))
     }
   }, [navType, storageKey])
 }
