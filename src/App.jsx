@@ -1,3 +1,4 @@
+// App root
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import OnboardingSheet from './components/OnboardingSheet.jsx'
