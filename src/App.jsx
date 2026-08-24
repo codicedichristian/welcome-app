@@ -175,7 +175,7 @@ export default function App() {
   useEffect(() => {
     const user = getStoredUser()
     if (!user.id || !user.notifApp) return
-    if (Notification.permission !== 'default') return
+    if (typeof Notification === 'undefined' || Notification.permission !== 'default') return
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
