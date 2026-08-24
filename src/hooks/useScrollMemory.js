@@ -29,11 +29,17 @@ export function useScrollMemory(key) {
 
     // Guard: only restore once per mount
     if (restoredKeys.has(storageKey)) {
-      const updateScroll = () => { currentScrollY = getScrollY() }
+      const updateScroll = () => {
+        currentScrollY = getScrollY()
+        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+      }
       window.addEventListener('scroll', updateScroll, { passive: true })
       pollInterval = setInterval(() => {
         const y = getScrollY()
-        if (y !== currentScrollY) currentScrollY = y
+        if (y !== currentScrollY) {
+          currentScrollY = y
+          sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+        }
       }, 200)
       return () => {
         clearInterval(pollInterval)
@@ -73,12 +79,18 @@ export function useScrollMemory(key) {
       }
     }
 
-    const updateScroll = () => { currentScrollY = getScrollY() }
+    const updateScroll = () => {
+      currentScrollY = getScrollY()
+      sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+    }
     window.addEventListener('scroll', updateScroll, { passive: true })
 
     pollInterval = setInterval(() => {
       const y = getScrollY()
-      if (y !== currentScrollY) currentScrollY = y
+      if (y !== currentScrollY) {
+        currentScrollY = y
+        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+      }
     }, 200)
 
     return () => {
