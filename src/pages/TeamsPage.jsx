@@ -1,13 +1,170 @@
 import { useEffect, useState } from 'react'
+import { X, Check } from 'lucide-react'
 import DetailPage from '../components/DetailPage.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getExploreCard, getServiceTeams } from '../lib/api.js'
+import { supabase } from '../lib/supabase.js'
+
+const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
+
+function JoinSheet({ onClose }) {
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState('')
+
+  const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.name.trim() || !form.surname.trim() || !form.email.trim()) {
+      setError('Please fill in name, surname and email.')
+      return
+    }
+    setSaving(true)
+    setError('')
+    const { error: dbError } = await supabase
+      .from('team_join_requests')
+      .insert([{ name: form.name.trim(), surname: form.surname.trim(), email: form.email.trim(), phone: form.phone.trim() }])
+    setSaving(false)
+    if (dbError) {
+      setError('Something went wrong. Please try again.')
+    } else {
+      setDone(true)
+    }
+  }
+
+  const inputStyle = {
+    width: '100%',
+    background: '#242424',
+    border: '0.5px solid #3a3a3a',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    fontSize: '15px',
+    color: '#ffffff',
+    outline: 'none',
+    boxSizing: 'border-box',
+  }
+
+  const labelStyle = {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#8e8e93',
+    marginBottom: '6px',
+    display: 'block',
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 100,
+          backdropFilter: 'blur(2px)',
+        }}
+      />
+
+      {/* Sheet */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#1a1a1a',
+        borderRadius: '24px 24px 0 0',
+        padding: '0 24px calc(env(safe-area-inset-bottom) + 32px)',
+        zIndex: 101,
+        maxHeight: '92dvh',
+        overflowY: 'auto',
+      }}>
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 99, background: '#3a3a3a' }} />
+        </div>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', paddingBottom: '24px' }}>
+          <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>Join the team</p>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ background: '#2a2a2a', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <X size={16} color="#8e8e93" />
+          </button>
+        </div>
+
+        {done ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', paddingTop: '32px', paddingBottom: '16px', textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#16a34a22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Check size={32} color="#22c55e" />
+            </div>
+            <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', margin: 0 }}>You're in!</p>
+            <p style={{ fontSize: '15px', color: '#6e6e73', lineHeight: 1.5, maxWidth: '260px', margin: 0 }}>
+              We received your request. Someone from the team will reach out to you soon.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ marginTop: '8px', padding: '14px 32px', background: '#22c55e', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>Name</label>
+              <input style={inputStyle} placeholder="Your first name" value={form.name} onChange={set('name')} autoComplete="given-name" />
+            </div>
+            <div>
+              <label style={labelStyle}>Surname</label>
+              <input style={inputStyle} placeholder="Your last name" value={form.surname} onChange={set('surname')} autoComplete="family-name" />
+            </div>
+            <div>
+              <label style={labelStyle}>Email</label>
+              <input style={inputStyle} type="email" placeholder="you@example.com" value={form.email} onChange={set('email')} autoComplete="email" />
+            </div>
+            <div>
+              <label style={labelStyle}>Phone number</label>
+              <input style={inputStyle} type="tel" placeholder="+39 333 000 0000" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+            </div>
+
+            {error && (
+              <p style={{ fontSize: '13px', color: '#f87171', margin: 0 }}>{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={saving}
+              style={{
+                marginTop: '8px',
+                padding: '16px',
+                background: saving ? '#166534' : '#22c55e',
+                border: 'none',
+                borderRadius: '14px',
+                fontSize: '17px',
+                fontWeight: '700',
+                color: '#fff',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                transition: 'background 0.2s',
+              }}
+            >
+              {saving ? 'Sending…' : 'Join the team now'}
+            </button>
+          </form>
+        )}
+      </div>
+    </>
+  )
+}
 
 export default function TeamsPage() {
   const [heroImage, setHeroImage] = useState(null)
   const [description, setDescription] = useState(null)
   const [teams, setTeams] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showJoin, setShowJoin] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -22,38 +179,62 @@ export default function TeamsPage() {
   }, [])
 
   return (
-    <DetailPage
-      image={heroImage ?? undefined}
-      title="Service Teams"
-      description={description ?? undefined}
-      backLabel="Home"
-      backPath="/"
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {isLoading ? (
-          [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} height={100} radius={20} />)
-        ) : teams.map((team) => (
-          <div
-            key={team.id}
+    <>
+      <DetailPage
+        image={heroImage ?? undefined}
+        title="Service Teams"
+        description={description ?? undefined}
+        backLabel="Home"
+        backPath="/"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {isLoading ? (
+            [0, 1, 2, 3, 4].map((i) => <SkeletonCard key={i} height={100} radius={20} />)
+          ) : teams.map((team) => (
+            <div
+              key={team.id}
+              style={{
+                background: '#1a1a1a',
+                border: '0.5px solid #2e2e2e',
+                borderRadius: '20px',
+                padding: '18px',
+              }}
+            >
+              <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff' }}>
+                {team.name}
+              </p>
+              {team.description && (
+                <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>
+                  {team.description}
+                </p>
+              )}
+            </div>
+          ))}
+
+          {/* Join button — same card dimensions */}
+          <button
+            type="button"
+            onClick={() => setShowJoin(true)}
             style={{
-              background: '#1a1a1a',
-              border: '0.5px solid #2e2e2e',
+              background: '#16a34a',
+              border: 'none',
               borderRadius: '20px',
               padding: '18px',
+              width: '100%',
+              textAlign: 'center',
+              fontSize: '16px',
+              fontWeight: '700',
+              color: '#ffffff',
+              cursor: 'pointer',
+              letterSpacing: '-0.01em',
             }}
           >
-            <p style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff' }}>
-              {team.name}
-            </p>
+            Join the team!
+          </button>
+        </div>
+      </DetailPage>
 
-            {team.description && (
-              <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>
-                {team.description}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    </DetailPage>
+      {showJoin && <JoinSheet onClose={() => setShowJoin(false)} />}
+    </>
   )
 }
