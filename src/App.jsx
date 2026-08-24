@@ -62,6 +62,31 @@ export default function App() {
   const [showOnboardingSheet, setShowOnboardingSheet] = useState(false)
   const [onboardingMissing, setOnboardingMissing] = useState(['interests', 'phone'])
   const [user, setUser] = useState(() => getStoredUser())
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const stored = getStoredUser()
+        setUser(stored?.id ? stored : session.user)
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const stored = getStoredUser()
+        setUser(stored?.id ? stored : session.user)
+      } else {
+        setUser(null)
+        localStorage.removeItem('welcome_user')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   // Triggered by LoginPage navigation state when onboarding_completed is false
   useEffect(() => {
@@ -161,6 +186,14 @@ export default function App() {
       })
     })
   }, [])
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid #2a2a2a', borderTop: '3px solid #f97316', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    )
+  }
 
   return (
     <UserContext.Provider value={user}>
