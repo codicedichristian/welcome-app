@@ -178,13 +178,14 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/welcome" element={user ? <Navigate to="/" replace /> : <WelcomeFlowPage />} />
+        <Route path="/" element={user ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
+        <Route path="/welcome" element={user ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
-            <Route index element={<HomePage />} />
+            <Route path="home" element={<HomePage />} />
             <Route path="events" element={<EventsPage />} />
             <Route path="events/:eventId" element={<EventDetailPage />} />
             <Route path="news" element={<NewsPage />} />
@@ -229,7 +230,7 @@ export default function App() {
             <Route path="admin/attendance" element={<AdminAttendancePage />} />
           </Route>
         </Route>
-        <Route path="*" element={user ? <Navigate to="/" replace /> : <Navigate to="/welcome" replace />} />
+        <Route path="*" element={user ? <Navigate to="/home" replace /> : <Navigate to="/welcome" replace />} />
       </Routes>
     </>
     </UserSetterContext.Provider>
