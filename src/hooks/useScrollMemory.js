@@ -64,18 +64,37 @@ export function useScrollMemory(key) {
       console.log('[useScrollMemory] saved position:', saved, '| will scroll:', saved !== null)
 
       if (saved) {
-        timer = setTimeout(() => {
-          // LOG 4 — timer fired
-          console.log('[useScrollMemory] setTimeout fired, scrolling to', parseInt(saved, 10),
-            '| current scrollY at fire time:', window.scrollY)
+        // POP (back/swipe): iOS needs 200ms to stabilize after history navigation
+        // REPLACE (FloatingNav tab): page already rendered, restore immediately
+        const delay = navType === 'POP' ? 200 : 0
 
-          window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
-          document.documentElement.scrollTop = parseInt(saved, 10)
+        if (delay === 0) {
+          requestAnimationFrame(() => {
+            // LOG 4 — rAF fired
+            console.log('[useScrollMemory] rAF fired, scrolling to', parseInt(saved, 10),
+              '| current scrollY at fire time:', window.scrollY)
 
-          // LOG 5 — after scroll call
-          console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
-            '| docScrollTop:', document.documentElement.scrollTop)
-        }, 200)
+            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+            document.documentElement.scrollTop = parseInt(saved, 10)
+
+            // LOG 5 — after scroll call
+            console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
+              '| docScrollTop:', document.documentElement.scrollTop)
+          })
+        } else {
+          timer = setTimeout(() => {
+            // LOG 4 — timer fired
+            console.log('[useScrollMemory] setTimeout fired, scrolling to', parseInt(saved, 10),
+              '| current scrollY at fire time:', window.scrollY)
+
+            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+            document.documentElement.scrollTop = parseInt(saved, 10)
+
+            // LOG 5 — after scroll call
+            console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
+              '| docScrollTop:', document.documentElement.scrollTop)
+          }, delay)
+        }
       }
     }
 
