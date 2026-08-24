@@ -89,14 +89,6 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Triggered by LoginPage navigation state when onboarding_completed is false
-  useEffect(() => {
-    if (!location.state?.showOnboarding) return
-    if (localStorage.getItem('onboarding_checked') === 'true') return
-    setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
-    setShowOnboardingSheet(true)
-  }, [location.state])
-
   const userId = user?.id
 
   // Runs once at app mount — userId captured from getStoredUser() at render time.
@@ -162,7 +154,7 @@ export default function App() {
       // Mark as checked — localStorage persists across sessions on iOS PWA
       localStorage.setItem('onboarding_checked', 'true')
     })
-  }, [])
+  }, [userId])
 
   useEffect(() => {
     const hideTimer = setTimeout(() => setSplashVisible(false), 1500)
@@ -212,7 +204,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/" element={user ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
+        <Route path="/" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
         <Route path="/welcome" element={user ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />

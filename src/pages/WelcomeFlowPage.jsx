@@ -502,6 +502,7 @@ export default function WelcomeFlowPage() {
   const handleSubmit = async () => {
     setSaving(true)
     setError(null)
+    sessionStorage.setItem('registration_in_progress', 'true')
     const { user, authId, error: err } = await registerVisitor(form)
     if (err) {
       setError(err.message || 'Errore durante la registrazione. Riprova.')
@@ -514,7 +515,7 @@ export default function WelcomeFlowPage() {
   }
 
   if (screen === 0) return <SplashScreen onStart={() => goTo(1)} onLogin={() => navigate('/login')} />
-  if (screen === 5) return <SuccessScreen onEnter={() => navigate('/login', { replace: true })} />
+  if (screen === 5) return <SuccessScreen onEnter={() => { sessionStorage.removeItem('registration_in_progress'); navigate('/login', { replace: true }) }} />
 
   const animClass = direction === 1 ? 'animate-slide-in-right' : 'animate-slide-in-left'
 

@@ -56,11 +56,7 @@ export default function LoginPage() {
 
     localStorage.setItem('welcome_user', JSON.stringify(toStoredUser(profile, data.user.id)))
 
-    if (!profile.onboarding_completed) {
-      navigate('/', { replace: true, state: { showOnboarding: true } })
-    } else {
-      navigate('/', { replace: true })
-    }
+    navigate('/', { replace: true })
   }
 
   const handleResetSubmit = async (e) => {
