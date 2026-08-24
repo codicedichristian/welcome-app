@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import OnboardingSheet from './components/OnboardingSheet.jsx'
 import { UserContext, UserSetterContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
@@ -49,6 +49,7 @@ import AdminExplore from './pages/admin/AdminExplore.jsx'
 import AdminTeams from './pages/admin/AdminTeams.jsx'
 import AdminAttendancePage from './pages/admin/AdminAttendancePage.jsx'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
+import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -177,8 +178,8 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/welcome" element={user ? <Navigate to="/" replace /> : <WelcomeFlowPage />} />
         <Route element={<RedirectIfAuthenticated />}>
-          <Route path="/welcome" element={<WelcomeFlowPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
         <Route element={<RequireAuth />}>
@@ -207,6 +208,7 @@ export default function App() {
             <Route path="seasons" element={<SeasonsPage />} />
             <Route path="seasons/:id" element={<SeasonDetailPage />} />
             <Route path="midweeks" element={<MidweeksDescriptionPage />} />
+            <Route path="prayer-requests" element={<PrayerRequestsPage />} />
           </Route>
         </Route>
         <Route element={<AdminRoute />}>
@@ -227,6 +229,7 @@ export default function App() {
             <Route path="admin/attendance" element={<AdminAttendancePage />} />
           </Route>
         </Route>
+        <Route path="*" element={user ? <Navigate to="/" replace /> : <Navigate to="/welcome" replace />} />
       </Routes>
     </>
     </UserSetterContext.Provider>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
-import { IconCalendarHeart } from '@tabler/icons-react'
+import { IconCalendarHeart, IconPray } from '@tabler/icons-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
@@ -399,14 +399,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── 5. QUICK ACCESS ── */}
+      {/* ── 5. EXPLORE MORE ── */}
       <div style={{ paddingTop: '30px', paddingLeft: '24px', paddingRight: '24px' }}>
-        <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Quick access</span>
+        <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Explore More</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
-          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={qaCard}>
-            <CalendarDays size={24} color="#5b8cff" strokeWidth={1.75} />
-            <div><p style={qaLabel}>Events calendar</p><p style={qaSub}>All events</p></div>
-          </button>
           <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/last-sunday') }} style={qaCard}>
             <Play size={24} color="#ffffff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Last Sunday</p><p style={qaSub}>Sermon</p></div>
@@ -414,6 +410,10 @@ export default function HomePage() {
           <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/midweek') }} style={qaCard}>
             <MapPin size={24} color="#5b8cff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Find Midweek</p><p style={qaSub}>Near you</p></div>
+          </button>
+          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/prayer-requests') }} style={qaCard}>
+            <IconPray size={24} color="#a78bfa" />
+            <div><p style={qaLabel}>Prayer Requests</p><p style={qaSub}>Pray together</p></div>
           </button>
           <button type="button" onClick={() => setShowDonateModal(true)} style={qaCard}>
             <Heart size={24} color="#4caf7d" strokeWidth={1.75} />
