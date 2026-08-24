@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useSmartBack } from '../hooks/useSmartBack.js'
+import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
 import { getEvents, rsvpEvent } from '../lib/api.js'
 import { SkeletonText } from '../components/SkeletonCard.jsx'
@@ -55,9 +54,6 @@ function dayLabel(date) {
 
 export default function EventsPage() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const fromHome = location.state?.fromHome === true
-  const goBack = useSmartBack('/')
   const user = getStoredUser()
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
 
@@ -138,7 +134,7 @@ export default function EventsPage() {
         fontFamily: FONT,
         background: '#0a0a0a',
         minHeight: '100dvh',
-        paddingBottom: '110px',
+        paddingBottom: '40px',
         position: 'relative',
       }}
     >
@@ -151,18 +147,14 @@ export default function EventsPage() {
           padding: 'calc(env(safe-area-inset-top) + 22px) 24px 0',
         }}
       >
-        {fromHome ? (
-          <button
-            type="button"
-            onClick={goBack}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          >
-            <ArrowLeft size={18} color="#8e8e93" />
-            <span style={{ fontSize: '15px', fontWeight: '600', color: '#8e8e93' }}>Home</span>
-          </button>
-        ) : (
-          <div />
-        )}
+        <button
+          type="button"
+          onClick={() => navigate('/', { replace: true })}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <ArrowLeft size={18} color="#8e8e93" />
+          <span style={{ fontSize: '15px', fontWeight: '600', color: '#8e8e93' }}>Home</span>
+        </button>
         <div
           style={{
             width: '36px',

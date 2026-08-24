@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { Bookmark, CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
+import { CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
+import { IconCalendarHeart } from '@tabler/icons-react'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
@@ -198,7 +199,7 @@ export default function HomePage() {
     )}
     <div
       className="page-transition"
-      style={{ fontFamily: FONT, background: '#0a0a0a', minHeight: '100dvh', paddingBottom: '100px' }}
+      style={{ fontFamily: FONT, background: '#0a0a0a', minHeight: '100dvh', paddingBottom: '40px' }}
     >
       {/* ── 1. GREETING HEADER ── */}
       <div
@@ -228,10 +229,9 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => navigate('/my-events')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
           >
-            <Bookmark size={20} color="#ffffff" />
-            <span style={{ fontSize: '11px', color: '#c7c7cc' }}>My Events</span>
+            <IconCalendarHeart size={26} color="white" />
           </button>
           <button
             type="button"
@@ -327,13 +327,34 @@ export default function HomePage() {
             </button>
           ))}
         </div>
+
+        {/* View full calendar */}
+        <div style={{ paddingLeft: '24px', paddingRight: '24px', marginTop: '12px' }}>
+          <button
+            type="button"
+            onClick={() => { sessionStorage.setItem('scroll_home_saved', sessionStorage.getItem('scroll_home_live') || '0'); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events') }}
+            style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: '1px solid #2a2a2a', background: 'transparent', color: '#f97316', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+          >
+            <CalendarDays size={16} />
+            View full calendar
+          </button>
+        </div>
       </div>
 
       {/* ── 4. ANNOUNCEMENTS ── */}
       <section style={{ padding: '30px 24px 0' }}>
-        <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em' }}>
-          Announcements
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
+            Announcements
+          </p>
+          <button
+            type="button"
+            onClick={() => { sessionStorage.setItem('scroll_home_saved', sessionStorage.getItem('scroll_home_live') || '0'); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/news') }}
+            style={{ color: '#f97316', fontSize: 13, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            See all
+          </button>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
           {announcementItems.map((item) => {

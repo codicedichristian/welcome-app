@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useSmartBack } from '../hooks/useSmartBack.js'
+import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Megaphone } from 'lucide-react'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
@@ -10,9 +9,6 @@ import ErrorState from '../components/ErrorState.jsx'
 
 export default function NewsPage() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const fromHome = location.state?.fromHome === true
-  const goBack = useSmartBack('/')
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -41,16 +37,14 @@ export default function NewsPage() {
 
   return (
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
-      {fromHome && (
-        <button
-          type="button"
-          onClick={goBack}
-          className="mb-4 flex items-center gap-1.5"
-        >
-          <ArrowLeft size={18} className="text-[#666666]" />
-          <span className="text-[14px] text-[#444444]">Home</span>
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => navigate('/', { replace: true })}
+        className="mb-4 flex items-center gap-1.5"
+      >
+        <ArrowLeft size={18} className="text-[#666666]" />
+        <span className="text-[14px] text-[#444444]">Home</span>
+      </button>
       {loading ? (
         <div className="mt-2 flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
