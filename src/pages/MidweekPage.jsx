@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Clock, Check, Home, ChevronRight } from 'lucide-react'
@@ -16,6 +16,20 @@ import Spinner from '../components/Spinner.jsx'
 import ErrorState from '../components/ErrorState.jsx'
 
 const MADRID_CENTER = [40.4168, -3.7038]
+
+function InvalidateSizeOnMount() {
+  const map = useMap()
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 100)
+    const handleResize = () => map.invalidateSize()
+    window.addEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [map])
+  return null
+}
 const TILE_URL = 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
 const midweekEvent = normalizeEvent(getEventById('midweek'))
 
@@ -41,7 +55,6 @@ export default function MidweekPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const popupRef = useRef(null)
-  const mapRef = useRef(null)
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -84,12 +97,6 @@ export default function MidweekPage() {
       return () => clearTimeout(t)
     }
   }, [groups])
-
-  useEffect(() => {
-    if (!mapRef.current) return
-    const t = setTimeout(() => { mapRef.current.invalidateSize() }, 300)
-    return () => clearTimeout(t)
-  }, [mapReady])
 
   useEffect(() => {
     if (location.state?.selectedGroupId && popupRef.current) {
@@ -147,11 +154,11 @@ export default function MidweekPage() {
               <div style={{ borderRadius: '14px', overflow: 'hidden' }}>
                 <MapContainer
                   key={groups.length}
-                  ref={mapRef}
                   center={MADRID_CENTER}
                   zoom={12}
                   style={{ height: '220px', width: '100%' }}
                 >
+                  <InvalidateSizeOnMount />
                   <TileLayer
                     url={TILE_URL}
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
