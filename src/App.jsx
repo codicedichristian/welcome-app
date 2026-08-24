@@ -91,16 +91,17 @@ export default function App() {
 
   const userId = user?.id
 
-  // Runs once at app mount — userId captured from getStoredUser() at render time.
   useEffect(() => {
     if (!userId) return
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
 
-      // Guard: flag lives in localStorage so it survives iOS PWA navigation clears
+      // Permanent guard: onboarding confirmed complete in a previous session
       if (localStorage.getItem('onboarding_checked') === 'true') return
+      // Same-session guard: already ran this session (prevents double-fire when userId changes)
+      if (sessionStorage.getItem('onboarding_checked') === 'true') return
 
-      // Hard guard: DB is the source of truth — if complete, lock and never show again
+      // Hard guard: DB is source of truth — if complete, lock permanently
       if (freshUser.onboardingCompleted === true) {
         setShowOnboardingSheet(false)
         localStorage.setItem('onboarding_checked', 'true')
@@ -138,21 +139,21 @@ export default function App() {
         sectionsToShow,
       })
 
-      // Case A: onboarding never completed — always show all sections
+      // Case A: onboarding never completed — show all sections, allow re-check next session
       if (freshUser.onboardingCompleted !== true) {
         setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
+        sessionStorage.setItem('onboarding_checked', 'true')
       // Case B: every 5th open, only if something is still missing
       } else if (count > 0 && count % 5 === 0 && sectionsToShow.length > 0) {
         setOnboardingMissing(sectionsToShow)
         setShowOnboardingSheet(true)
-      // Case C: all complete
+        sessionStorage.setItem('onboarding_checked', 'true')
+      // Case C: all complete — lock permanently
       } else {
         setShowOnboardingSheet(false)
+        localStorage.setItem('onboarding_checked', 'true')
       }
-
-      // Mark as checked — localStorage persists across sessions on iOS PWA
-      localStorage.setItem('onboarding_checked', 'true')
     })
   }, [userId])
 
