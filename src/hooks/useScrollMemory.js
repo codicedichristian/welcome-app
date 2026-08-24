@@ -73,14 +73,17 @@ export function useScrollMemory(key) {
     }
 
     const flag = key === 'home' && sessionStorage.getItem('returning_to_home') === 'true'
-    const shouldRestore = navType === 'POP' || flag
+    const manualRestoreRequested = sessionStorage.getItem('use_manual_restore') === 'true'
+    const shouldRestore = flag && manualRestoreRequested
 
     // LOG 2 — decision
     console.log('[useScrollMemory] shouldRestore:', shouldRestore, '| flag:', flag, '| navType:', navType)
+    console.log('[restore decision]', { flag, manualRestoreRequested, shouldRestore })
 
     if (shouldRestore) {
       restoredKeys.add(storageKey)
       if (flag) sessionStorage.removeItem('returning_to_home')
+      sessionStorage.removeItem('use_manual_restore')
       const saved = sessionStorage.getItem(`${storageKey}_saved`) || sessionStorage.getItem(`${storageKey}_live`)
       sessionStorage.removeItem(`${storageKey}_saved`)
 

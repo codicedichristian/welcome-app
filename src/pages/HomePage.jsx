@@ -54,7 +54,7 @@ function getGreeting() {
 function ExploreCard({ card, didDrag, navigate }) {
   return (
     <div
-      onClick={() => { if (!didDrag.current) { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate(card.to) } }}
+      onClick={() => { if (!didDrag.current) { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate(card.to) } }}
       style={{
         width: '100%',
         height: '200px',
@@ -289,7 +289,7 @@ export default function HomePage() {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '24px', paddingRight: '24px' }}>
           <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Upcoming events</span>
-          <button onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
+          <button onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
         </div>
 
         {/* Cards row */}
@@ -308,7 +308,7 @@ export default function HomePage() {
           }}>
           {upcoming.map((ev) => (
             <button key={ev.id} type="button"
-              onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate(`/events/${ev.id}`, { state: { event: ev } }) }}
+              onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate(`/events/${ev.id}`, { state: { event: ev } }) }}
               style={{ flexShrink: 0, width: '176px', background: '#161618', border: '1px solid #222226', borderRadius: '22px', padding: '8px 8px 12px', cursor: 'pointer', textAlign: 'left' }}>
               <div style={{ height: '160px', borderRadius: '16px', overflow: 'hidden', background: '#1c1c1f' }}>
                 <img
@@ -343,7 +343,7 @@ export default function HomePage() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate(`/news/${item.id}`, { state: { item } }) }}
+                onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate(`/news/${item.id}`, { state: { item } }) }}
                 style={{
                   gridColumn: item.fullWidth ? '1 / -1' : 'span 1',
                   height: item.fullWidth ? '150px' : '120px',
@@ -382,15 +382,15 @@ export default function HomePage() {
       <div style={{ paddingTop: '30px', paddingLeft: '24px', paddingRight: '24px' }}>
         <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Quick access</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
-          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={qaCard}>
+          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={qaCard}>
             <CalendarDays size={24} color="#5b8cff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Events calendar</p><p style={qaSub}>All events</p></div>
           </button>
-          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/last-sunday') }} style={qaCard}>
+          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/last-sunday') }} style={qaCard}>
             <Play size={24} color="#ffffff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Last Sunday</p><p style={qaSub}>Sermon</p></div>
           </button>
-          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); navigate('/midweek') }} style={qaCard}>
+          <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/midweek') }} style={qaCard}>
             <MapPin size={24} color="#5b8cff" strokeWidth={1.75} />
             <div><p style={qaLabel}>Find Midweek</p><p style={qaSub}>Near you</p></div>
           </button>
