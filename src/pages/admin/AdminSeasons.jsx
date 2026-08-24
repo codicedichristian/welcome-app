@@ -6,6 +6,7 @@ import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
 const EMPTY = { name: '', description: '', image_url: '', start_date: '', end_date: '' }
 
@@ -55,9 +56,12 @@ function SeasonForm({ initial, onSave, onCancel, saving }) {
           placeholder="Brief description of the season"
         />
       </Field>
-      <Field label="Image URL">
-        <Input value={form.image_url} onChange={(e) => set('image_url', e.target.value)} type="url" placeholder="https://..." />
-      </Field>
+      <ImageUploader
+        folder="seasons"
+        imageUrl={form.image_url}
+        onUpload={(url) => set('image_url', url)}
+        label="Season image"
+      />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Start date">
           <Input value={form.start_date} onChange={(e) => set('start_date', e.target.value)} type="date" />

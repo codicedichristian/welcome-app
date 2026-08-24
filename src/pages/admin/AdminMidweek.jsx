@@ -11,6 +11,7 @@ import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
 const EMPTY_GROUP = {
   host: '',
@@ -135,14 +136,12 @@ function GroupForm({ initial, onSave, onCancel, saving }) {
         />
       </Field>
 
-      <Field label="Photos URL">
-        <Input
-          type="url"
-          placeholder="https://..."
-          value={form.photos_url}
-          onChange={(e) => update({ photos_url: e.target.value })}
-        />
-      </Field>
+      <ImageUploader
+        folder="midweek"
+        imageUrl={form.photos_url}
+        onUpload={(url) => update({ photos_url: url })}
+        label="Group photo"
+      />
 
       <label className="flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5">
         <span className="text-sm text-primary">Active</span>

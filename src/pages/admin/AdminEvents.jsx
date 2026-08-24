@@ -8,6 +8,7 @@ import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
 const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special']
 const AUDIENCE_OPTIONS = ['Open to everyone', 'Members only', 'Youth', 'Women', 'Men', 'Leaders']
@@ -233,14 +234,12 @@ function EventForm({ initial, onSave, onCancel, saving }) {
         </Field>
       </div>
 
-      <Field label="Image URL">
-        <Input
-          type="url"
-          placeholder="https://..."
-          value={form.image_url}
-          onChange={(e) => update({ image_url: e.target.value })}
-        />
-      </Field>
+      <ImageUploader
+        folder="events"
+        imageUrl={form.image_url}
+        onUpload={(url) => update({ image_url: url })}
+        label="Image"
+      />
 
       <div className="mt-2 flex gap-3">
         <button type="button" onClick={onCancel} className="flex-1 rounded-xl border border-border py-2.5 text-sm text-primary">

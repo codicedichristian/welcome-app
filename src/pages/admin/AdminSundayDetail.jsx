@@ -6,8 +6,9 @@ import { formatShortDate } from '../../lib/format.js'
 import { safeUrl, trimField } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
-const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', video_url: '', photos_url: '', audio_url: '' }
+const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', image_url: '', video_url: '', photos_url: '', audio_url: '' }
 
 function toForm(s) {
   if (!s) return EMPTY_FORM
@@ -16,6 +17,7 @@ function toForm(s) {
     speaker:     s.speaker ?? '',
     scripture:   s.scripture ?? '',
     description: s.description ?? '',
+    image_url:   s.image_url ?? '',
     video_url:   s.video_url ?? '',
     photos_url:  s.photos_url ?? '',
     audio_url:   s.audio_url ?? '',
@@ -53,6 +55,7 @@ export default function AdminSundayDetail() {
       speaker:     trimField(form.speaker),
       scripture:   trimField(form.scripture),
       description: trimField(form.description),
+      image_url:   safeUrl(form.image_url),
       video_url:   safeUrl(form.video_url),
       photos_url:  safeUrl(form.photos_url),
       audio_url:   safeUrl(form.audio_url),
@@ -99,6 +102,12 @@ export default function AdminSundayDetail() {
         <Field label="Description">
           <Textarea rows={4} value={form.description} onChange={(e) => update({ description: e.target.value })} />
         </Field>
+        <ImageUploader
+          folder="sundays"
+          imageUrl={form.image_url}
+          onUpload={(url) => update({ image_url: url })}
+          label="Sermon image"
+        />
         <Field label="Video URL">
           <Input
             type="url"

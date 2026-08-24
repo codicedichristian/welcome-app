@@ -8,6 +8,7 @@ import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
 const CATEGORY_OPTIONS = ['Announcement', 'Event', 'General']
 const COLOR_SWATCHES = [
@@ -67,14 +68,12 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
         <Textarea rows={6} value={form.body} onChange={(e) => update({ body: e.target.value })} required />
       </Field>
 
-      <Field label="Cover image URL (optional)">
-        <Input
-          type="url"
-          placeholder="https://..."
-          value={form.image_url}
-          onChange={(e) => update({ image_url: e.target.value })}
-        />
-      </Field>
+      <ImageUploader
+        folder="news"
+        imageUrl={form.image_url}
+        onUpload={(url) => update({ image_url: url })}
+        label="Cover image"
+      />
 
       <Field label="External link (optional)">
         <Input

@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
+import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
 const COLOR_SWATCHES = [
   { name: 'Purple', hex: '#a78bfa' },
@@ -43,20 +44,12 @@ function ExploreForm({ initial, onSave, onCancel, saving }) {
         <Textarea rows={2} value={form.description} onChange={(e) => update({ description: e.target.value })} />
       </Field>
 
-      <Field label="Image URL">
-        <Input
-          type="url"
-          placeholder="https://..."
-          value={form.image_url}
-          onChange={(e) => update({ image_url: e.target.value })}
-        />
-      </Field>
-
-      {form.image_url && (
-        <div className="overflow-hidden rounded-xl border border-border" style={{ height: '80px' }}>
-          <img src={form.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-      )}
+      <ImageUploader
+        folder="explore"
+        imageUrl={form.image_url}
+        onUpload={(url) => update({ image_url: url })}
+        label="Card image"
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Pill label">
