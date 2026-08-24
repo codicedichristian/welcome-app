@@ -54,17 +54,13 @@ export default function FloatingNav() {
                     const homeScroll = sessionStorage.getItem('scroll_home_live') || '0'
                     sessionStorage.setItem('scroll_home_saved', homeScroll)
                     sessionStorage.setItem('returning_to_home', 'true')
-                    if (window.history.length > 1) {
-                      window.history.back()
-                    } else {
-                      navigate('/', { replace: true })
-                    }
+                    sessionStorage.setItem('use_manual_restore', 'true')
+                    navigate('/', { replace: true })
                   } else {
-                    // Already on Home — scroll to top smoothly
                     window.scrollTo({ top: 0, behavior: 'smooth' })
                   }
                 } else {
-                  navigate(to)
+                  navigate(to, { replace: true })
                 }
               }}
               style={{
