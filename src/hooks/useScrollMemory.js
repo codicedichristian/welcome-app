@@ -32,6 +32,7 @@ export function useScrollMemory(key) {
       const updateScroll = () => {
         currentScrollY = getScrollY()
         sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+        console.log('[scroll event] scrollY:', getScrollY(), 'writing to:', `${storageKey}_live`)
       }
       window.addEventListener('scroll', updateScroll, { passive: true })
       pollInterval = setInterval(() => {
@@ -39,6 +40,7 @@ export function useScrollMemory(key) {
         if (y !== currentScrollY) {
           currentScrollY = y
           sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+          console.log('[poll] scrollY:', getScrollY(), 'currentScrollY:', currentScrollY, 'writing to:', `${storageKey}_live`)
         }
       }, 200)
       return () => {
@@ -103,6 +105,7 @@ export function useScrollMemory(key) {
     const updateScroll = () => {
       currentScrollY = getScrollY()
       sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+      console.log('[scroll event] scrollY:', getScrollY(), 'writing to:', `${storageKey}_live`)
     }
     window.addEventListener('scroll', updateScroll, { passive: true })
 
@@ -111,6 +114,7 @@ export function useScrollMemory(key) {
       if (y !== currentScrollY) {
         currentScrollY = y
         sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+        console.log('[poll] scrollY:', getScrollY(), 'currentScrollY:', currentScrollY, 'writing to:', `${storageKey}_live`)
       }
     }, 200)
 

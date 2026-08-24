@@ -50,11 +50,17 @@ export default function FloatingNav() {
               aria-label={label}
               onClick={() => {
                 if (to === '/') {
+                  console.log('[FloatingNav Home] clicked, pathname:', location.pathname,
+                    'scroll_home_live:', sessionStorage.getItem('scroll_home_live'),
+                    'scroll_home_saved:', sessionStorage.getItem('scroll_home_saved'),
+                    'windowScrollY:', window.scrollY,
+                    'docScrollTop:', document.documentElement.scrollTop)
                   if (location.pathname !== '/' && location.pathname !== '/home') {
                     // Coming from another tab — go back via history so POP fires and scroll restores
                     // Do NOT use getScrollY() here — we are on a different page, scrollY is 0
                     const homeScroll = sessionStorage.getItem('scroll_home_live') || '0'
                     sessionStorage.setItem('scroll_home_saved', homeScroll)
+                    console.log('[FloatingNav Home] saved to scroll_home_saved:', sessionStorage.getItem('scroll_home_saved'))
                     sessionStorage.setItem('returning_to_home', 'true')
                     if (window.history.length > 1) {
                       window.history.back()
