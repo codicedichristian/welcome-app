@@ -13,7 +13,6 @@ export function useScrollMemory(key) {
   useEffect(() => {
     let timer
     let currentScrollY = getScrollY()
-    let pollInterval
 
     // LOG 1 — effect entry
     console.log('[useScrollMemory] effect ran', {
@@ -29,24 +28,47 @@ export function useScrollMemory(key) {
 
     // Guard: only restore once per mount
     if (restoredKeys.has(storageKey)) {
-      const updateScroll = () => {
-        currentScrollY = getScrollY()
-        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
-        console.log('[scroll event] scrollY:', getScrollY(), 'writing to:', `${storageKey}_live`)
+      let lastScrollY = currentScrollY
+      let stableTimer = null
+
+      const saveToLive = (y) => {
+        currentScrollY = y
+        sessionStorage.setItem(`${storageKey}_live`, String(y))
+        console.log('[scroll save] position:', y, 'key:', `${storageKey}_live`)
       }
-      window.addEventListener('scroll', updateScroll, { passive: true })
-      pollInterval = setInterval(() => {
+
+      const onScrollEnd = () => {
         const y = getScrollY()
-        if (y !== currentScrollY) {
-          currentScrollY = y
-          sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
-          console.log('[poll] scrollY:', getScrollY(), 'currentScrollY:', currentScrollY, 'writing to:', `${storageKey}_live`)
-        }
-      }, 200)
+        saveToLive(y)
+        console.log('[scrollend] final position:', y)
+      }
+
+      const onScroll = () => {
+        const y = getScrollY()
+        lastScrollY = y
+        if (stableTimer) clearTimeout(stableTimer)
+        stableTimer = setTimeout(() => {
+          const finalY = getScrollY()
+          saveToLive(finalY)
+          console.log('[scroll stable] final position:', finalY)
+        }, 150)
+      }
+
+      const supportsScrollEnd = 'onscrollend' in window
+      if (supportsScrollEnd) {
+        window.addEventListener('scrollend', onScrollEnd, { passive: true })
+        window.addEventListener('scroll', onScroll, { passive: true })
+      } else {
+        window.addEventListener('scroll', onScroll, { passive: true })
+      }
+
       return () => {
-        clearInterval(pollInterval)
-        window.removeEventListener('scroll', updateScroll)
-        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+        clearTimeout(stableTimer)
+        window.removeEventListener('scrollend', onScrollEnd)
+        window.removeEventListener('scroll', onScroll)
+        const finalY = getScrollY()
+        sessionStorage.setItem(`${storageKey}_live`, String(finalY))
+        console.log('[cleanup] saved position:', finalY)
       }
     }
 
@@ -102,28 +124,49 @@ export function useScrollMemory(key) {
       }
     }
 
-    const updateScroll = () => {
-      currentScrollY = getScrollY()
-      sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
-      console.log('[scroll event] scrollY:', getScrollY(), 'writing to:', `${storageKey}_live`)
-    }
-    window.addEventListener('scroll', updateScroll, { passive: true })
+    let lastScrollY = currentScrollY
+    let stableTimer = null
 
-    pollInterval = setInterval(() => {
+    const saveToLive = (y) => {
+      currentScrollY = y
+      sessionStorage.setItem(`${storageKey}_live`, String(y))
+      console.log('[scroll save] position:', y, 'key:', `${storageKey}_live`)
+    }
+
+    const onScrollEnd = () => {
       const y = getScrollY()
-      if (y !== currentScrollY) {
-        currentScrollY = y
-        sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
-        console.log('[poll] scrollY:', getScrollY(), 'currentScrollY:', currentScrollY, 'writing to:', `${storageKey}_live`)
-      }
-    }, 200)
+      saveToLive(y)
+      console.log('[scrollend] final position:', y)
+    }
+
+    const onScroll = () => {
+      const y = getScrollY()
+      lastScrollY = y
+      if (stableTimer) clearTimeout(stableTimer)
+      stableTimer = setTimeout(() => {
+        const finalY = getScrollY()
+        saveToLive(finalY)
+        console.log('[scroll stable] final position:', finalY)
+      }, 150)
+    }
+
+    const supportsScrollEnd = 'onscrollend' in window
+    if (supportsScrollEnd) {
+      window.addEventListener('scrollend', onScrollEnd, { passive: true })
+      window.addEventListener('scroll', onScroll, { passive: true })
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true })
+    }
 
     return () => {
       restoredKeys.delete(storageKey)
       clearTimeout(timer)
-      clearInterval(pollInterval)
-      window.removeEventListener('scroll', updateScroll)
-      sessionStorage.setItem(`${storageKey}_live`, String(currentScrollY))
+      clearTimeout(stableTimer)
+      window.removeEventListener('scrollend', onScrollEnd)
+      window.removeEventListener('scroll', onScroll)
+      const finalY = getScrollY()
+      sessionStorage.setItem(`${storageKey}_live`, String(finalY))
+      console.log('[cleanup] saved position:', finalY)
     }
   }, [navType, storageKey])
 }
