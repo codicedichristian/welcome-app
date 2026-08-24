@@ -51,17 +51,21 @@ export default function FloatingNav() {
               onClick={() => {
                 if (to === '/') {
                   if (location.pathname !== '/' && location.pathname !== '/home') {
-                    // Coming from another tab — HomePage is unmounted, read last known position
-                    console.log('[FloatingNav] coming from another tab, scroll_home_live:', sessionStorage.getItem('scroll_home_live'))
-                    const liveScroll = sessionStorage.getItem('scroll_home_live')
-                    if (liveScroll && parseInt(liveScroll) > 0) {
-                      sessionStorage.setItem('scroll_home_saved', liveScroll)
-                      sessionStorage.setItem('returning_to_home', 'true')
+                    // Coming from another tab — go back via history so POP fires and scroll restores
+                    sessionStorage.setItem('scroll_home_saved', String(getScrollY()))
+                    sessionStorage.setItem('returning_to_home', 'true')
+                    if (window.history.length > 1) {
+                      window.history.back()
+                    } else {
+                      navigate('/', { replace: true })
                     }
+                  } else {
+                    // Already on Home — scroll to top smoothly
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
                   }
-                  // Already on Home — do nothing
+                } else {
+                  navigate(to)
                 }
-                navigate(to, { replace: true })
               }}
               style={{
                 width: '52px',
