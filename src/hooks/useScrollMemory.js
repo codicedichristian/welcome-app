@@ -70,16 +70,18 @@ export function useScrollMemory(key) {
 
         if (delay === 0) {
           requestAnimationFrame(() => {
-            // LOG 4 — rAF fired
-            console.log('[useScrollMemory] rAF fired, scrolling to', parseInt(saved, 10),
-              '| current scrollY at fire time:', window.scrollY)
+            requestAnimationFrame(() => {
+              // LOG 4 — double rAF fired
+              console.log('[useScrollMemory] double rAF fired, scrolling to', parseInt(saved, 10),
+                '| current scrollY at fire time:', window.scrollY)
 
-            window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
-            document.documentElement.scrollTop = parseInt(saved, 10)
+              window.scrollTo({ top: parseInt(saved, 10), behavior: 'instant' })
+              document.documentElement.scrollTop = parseInt(saved, 10)
 
-            // LOG 5 — after scroll call
-            console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
-              '| docScrollTop:', document.documentElement.scrollTop)
+              // LOG 5 — after scroll call
+              console.log('[useScrollMemory] after scrollTo — scrollY:', window.scrollY,
+                '| docScrollTop:', document.documentElement.scrollTop)
+            })
           })
         } else {
           timer = setTimeout(() => {
