@@ -52,7 +52,9 @@ export default function FloatingNav() {
                 if (to === '/') {
                   if (location.pathname !== '/' && location.pathname !== '/home') {
                     // Coming from another tab — go back via history so POP fires and scroll restores
-                    sessionStorage.setItem('scroll_home_saved', String(getScrollY()))
+                    // Do NOT use getScrollY() here — we are on a different page, scrollY is 0
+                    const homeScroll = sessionStorage.getItem('scroll_home_live') || '0'
+                    sessionStorage.setItem('scroll_home_saved', homeScroll)
                     sessionStorage.setItem('returning_to_home', 'true')
                     if (window.history.length > 1) {
                       window.history.back()
