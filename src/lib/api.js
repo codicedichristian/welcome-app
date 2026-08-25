@@ -28,6 +28,9 @@ export async function registerVisitor(form) {
       profiling_consent: form.profilingConsent ?? false,
       privacy_policy_version: 'v1.0',
       role: 'visitor',
+      notif_email: false,
+      notif_whatsapp: false,
+      notif_app: false,
     })
     .select()
     .single()
