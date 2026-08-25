@@ -11,7 +11,7 @@ const HOW_FOUND = [
   'Instagram',
   'Un amico',
   'Email',
-  'Altra chiesa',
+  "Vengo da un'altra Vive",
   'Altro',
 ]
 
