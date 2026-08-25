@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Cross, Check, Plus } from 'lucide-react'
+import { ArrowLeft, Cross, Check } from 'lucide-react'
 import { registerVisitor } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
 
@@ -16,12 +16,6 @@ const HOW_FOUND = [
 ]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const ua = navigator.userAgent
-const isIOS = /iPhone|iPad|iPod/.test(ua)
-const isSafariUA = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua)
-const isInstalled = window.navigator.standalone === true
-const showPWAHint = isIOS && isSafariUA && !isInstalled
 
 // ── Shared primitives ──────────────────────────────────────────────────────
 
@@ -256,57 +250,6 @@ function SuccessScreen({ onEnter }) {
       >
         Siamo felici di averti con noi! Controlla la tua email e conferma il tuo account per accedere
       </p>
-
-      {showPWAHint && (
-        <div
-          style={{
-            width: '100%',
-            background: '#111',
-            border: '0.5px solid #2e2e2e',
-            borderRadius: 18,
-            padding: '18px 20px',
-            marginBottom: 28,
-          }}
-        >
-          <p style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', marginBottom: 14 }}>
-            Installa l'app per la migliore esperienza
-          </p>
-
-          {[
-            {
-              n: '1',
-              title: 'Tocca il pulsante Condividi',
-              sub: 'In fondo a Safari',
-              icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ marginTop: 6 }}>
-                  <path d="M12 15V3M12 3L8 7M12 3L16 7" stroke="#5b8cff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 11V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V11" stroke="#5b8cff" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ),
-            },
-            { n: '2', title: '"Aggiungi a Home"', sub: 'Scorri nel menu Condividi', icon: <Plus size={16} color="#ffffff" /> },
-            { n: '3', title: 'Tocca "Aggiungi"', sub: 'Welcome apparirà sulla home', icon: null },
-          ].map(({ n, title, sub, icon }) => (
-            <div key={n} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 24, height: 24, borderRadius: '50%',
-                  background: '#1a1a1a', border: '0.5px solid #2e2e2e',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, marginTop: 2,
-                }}
-              >
-                {n}
-              </div>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', margin: 0 }}>{title}</p>
-                <p style={{ fontSize: 12, color: '#9a9a97', margin: '2px 0 0' }}>{sub}</p>
-                {icon && <div style={{ marginTop: 6 }}>{icon}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       <OrangeButton onClick={onEnter}>OK, vado a confermare</OrangeButton>
     </div>
