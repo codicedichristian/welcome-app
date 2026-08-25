@@ -96,8 +96,6 @@ export default function App() {
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
 
-      // Permanent guard: nothing left to show — set in Case C
-      if (localStorage.getItem('onboarding_checked') === 'true') return
       // Same-session guard: already ran this session (prevents double-fire if userId changes)
       if (sessionStorage.getItem('onboarding_checked') === 'true') return
 
@@ -117,7 +115,7 @@ export default function App() {
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
       if (!freshUser.notifEmail && !freshUser.notifWhatsapp && !freshUser.notifApp) sectionsToShow.push('notifications')
 
-      // Case A: first login / onboarding not yet complete — show all sections every session
+      // Case A: onboarding not yet complete — show all sections, re-check every session
       if (freshUser.onboardingCompleted !== true) {
         setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
@@ -127,10 +125,8 @@ export default function App() {
         setOnboardingMissing(sectionsToShow)
         setShowOnboardingSheet(true)
         sessionStorage.setItem('onboarding_checked', 'true')
-      // Case C: everything complete — lock permanently
-      } else if (sectionsToShow.length === 0) {
-        localStorage.setItem('onboarding_checked', 'true')
       }
+      // Case C: onboarding_completed=true in DB and nothing missing — nothing to do
     })
   }, [userId])
 
