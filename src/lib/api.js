@@ -30,9 +30,13 @@ export async function registerVisitor(form) {
       notif_app: false,
     })
     .select()
-    .single()
+    .maybeSingle()
 
-  if (!dbError && dbUser) {
+  if (dbError) return { user: null, authId, error: dbError }
+
+  // dbUser may be null if RLS blocks the read-back (email confirmation OFF).
+  // The INSERT succeeded regardless — treat null dbUser as success.
+  if (dbUser) {
     await logGdprConsent(dbUser.id, {
       privacy_accepted: true,
       marketing_consent: form.marketingConsent ?? false,
@@ -43,7 +47,7 @@ export async function registerVisitor(form) {
     }, 'registration')
   }
 
-  return { user: dbUser, authId, error: dbError }
+  return { user: dbUser, authId, error: null }
 }
 
 export async function updateUserOnboarding(userId, updates) {
@@ -117,7 +121,7 @@ export async function registerUser(userData) {
 
 export async function getUserByAuthId(authId) {
   try {
-    const { data, error } = await supabase.from('users').select('*').eq('auth_id', authId).single()
+    const { data, error } = await supabase.from('users').select('*').eq('auth_id', authId).maybeSingle()
 
     if (error) throw error
     return { data, error: null }
