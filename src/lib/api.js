@@ -11,16 +11,13 @@ export async function registerVisitor(form) {
   if (authError) return { user: null, authId: null, error: authError }
 
   const authId = authData.user?.id
-  const nameParts = form.fullName.trim().split(' ')
-  const firstName = nameParts[0]
-  const lastName = nameParts.slice(1).join(' ') || ''
 
   const { data: dbUser, error: dbError } = await supabase
     .from('users')
     .insert({
       auth_id: authId,
-      first_name: firstName,
-      last_name: lastName,
+      first_name: form.firstName,
+      last_name: form.lastName,
       email: form.email,
       how_found_us: form.howFoundUs,
       privacy_accepted: true,

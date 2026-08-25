@@ -8,10 +8,10 @@ const VIDEO_SRC =
   'https://vive.sfo2.cdn.digitaloceanspaces.com/2026/website/Hero%20Videos/2026_Website%20Hero%201280x720_Mobile.mp4'
 
 const HOW_FOUND = [
-  'QR code a un evento',
+  'Instagram',
   'Un amico',
-  'Social media',
-  'Passando per strada',
+  'Email',
+  'Altra chiesa',
   'Altro',
 ]
 
@@ -322,10 +322,18 @@ function Screen1({ form, update }) {
       <input
         type="text"
         autoFocus
-        autoComplete="name"
-        placeholder="Nome e cognome"
-        value={form.fullName}
-        onChange={(e) => update({ fullName: e.target.value })}
+        autoComplete="given-name"
+        placeholder="Nome"
+        value={form.firstName}
+        onChange={(e) => update({ firstName: e.target.value })}
+        style={inputStyle}
+      />
+      <input
+        type="text"
+        autoComplete="family-name"
+        placeholder="Cognome"
+        value={form.lastName}
+        onChange={(e) => update({ lastName: e.target.value })}
         style={inputStyle}
       />
     </div>
@@ -337,10 +345,37 @@ function Screen2({ form, update }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <h2 style={headingStyle}>Come ci hai conosciuto?</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {HOW_FOUND.map((opt) => (
-          <Chip key={opt} label={opt} selected={form.howFoundUs === opt} onToggle={() => update({ howFoundUs: opt })} />
-        ))}
+        {HOW_FOUND.map((opt) => {
+          const isOther = opt === 'Altro'
+          const selected = isOther
+            ? form.howFoundUsIsOther
+            : form.howFoundUs === opt && !form.howFoundUsIsOther
+          return (
+            <Chip
+              key={opt}
+              label={opt}
+              selected={selected}
+              onToggle={() => {
+                if (isOther) {
+                  update({ howFoundUsIsOther: !form.howFoundUsIsOther, howFoundUs: '' })
+                } else {
+                  update({ howFoundUs: opt, howFoundUsIsOther: false })
+                }
+              }}
+            />
+          )
+        })}
       </div>
+      {form.howFoundUsIsOther && (
+        <input
+          type="text"
+          autoFocus
+          placeholder="Scrivi qui..."
+          value={form.howFoundUs}
+          onChange={(e) => update({ howFoundUs: e.target.value })}
+          style={inputStyle}
+        />
+      )}
     </div>
   )
 }
@@ -472,8 +507,10 @@ export default function WelcomeFlowPage() {
   const [error, setError] = useState(null)
 
   const [form, setForm] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     howFoundUs: '',
+    howFoundUsIsOther: false,
     email: '',
     password: '',
     privacyAccepted: false,
@@ -491,8 +528,8 @@ export default function WelcomeFlowPage() {
 
   const canContinue = () => {
     switch (screen) {
-      case 1: return form.fullName.trim().length > 0
-      case 2: return form.howFoundUs !== ''
+      case 1: return form.firstName.trim().length > 0 && form.lastName.trim().length > 0
+      case 2: return form.howFoundUs.trim().length > 0
       case 3: return EMAIL_RE.test(form.email) && form.password.length >= 6
       case 4: return form.privacyAccepted
       default: return true
