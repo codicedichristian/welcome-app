@@ -96,29 +96,19 @@ export default function App() {
     getCurrentUserWithRole().then((freshUser) => {
       if (!freshUser) return
 
-      // Permanent guard: onboarding confirmed complete in a previous session
+      // Permanent guard: nothing left to show — set in Case C
       if (localStorage.getItem('onboarding_checked') === 'true') return
-      // Same-session guard: already ran this session (prevents double-fire when userId changes)
+      // Same-session guard: already ran this session (prevents double-fire if userId changes)
       if (sessionStorage.getItem('onboarding_checked') === 'true') return
-
-      // Hard guard: DB is source of truth — if complete, lock permanently
-      if (freshUser.onboardingCompleted === true) {
-        setShowOnboardingSheet(false)
-        localStorage.setItem('onboarding_checked', 'true')
-        return
-      }
 
       setUser(freshUser)
 
-      // Increment count once per browser session (sessionStorage clears on tab/browser close)
+      // Increment open count once per browser session
       let count = parseInt(localStorage.getItem('app_open_count') || '0', 10)
       if (!sessionStorage.getItem('session_started')) {
         count = count + 1
         localStorage.setItem('app_open_count', String(count))
         sessionStorage.setItem('session_started', 'true')
-        console.log('[Onboarding] new session, count now:', count)
-      } else {
-        console.log('[Onboarding] same session, count unchanged:', count)
       }
 
       const sectionsToShow = []
@@ -127,31 +117,18 @@ export default function App() {
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
       if (!freshUser.notifEmail && !freshUser.notifWhatsapp && !freshUser.notifApp) sectionsToShow.push('notifications')
 
-      console.log('[Onboarding Check]', {
-        onboarding_completed: freshUser.onboardingCompleted,
-        interests: freshUser.interests,
-        ageRange: freshUser.ageRange,
-        phone: freshUser.phone,
-        notifEmail: freshUser.notifEmail,
-        notifWhatsapp: freshUser.notifWhatsapp,
-        notifApp: freshUser.notifApp,
-        app_open_count: count,
-        sectionsToShow,
-      })
-
-      // Case A: onboarding never completed — show all sections, allow re-check next session
+      // Case A: first login / onboarding not yet complete — show all sections every session
       if (freshUser.onboardingCompleted !== true) {
         setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
         sessionStorage.setItem('onboarding_checked', 'true')
-      // Case B: every 5th open, only if something is still missing
-      } else if (count > 0 && count % 5 === 0 && sectionsToShow.length > 0) {
+      // Case B: onboarding complete but optional fields missing — prompt every 5th session
+      } else if (sectionsToShow.length > 0 && count > 0 && count % 5 === 0) {
         setOnboardingMissing(sectionsToShow)
         setShowOnboardingSheet(true)
         sessionStorage.setItem('onboarding_checked', 'true')
-      // Case C: all complete — lock permanently
-      } else {
-        setShowOnboardingSheet(false)
+      // Case C: everything complete — lock permanently
+      } else if (sectionsToShow.length === 0) {
         localStorage.setItem('onboarding_checked', 'true')
       }
     })
