@@ -25,5 +25,6 @@ export function toStoredUser(profile, authId) {
     notifApp: profile.notif_app,
     role: profile.role,
     registeredAt: profile.created_at,
+    appOpenCount: profile.app_open_count ?? 0,
   }
 }

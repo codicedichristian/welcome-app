@@ -30,7 +30,7 @@ import SeasonDetailPage from './pages/SeasonDetailPage.jsx'
 import { getStoredUser } from './lib/user.js'
 import { normalizeInterests } from './utils/normalizeInterests.js'
 import { subscribeToPush } from './lib/push.js'
-import { saveSubscription } from './lib/api.js'
+import { saveSubscription, incrementAppOpenCount, updateUserOnboarding } from './lib/api.js'
 import { supabase } from './lib/supabase.js'
 import { ScrollToTop } from './components/ScrollToTop.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
@@ -93,20 +93,22 @@ export default function App() {
 
   useEffect(() => {
     if (!userId) return
-    getCurrentUserWithRole().then((freshUser) => {
-      if (!freshUser) return
 
-      // Same-session guard: already ran this session (prevents double-fire if userId changes)
-      if (sessionStorage.getItem('onboarding_checked') === 'true') return
+    async function runOnboardingCheck() {
+      const freshUser = await getCurrentUserWithRole()
+      if (!freshUser) return
 
       setUser(freshUser)
 
-      // Increment open count once per browser session
-      let count = parseInt(localStorage.getItem('app_open_count') || '0', 10)
-      if (!sessionStorage.getItem('session_started')) {
-        count = count + 1
-        localStorage.setItem('app_open_count', String(count))
-        sessionStorage.setItem('session_started', 'true')
+      // Same-session guard: already ran this session
+      if (sessionStorage.getItem('onboarding_checked') === 'true') return
+
+      // Increment open count in DB once per browser session (sessionStorage clears on tab close)
+      let count = freshUser.appOpenCount ?? 0
+      if (!sessionStorage.getItem('session_counted')) {
+        const { data: newCount } = await incrementAppOpenCount(freshUser.id)
+        if (newCount != null) count = newCount
+        sessionStorage.setItem('session_counted', 'true')
       }
 
       const sectionsToShow = []
@@ -115,19 +117,32 @@ export default function App() {
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
       if (!freshUser.notifEmail && !freshUser.notifWhatsapp && !freshUser.notifApp) sectionsToShow.push('notifications')
 
-      // Case A: onboarding not yet complete — show all sections, re-check every session
-      if (freshUser.onboardingCompleted !== true) {
+      if (count === 1 && freshUser.onboardingCompleted !== true) {
+        // Case 1: first open after registration — show all fields
         setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
         setShowOnboardingSheet(true)
         sessionStorage.setItem('onboarding_checked', 'true')
-      // Case B: onboarding complete but optional fields missing — prompt every 5th session
-      } else if (sectionsToShow.length > 0 && count > 0 && count % 5 === 0) {
-        setOnboardingMissing(sectionsToShow)
-        setShowOnboardingSheet(true)
-        sessionStorage.setItem('onboarding_checked', 'true')
+      } else if (count > 0 && count % 5 === 0 && freshUser.onboardingCompleted !== true) {
+        // Case 3: every 5th open, onboarding not complete — show missing fields or mark complete
+        if (sectionsToShow.length > 0) {
+          setOnboardingMissing(sectionsToShow)
+          setShowOnboardingSheet(true)
+          sessionStorage.setItem('onboarding_checked', 'true')
+        } else {
+          updateUserOnboarding(freshUser.id, {})
+        }
+      } else if (count > 0 && count % 5 === 0) {
+        // Case 4: every 5th open, onboarding complete — check optional missing fields
+        if (sectionsToShow.length > 0) {
+          setOnboardingMissing(sectionsToShow)
+          setShowOnboardingSheet(true)
+          sessionStorage.setItem('onboarding_checked', 'true')
+        }
       }
-      // Case C: onboarding_completed=true in DB and nothing missing — nothing to do
-    })
+      // Case 2: normal open (not count 1, not multiple of 5) — nothing to show
+    }
+
+    runOnboardingCheck()
   }, [userId])
 
   useEffect(() => {

@@ -55,6 +55,11 @@ export async function updateUserOnboarding(userId, updates) {
   return { error }
 }
 
+export async function incrementAppOpenCount(userId) {
+  const { data, error } = await supabase.rpc('increment_app_open_count', { p_user_id: userId })
+  return { data, error }
+}
+
 export async function registerUser(userData) {
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: userData.email,
