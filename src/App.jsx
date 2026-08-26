@@ -5,7 +5,6 @@ import OnboardingSheet from './components/OnboardingSheet.jsx'
 import { UserContext, UserSetterContext } from './lib/UserContext.js'
 import { getCurrentUserWithRole } from './lib/auth.js'
 import SplashScreen from './components/SplashScreen.jsx'
-import PWAInstallPrompt, { shouldShowPWAPrompt } from './components/PWAInstallPrompt.jsx'
 import AppLayout from './layouts/AppLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import RedirectIfAuthenticated from './components/RedirectIfAuthenticated.jsx'
@@ -59,7 +58,6 @@ export default function App() {
   const isPublicRoute = location.pathname === '/welcome' || location.pathname === '/login'
   const [showSplash, setShowSplash] = useState(!isPublicRoute)
   const [splashVisible, setSplashVisible] = useState(!isPublicRoute)
-  const [showPWAPrompt, setShowPWAPrompt] = useState(shouldShowPWAPrompt)
   const [showOnboardingSheet, setShowOnboardingSheet] = useState(false)
   const [onboardingMissing, setOnboardingMissing] = useState(['interests', 'phone'])
   const [user, setUser] = useState(() => getStoredUser())
@@ -182,7 +180,6 @@ export default function App() {
     <UserSetterContext.Provider value={setUser}>
     <>
       {showSplash && <SplashScreen visible={splashVisible} />}
-      {showPWAPrompt && <PWAInstallPrompt onDismiss={() => setShowPWAPrompt(false)} />}
       {showOnboardingSheet && (
         <OnboardingSheet
           sectionsToShow={onboardingMissing}
