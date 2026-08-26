@@ -194,7 +194,7 @@ export default function App() {
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
-        <Route path="/welcome" element={user ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
+        <Route path="/welcome" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>

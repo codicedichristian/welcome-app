@@ -25,7 +25,7 @@ function JoinSheet({ onClose }) {
     setError('')
     const { error: dbError } = await supabase
       .from('team_join_requests')
-      .insert([{ name: form.name.trim(), surname: form.surname.trim(), email: form.email.trim(), phone: form.phone.trim() }])
+      .insert([{ full_name: `${form.name.trim()} ${form.surname.trim()}`, email: form.email.trim(), phone: form.phone.trim() }])
     setSaving(false)
     if (dbError) {
       setError('Something went wrong. Please try again.')
