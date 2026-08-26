@@ -24,8 +24,8 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'external-images',
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
@@ -35,13 +35,18 @@ export default defineConfig({
             options: {
               cacheName: 'supabase-api',
               networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
             urlPattern: /^https:\/\/.*\.vercel\.app/,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'app-shell' },
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'app-shell',
+              networkTimeoutSeconds: 3,
+              cacheableResponse: { statuses: [0, 200] },
+            },
           },
         ],
       },
