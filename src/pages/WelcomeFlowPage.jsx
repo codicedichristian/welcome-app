@@ -1,19 +1,14 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Cross, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { registerVisitor } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
 
 const VIDEO_SRC =
   'https://vive.sfo2.cdn.digitaloceanspaces.com/2026/website/Hero%20Videos/2026_Website%20Hero%201280x720_Mobile.mp4'
 
-const HOW_FOUND = [
-  'Instagram',
-  'Un amico',
-  'Email',
-  "Vengo da un'altra Vive",
-  'Altro',
-]
+const HOW_FOUND_KEYS = ['instagram', 'friend', 'email', 'another_vive', 'other']
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -86,6 +81,7 @@ function ProgressBar({ step }) {
 // ── Screen 0 — Splash ─────────────────────────────────────────────────────
 
 function SplashScreen({ onStart, onLogin }) {
+  const { t } = useTranslation()
   const [videoFailed, setVideoFailed] = useState(false)
   const videoRef = useRef(null)
 
@@ -168,7 +164,7 @@ function SplashScreen({ onStart, onLogin }) {
             cursor: 'pointer',
           }}
         >
-          Entra a far parte della nostra famiglia
+          {t('welcome.join_button')}
         </button>
 
         <button
@@ -183,8 +179,8 @@ function SplashScreen({ onStart, onLogin }) {
             padding: '8px 0',
           }}
         >
-          Hai già un account?{' '}
-          <span style={{ color: '#f97316', fontWeight: 600 }}>Accedi</span>
+          {t('welcome.have_account')}{' '}
+          <span style={{ color: '#f97316', fontWeight: 600 }}>{t('welcome.sign_in_link')}</span>
         </button>
       </div>
     </div>
@@ -194,6 +190,7 @@ function SplashScreen({ onStart, onLogin }) {
 // ── Screen 6 — Welcome Home ───────────────────────────────────────────────
 
 function SuccessScreen({ onEnter }) {
+  const { t } = useTranslation()
   return (
     <div
       style={{
@@ -235,7 +232,7 @@ function SuccessScreen({ onEnter }) {
           letterSpacing: '-0.02em',
         }}
       >
-        Welcome Home! 🏠
+        {t('welcome.success_title')}
       </h1>
 
       <p
@@ -248,10 +245,10 @@ function SuccessScreen({ onEnter }) {
           lineHeight: 1.5,
         }}
       >
-        Siamo felici di averti con noi! Controlla la tua email e conferma il tuo account per accedere
+        {t('welcome.success_body')}
       </p>
 
-      <OrangeButton onClick={onEnter}>OK, vado a confermare</OrangeButton>
+      <OrangeButton onClick={onEnter}>{t('welcome.success_cta')}</OrangeButton>
     </div>
   )
 }
@@ -259,14 +256,15 @@ function SuccessScreen({ onEnter }) {
 // ── Individual form screens ────────────────────────────────────────────────
 
 function Screen1({ form, update }) {
+  const { t } = useTranslation()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={headingStyle}>Come ti chiami?</h2>
+      <h2 style={headingStyle}>{t('welcome.screen1_title')}</h2>
       <input
         type="text"
         autoFocus
         autoComplete="given-name"
-        placeholder="Nome"
+        placeholder={t('welcome.first_name')}
         value={form.firstName}
         onChange={(e) => update({ firstName: e.target.value })}
         style={inputStyle}
@@ -274,7 +272,7 @@ function Screen1({ form, update }) {
       <input
         type="text"
         autoComplete="family-name"
-        placeholder="Cognome"
+        placeholder={t('welcome.last_name')}
         value={form.lastName}
         onChange={(e) => update({ lastName: e.target.value })}
         style={inputStyle}
@@ -284,25 +282,28 @@ function Screen1({ form, update }) {
 }
 
 function Screen2({ form, update }) {
+  const { t } = useTranslation()
+  const options = HOW_FOUND_KEYS.map((key) => ({ key, label: t(`how_found.${key}`) }))
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={headingStyle}>Come ci hai conosciuto?</h2>
+      <h2 style={headingStyle}>{t('welcome.screen2_title')}</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {HOW_FOUND.map((opt) => {
-          const isOther = opt === 'Altro'
+        {options.map((opt) => {
+          const isOther = opt.key === 'other'
           const selected = isOther
             ? form.howFoundUsIsOther
-            : form.howFoundUs === opt && !form.howFoundUsIsOther
+            : form.howFoundUs === opt.label && !form.howFoundUsIsOther
           return (
             <Chip
-              key={opt}
-              label={opt}
+              key={opt.key}
+              label={opt.label}
               selected={selected}
               onToggle={() => {
                 if (isOther) {
                   update({ howFoundUsIsOther: !form.howFoundUsIsOther, howFoundUs: '' })
                 } else {
-                  update({ howFoundUs: opt, howFoundUsIsOther: false })
+                  update({ howFoundUs: opt.label, howFoundUsIsOther: false })
                 }
               }}
             />
@@ -313,7 +314,7 @@ function Screen2({ form, update }) {
         <input
           type="text"
           autoFocus
-          placeholder="Scrivi qui..."
+          placeholder={t('welcome.other_placeholder')}
           value={form.howFoundUs}
           onChange={(e) => update({ howFoundUs: e.target.value })}
           style={inputStyle}
@@ -324,15 +325,16 @@ function Screen2({ form, update }) {
 }
 
 function Screen4({ form, update }) {
+  const { t } = useTranslation()
   const [showPwd, setShowPwd] = useState(false)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <h2 style={headingStyle}>Inserisci la tua email</h2>
+      <h2 style={headingStyle}>{t('welcome.screen3_title')}</h2>
       <input
         type="email"
         inputMode="email"
         autoComplete="email"
-        placeholder="la-tua@email.com"
+        placeholder={t('welcome.email_placeholder')}
         value={form.email}
         onChange={(e) => update({ email: e.target.value })}
         style={inputStyle}
@@ -341,7 +343,7 @@ function Screen4({ form, update }) {
         <input
           type={showPwd ? 'text' : 'password'}
           autoComplete="new-password"
-          placeholder="Scegli una password"
+          placeholder={t('welcome.password_placeholder')}
           value={form.password}
           onChange={(e) => update({ password: e.target.value })}
           style={{ ...inputStyle, paddingRight: 80 }}
@@ -355,12 +357,12 @@ function Screen4({ form, update }) {
             color: '#9a9a97', fontSize: 13, fontWeight: 600,
           }}
         >
-          {showPwd ? 'Nascondi' : 'Mostra'}
+          {showPwd ? t('welcome.password_hide') : t('welcome.password_show')}
         </button>
       </div>
       {form.password.length > 0 && form.password.length < 6 && (
         <p style={{ fontSize: 12, color: '#e55555', margin: 0 }}>
-          La password deve avere almeno 6 caratteri
+          {t('welcome.password_min_length')}
         </p>
       )}
     </div>
@@ -397,21 +399,22 @@ function ConsentRow({ checked, onChange, required, children }) {
 }
 
 function Screen5({ form, update }) {
+  const { t } = useTranslation()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <h2 style={headingStyle}>Quasi fatto!</h2>
+      <h2 style={headingStyle}>{t('welcome.screen4_title')}</h2>
       <ConsentRow checked={form.marketingConsent} onChange={(v) => update({ marketingConsent: v })}>
-        Voglio essere il primo a sapere — eventi, annunci e momenti che non vorrai perderti
+        {t('welcome.consent_marketing')}
       </ConsentRow>
       <ConsentRow checked={form.profilingConsent} onChange={(v) => update({ profilingConsent: v })}>
-        Accetto di ricevere aggiornamenti e inviti dedicati agli eventi
+        {t('welcome.consent_profiling')}
       </ConsentRow>
       <ConsentRow checked={form.privacyAccepted} onChange={(v) => update({ privacyAccepted: v })} required>
-        Accetto la{' '}
+        {t('welcome.consent_privacy_before')}{' '}
         <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#f97316' }}>
-          Privacy Policy
+          {t('welcome.consent_privacy_link')}
         </a>{' '}
-        e i Termini di utilizzo
+        {t('welcome.consent_privacy_after')}
       </ConsentRow>
     </div>
   )
@@ -444,6 +447,7 @@ const inputStyle = {
 
 export default function WelcomeFlowPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [screen, setScreen] = useState(0)
   const [direction, setDirection] = useState(1)
   const [saving, setSaving] = useState(false)
@@ -485,7 +489,7 @@ export default function WelcomeFlowPage() {
     sessionStorage.setItem('registration_in_progress', 'true')
     const { user, authId, error: err } = await registerVisitor(form)
     if (err) {
-      setError(err.message || 'Errore durante la registrazione. Riprova.')
+      setError(err.message || t('welcome.screen4_title'))
       setSaving(false)
       return
     }
@@ -531,7 +535,7 @@ export default function WelcomeFlowPage() {
       </div>
 
       <p style={{ fontSize: 13, color: '#555', marginTop: 6, marginBottom: 0 }}>
-        Passo {screen} di 4
+        {t('welcome.step_indicator', { step: screen })}
       </p>
 
       {/* Animated step */}
@@ -556,7 +560,9 @@ export default function WelcomeFlowPage() {
         disabled={!canContinue() || saving}
         onClick={screen === 4 ? handleSubmit : () => goTo(screen + 1)}
       >
-        {screen === 4 ? (saving ? 'Creando account…' : 'Crea il mio account') : 'Continua'}
+        {screen === 4
+          ? (saving ? t('welcome.creating_account') : t('welcome.create_account'))
+          : t('welcome.continue')}
       </OrangeButton>
     </div>
   )

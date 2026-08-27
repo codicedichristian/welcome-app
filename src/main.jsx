@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import config from './config.js'
+import { initI18n } from './lib/i18n.js'
+import { supabase } from './lib/supabase.js'
 
-// Apply white-label colors from config.js as CSS custom properties so
-// Tailwind utilities (bg-bg, text-primary, text-inactive, etc.) reflect the active brand.
 const root = document.documentElement
 root.style.setProperty('--color-bg', config.backgroundColor)
 root.style.setProperty('--color-primary', config.primaryColor)
@@ -19,10 +19,28 @@ root.style.setProperty('--color-accent-blue', config.colors.accents.blue)
 root.style.setProperty('--color-accent-purple', config.colors.accents.purple)
 root.style.setProperty('--color-accent-orange', config.colors.accents.orange)
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-)
+async function bootstrap() {
+  let defaultLang = 'es'
+  try {
+    const { data } = await supabase
+      .from('app_config')
+      .select('value')
+      .eq('key', 'default_language')
+      .maybeSingle()
+    if (data?.value) defaultLang = data.value
+  } catch (_) {
+    // fall back to 'es'
+  }
+
+  await initI18n(defaultLang)
+
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <App />
+      </BrowserRouter>
+    </StrictMode>,
+  )
+}
+
+bootstrap()

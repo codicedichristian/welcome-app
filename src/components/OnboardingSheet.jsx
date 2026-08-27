@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Check, Plus, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase.js'
 import { getStoredUser, toStoredUser } from '../lib/user.js'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
@@ -32,6 +33,7 @@ const isPWA = window.matchMedia('(display-mode: standalone)').matches
 export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) {
   const user = getStoredUser()
   const sections = sectionsToShow
+  const { t } = useTranslation()
 
   const [visible, setVisible] = useState(false)
   const [currentSection, setCurrentSection] = useState(-1)
@@ -164,9 +166,9 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
   }
 
   const addCustomTag = () => {
-    const t = customTag.trim()
-    if (!t) return
-    if (!interests.includes(t)) setInterests((prev) => [...prev, t])
+    const tag = customTag.trim()
+    if (!tag) return
+    if (!interests.includes(tag)) setInterests((prev) => [...prev, tag])
     setCustomTag('')
     setShowCustomInput(false)
   }
@@ -221,7 +223,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
   const navRow = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
       {canGoBack ? backBtn : <div style={{ width: 28, flexShrink: 0 }} />}
-      <p style={stepLabel}>Step {stepNum} of {totalSteps}</p>
+      <p style={stepLabel}>{t('onboarding.step', { step: stepNum, total: totalSteps })}</p>
     </div>
   )
 
@@ -256,10 +258,10 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
             }}>
               <div style={{ fontSize: 52, marginBottom: 24 }}>👋</div>
               <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: '0 0 14px', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
-                Hey, mancano ancora alcune informazioni!
+                {t('onboarding.intro_title')}
               </h2>
               <p style={{ fontSize: 15, color: '#666', margin: '0 0 52px', lineHeight: 1.65 }}>
-                Aiutaci a tenerti sempre aggiornato su ciò che ti interessa
+                {t('onboarding.intro_body')}
               </p>
               <button
                 type="button"
@@ -269,7 +271,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   fontSize: 17, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer',
                 }}
               >
-                Inizia
+                {t('onboarding.intro_start')}
               </button>
             </div>
           )}
@@ -280,10 +282,10 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
                 {navRow}
                 <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                  What interests you?
+                  {t('onboarding.interests_title')}
                 </h2>
                 <p style={{ fontSize: 15, color: '#666', margin: '0 0 22px', lineHeight: 1.5 }}>
-                  Choose as many as you like
+                  {t('onboarding.interests_subtitle')}
                 </p>
                 <div style={{
                   display: 'flex', flexWrap: 'wrap', gap: 8, paddingBottom: 16,
@@ -318,7 +320,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                         value={customTag}
                         onChange={(e) => setCustomTag(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') addCustomTag() }}
-                        placeholder="Add..."
+                        placeholder={t('onboarding.interests_add_placeholder')}
                         style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 14, width: 80 }}
                       />
                       <button type="button" onClick={addCustomTag} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f97316', padding: 0, display: 'flex' }}>
@@ -340,7 +342,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                       }}
                     >
                       <Plus size={13} />
-                      Add your own
+                      {t('onboarding.interests_add_own')}
                     </button>
                   )}
                 </div>
@@ -352,7 +354,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   disabled={saving}
                   style={{ width: '100%', height: 52, background: '#f97316', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer' }}
                 >
-                  {saving ? 'Saving...' : 'Next'}
+                  {saving ? t('onboarding.saving') : t('onboarding.next')}
                 </button>
               </div>
             </div>
@@ -364,10 +366,10 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
                 {navRow}
                 <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                  How old are you?
+                  {t('onboarding.age_title')}
                 </h2>
                 <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', lineHeight: 1.5 }}>
-                  Helps us tailor content for you
+                  {t('onboarding.age_subtitle')}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {AGE_RANGE_OPTIONS.map((option) => (
@@ -403,7 +405,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                     marginBottom: 10, transition: 'background 200ms, color 200ms',
                   }}
                 >
-                  {saving ? 'Saving...' : 'Next'}
+                  {saving ? t('onboarding.saving') : t('onboarding.next')}
                 </button>
                 <button
                   type="button"
@@ -411,7 +413,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   disabled={saving}
                   style={{ width: '100%', background: 'none', border: 'none', color: '#555', fontSize: 14, cursor: 'pointer', padding: '6px 0' }}
                 >
-                  Skip for now
+                  {t('onboarding.skip')}
                 </button>
               </div>
             </div>
@@ -425,10 +427,10 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 20 }}>
                   <WhatsAppIcon />
                   <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: '16px 0 8px', textAlign: 'center', letterSpacing: '-0.02em' }}>
-                    Want to stay in the loop?
+                    {t('onboarding.phone_title')}
                   </h2>
                   <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', textAlign: 'center', lineHeight: 1.5 }}>
-                    Get event invites and reminders directly on WhatsApp
+                    {t('onboarding.phone_subtitle')}
                   </p>
                   <div style={{ width: '100%', display: 'flex', gap: 10, marginBottom: 8 }}>
                     <select
@@ -447,7 +449,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                     <input
                       type="tel"
                       inputMode="tel"
-                      placeholder="Phone number"
+                      placeholder={t('onboarding.phone_placeholder')}
                       value={phone}
                       onChange={(e) => { setPhone(e.target.value); setPhoneSkipped(false) }}
                       style={{
@@ -458,7 +460,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                     />
                   </div>
                   <p style={{ fontSize: 12, color: '#444', textAlign: 'center', lineHeight: 1.5, width: '100%', marginBottom: 4 }}>
-                    We'll only message you for events and important updates
+                    {t('onboarding.phone_disclaimer')}
                   </p>
                 </div>
               </div>
@@ -476,7 +478,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                     marginBottom: 10, transition: 'background 200ms, color 200ms',
                   }}
                 >
-                  {saving ? 'Saving...' : 'Save my number'}
+                  {saving ? t('onboarding.saving') : t('onboarding.phone_save')}
                 </button>
                 <button
                   type="button"
@@ -484,7 +486,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   disabled={saving}
                   style={{ width: '100%', background: 'none', border: 'none', color: '#555', fontSize: 14, cursor: 'pointer', padding: '6px 0' }}
                 >
-                  Skip for now
+                  {t('onboarding.skip')}
                 </button>
               </div>
             </div>
@@ -496,15 +498,15 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
               <div style={{ flex: 1, overflowY: 'auto', padding: '8px 24px 0' }}>
                 {navRow}
                 <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                  Stay in the loop
+                  {t('onboarding.notif_title')}
                 </h2>
                 <p style={{ fontSize: 15, color: '#666', margin: '0 0 28px', lineHeight: 1.5 }}>
-                  Choose how you want to hear from us
+                  {t('onboarding.notif_subtitle')}
                 </p>
                 {[
-                  { label: 'Email', value: notifEmail, set: setNotifEmail },
-                  { label: 'WhatsApp', value: notifWhatsapp, set: setNotifWhatsapp },
-                  { label: 'App notifications', value: notifApp, set: setNotifApp },
+                  { label: t('onboarding.notif_email'), value: notifEmail, set: setNotifEmail },
+                  { label: t('onboarding.notif_whatsapp'), value: notifWhatsapp, set: setNotifWhatsapp },
+                  { label: t('onboarding.notif_app'), value: notifApp, set: setNotifApp },
                 ].map((row) => (
                   <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20 }}>
                     <span style={{ fontSize: 16, color: '#fff' }}>{row.label}</span>
@@ -535,7 +537,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
                   disabled={saving}
                   style={{ width: '100%', height: 52, background: '#f97316', color: '#fff', fontSize: 16, fontWeight: 700, borderRadius: 14, border: 'none', cursor: 'pointer' }}
                 >
-                  {saving ? 'Saving...' : 'Done'}
+                  {saving ? t('onboarding.saving') : t('onboarding.done')}
                 </button>
               </div>
             </div>

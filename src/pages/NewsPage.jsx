@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Megaphone } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
@@ -9,6 +10,7 @@ import ErrorState from '../components/ErrorState.jsx'
 
 export default function NewsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -43,7 +45,7 @@ export default function NewsPage() {
         className="mb-4 flex items-center gap-1.5"
       >
         <ArrowLeft size={18} className="text-[#666666]" />
-        <span className="text-[14px] text-[#444444]">Home</span>
+        <span className="text-[14px] text-[#444444]">{t('news.back')}</span>
       </button>
       {loading ? (
         <div className="mt-2 flex flex-col gap-3">
@@ -61,7 +63,7 @@ export default function NewsPage() {
       ) : news.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">
           <Megaphone size={32} className="text-zinc-600" />
-          <p className="mt-3 text-[16px] text-primary">No announcements yet</p>
+          <p className="mt-3 text-[16px] text-primary">{t('news.no_announcements')}</p>
         </div>
       ) : (
         <div className="mt-2 flex flex-col gap-3">

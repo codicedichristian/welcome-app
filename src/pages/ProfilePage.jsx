@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Phone, Cake, Pencil, Bell, ShieldCheck, ChevronRight, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { INTERESTS, migrateInterests } from '../constants/interests.js'
 import { normalizeInterests } from '../utils/normalizeInterests.js'
 import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
 import { useUser } from '../lib/UserContext.js'
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 
 function WhatsAppIcon() {
   return (
@@ -17,15 +19,17 @@ function WhatsAppIcon() {
   )
 }
 
-function formatMemberSince(isoDate) {
+function formatMemberSince(isoDate, t, lang) {
   if (!isoDate) return ''
   const date = new Date(isoDate)
-  const month = date.toLocaleString('en-US', { month: 'long' })
-  return `Member since ${month} ${date.getFullYear()}`
+  const locale = lang === 'es' ? 'es-ES' : 'en-US'
+  const month = date.toLocaleString(locale, { month: 'long' })
+  return t('profile.member_since', { month, year: date.getFullYear() })
 }
 
 export default function ProfilePage() {
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
   const [user, setUser] = useState({})
   const liveUser = useUser()
   const [consents, setConsents] = useState({ marketing: false, profiling: false })
@@ -167,16 +171,16 @@ export default function ProfilePage() {
   }
 
   const infoRows = [
-    { icon: User, label: 'Full name', value: fullName },
-    { icon: Mail, label: 'Email', value: user.email },
-    { icon: Phone, label: 'Phone', value: user.phone },
-    { icon: Cake, label: 'Age range', value: user.age_range },
+    { icon: User, label: t('profile.full_name'), value: fullName },
+    { icon: Mail, label: t('profile.email'), value: user.email },
+    { icon: Phone, label: t('profile.phone'), value: user.phone },
+    { icon: Cake, label: t('profile.age_range'), value: user.age_range },
   ]
 
   const notifRows = [
-    { icon: <Mail size={18} className="shrink-0 text-zinc-500" />, label: 'Email notifications', key: 'email' },
-    { icon: <WhatsAppIcon />, label: 'WhatsApp', key: 'whatsapp' },
-    { icon: <Bell size={18} className="shrink-0 text-zinc-500" />, label: 'App notifications', key: 'app' },
+    { icon: <Mail size={18} className="shrink-0 text-zinc-500" />, label: t('profile.notif_email'), key: 'email' },
+    { icon: <WhatsAppIcon />, label: t('profile.notif_whatsapp'), key: 'whatsapp' },
+    { icon: <Bell size={18} className="shrink-0 text-zinc-500" />, label: t('profile.notif_app'), key: 'app' },
   ]
 
   return (
@@ -191,7 +195,7 @@ export default function ProfilePage() {
         paddingTop: 'env(safe-area-inset-top)',
       }}>
         <div style={{ width: 38 }} />
-        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>Settings</span>
+        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{t('profile.settings')}</span>
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
@@ -207,7 +211,7 @@ export default function ProfilePage() {
           className="mb-4 flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-4 py-4 text-left"
         >
           <ShieldCheck size={20} className="shrink-0 text-accent-blue" />
-          <span className="flex-1 text-[16px] font-medium text-primary">Admin Panel</span>
+          <span className="flex-1 text-[16px] font-medium text-primary">{t('profile.admin_panel')}</span>
         </button>
       )}
 
@@ -216,11 +220,11 @@ export default function ProfilePage() {
           {initials}
         </div>
         <p className="mt-3 text-[18px] font-medium text-primary">{fullName}</p>
-        <p className="mt-1 text-[13px] text-zinc-500">{formatMemberSince(user.created_at)}</p>
+        <p className="mt-1 text-[13px] text-zinc-500">{formatMemberSince(user.created_at, t, i18n.language)}</p>
       </div>
 
       <section className="mt-8">
-        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Personal info</h3>
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">{t('profile.personal_info')}</h3>
         <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
           {infoRows.map((row, index) => (
             <button
@@ -243,7 +247,7 @@ export default function ProfilePage() {
       </section>
 
       <section className="mt-6">
-        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Interests</h3>
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">{t('profile.interests')}</h3>
         <div className="mt-2 flex flex-wrap gap-2">
           {(() => {
             const userInterests = normalizeInterests(user.interests)
@@ -270,7 +274,7 @@ export default function ProfilePage() {
       </section>
 
       <section className="mt-6">
-        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Notifications</h3>
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">{t('profile.notifications')}</h3>
         <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
           {notifRows.map((row, index) => (
             <div
@@ -308,7 +312,7 @@ export default function ProfilePage() {
       </section>
 
       <section className="mt-6">
-        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">Privacy &amp; Consents</h3>
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">{t('profile.privacy_consents')}</h3>
         <div className="mt-2 overflow-hidden rounded-xl border border-border bg-surface">
           <button
             type="button"
@@ -316,12 +320,12 @@ export default function ProfilePage() {
             className="flex w-full items-center gap-3 border-b border-border px-4 py-4 text-left"
           >
             <ShieldCheck size={18} className="shrink-0 text-zinc-500" />
-            <span className="flex-1 text-[16px] text-primary">Privacy Policy</span>
+            <span className="flex-1 text-[16px] text-primary">{t('profile.privacy_policy')}</span>
             <ChevronRight size={15} className="shrink-0 text-zinc-600" />
           </button>
           {[
-            { label: 'Marketing communications', key: 'marketing' },
-            { label: 'Personalised content', key: 'profiling' },
+            { label: t('profile.marketing'), key: 'marketing' },
+            { label: t('profile.profiling'), key: 'profiling' },
           ].map((row, index) => (
             <div key={row.key} className={`flex items-center justify-between px-4 py-4 ${index === 0 ? 'border-b border-border' : ''}`}>
               <span className="text-[16px] text-primary">{row.label}</span>
@@ -349,12 +353,14 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      <LanguageSwitcher />
+
       <button
         type="button"
         onClick={handleSignOut}
         className="mt-6 w-full rounded-xl border border-[#3a1a1a] bg-surface py-4 text-[16px] font-medium text-[#e55555]"
       >
-        Sign out
+        {t('profile.sign_out')}
       </button>
     </div>
   )

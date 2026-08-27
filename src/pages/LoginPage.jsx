@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Cross } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase.js'
 import { getUserByAuthId } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
@@ -19,6 +20,7 @@ const buildLabel =
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -38,9 +40,9 @@ export default function LoginPage() {
 
     if (authError) {
       if (authError.message?.toLowerCase().includes('email not confirmed')) {
-        setError('Conferma la mail che ti abbiamo inviato prima di accedere')
+        setError(t('login.error_email_not_confirmed'))
       } else {
-        setError('Invalid email or password')
+        setError(t('login.error_invalid_credentials'))
       }
       setSubmitting(false)
       return
@@ -49,7 +51,7 @@ export default function LoginPage() {
     const { data: profile, error: profileError } = await getUserByAuthId(data.user.id)
 
     if (profileError || !profile) {
-      setError('Invalid email or password')
+      setError(t('login.error_invalid_credentials'))
       setSubmitting(false)
       return
     }
@@ -78,7 +80,7 @@ export default function LoginPage() {
       {showReset ? (
         <form onSubmit={handleResetSubmit} className="mt-10 flex w-full max-w-sm flex-col gap-3">
           {resetSent ? (
-            <p className="text-center text-sm text-zinc-400">Check your email for a reset link</p>
+            <p className="text-center text-sm text-zinc-400">{t('login.reset_sent')}</p>
           ) : (
             <>
               <TextField
@@ -93,7 +95,7 @@ export default function LoginPage() {
                 disabled={resetSubmitting || !resetEmail}
                 className="w-full rounded-xl bg-primary py-3.5 text-[17px] font-medium text-bg transition-opacity disabled:opacity-50"
               >
-                {resetSubmitting ? 'Sending...' : 'Send reset link'}
+                {resetSubmitting ? t('login.sending') : t('login.send_reset')}
               </button>
             </>
           )}
@@ -105,7 +107,7 @@ export default function LoginPage() {
             }}
             className="mt-2 text-center text-xs text-zinc-500"
           >
-            Back to sign in
+            {t('login.back_to_sign_in')}
           </button>
         </form>
       ) : (
@@ -126,15 +128,15 @@ export default function LoginPage() {
             disabled={submitting || !email || !password}
             className="w-full rounded-xl bg-primary py-3.5 text-[17px] font-medium text-bg transition-opacity disabled:opacity-50"
           >
-            {submitting ? 'Signing in...' : 'Sign in'}
+            {submitting ? t('login.signing_in') : t('login.sign_in')}
           </button>
 
           <button type="button" onClick={() => setShowReset(true)} className="text-center text-xs text-zinc-500">
-            Forgot password?
+            {t('login.forgot_password')}
           </button>
 
           <button type="button" onClick={() => navigate('/welcome')} className="mt-4 text-center text-xs text-zinc-500">
-            New here? Create account
+            {t('login.new_here')}
           </button>
         </form>
       )}

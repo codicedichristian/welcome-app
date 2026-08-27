@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft, ExternalLink } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
@@ -56,6 +57,7 @@ function LocationRow({ location }) {
 }
 
 function CancelSheet({ eventName, onConfirm, onClose }) {
+  const { t } = useTranslation()
   return (
     <>
       <div
@@ -79,10 +81,10 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: '#333' }} />
         </div>
         <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '8px' }}>
-          Cancel attendance?
+          {t('event_detail.cancel_title')}
         </p>
         <p style={{ fontSize: '13px', color: '#888', textAlign: 'center', marginBottom: '24px' }}>
-          Are you sure you don't want to go to {eventName}?
+          {t('event_detail.cancel_body', { eventName })}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <button
@@ -100,7 +102,7 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
               cursor: 'pointer',
             }}
           >
-            Yes, cancel
+            {t('event_detail.cancel_confirm')}
           </button>
           <button
             type="button"
@@ -117,7 +119,7 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
               cursor: 'pointer',
             }}
           >
-            Keep my spot
+            {t('event_detail.cancel_keep')}
           </button>
         </div>
       </div>
@@ -130,6 +132,7 @@ export default function EventDetailPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const user = useUser()
+  const { t } = useTranslation()
 
   const fallbackEvent = getEventById(eventId)
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
@@ -145,7 +148,7 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 24px)' }}>
-        <p className="text-[14px] text-zinc-500">Event not found.</p>
+        <p className="text-[14px] text-zinc-500">{t('event_detail.not_found')}</p>
       </div>
     )
   }
@@ -243,8 +246,8 @@ export default function EventDetailPage() {
               >
                 <Map size={22} />
                 <div>
-                  <p className="text-[16px] font-medium">Find your group</p>
-                  <p className="text-[13px]">See all locations on the map</p>
+                  <p className="text-[16px] font-medium">{t('event_detail.find_group')}</p>
+                  <p className="text-[13px]">{t('event_detail.see_map')}</p>
                 </div>
               </button>
             ) : (
@@ -256,7 +259,7 @@ export default function EventDetailPage() {
                 }`}
               >
                 {going && <Check size={18} />}
-                <span>{going ? "You're in!" : "I'll be there"}</span>
+                <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
               </button>
             )}
           </div>

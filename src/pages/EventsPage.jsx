@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { getEvents, rsvpEvent } from '../lib/api.js'
 import { SkeletonText } from '../components/SkeletonCard.jsx'
 import { events as fallbackEvents } from '../data/events.js'
@@ -54,6 +55,7 @@ function dayLabel(date) {
 
 export default function EventsPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const user = getStoredUser()
   const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
 
@@ -153,7 +155,7 @@ export default function EventsPage() {
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <ArrowLeft size={18} color="#8e8e93" />
-          <span style={{ fontSize: '15px', fontWeight: '600', color: '#8e8e93' }}>Home</span>
+          <span style={{ fontSize: '15px', fontWeight: '600', color: '#8e8e93' }}>{t('events.back')}</span>
         </button>
         <div
           style={{
@@ -303,7 +305,7 @@ export default function EventsPage() {
               cursor: 'pointer',
             }}
           >
-            Today
+            {t('events.today')}
           </button>
         </div>
       </div>
@@ -381,7 +383,7 @@ export default function EventsPage() {
                 textAlign: 'center',
               }}
             >
-              <p style={{ fontSize: '13px', color: '#6e6e73' }}>Nothing scheduled this day</p>
+              <p style={{ fontSize: '13px', color: '#6e6e73' }}>{t('events.nothing_scheduled')}</p>
             </div>
           ) : (
             selEvents.map((ev, ei) => {
@@ -547,7 +549,11 @@ export default function EventsPage() {
                   cursor: overlayGoing ? 'default' : 'pointer',
                 }}
               >
-                {detailEvent.type === 'midweek' ? 'Find a group' : overlayGoing ? "You're going!" : "I'm going"}
+                {detailEvent.type === 'midweek'
+                  ? t('events.find_group')
+                  : overlayGoing
+                    ? t('events.going')
+                    : t('events.im_going')}
               </button>
               <button
                 type="button"

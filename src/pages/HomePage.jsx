@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { IconCalendarHeart, IconPray } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
@@ -44,11 +45,11 @@ function formatAnnouncementDate(dateStr) {
 
 const SCRIM = 'linear-gradient(to top, rgba(0,0,0,.88) 8%, rgba(0,0,0,.35) 50%, transparent 80%)'
 
-function getGreeting() {
+function getGreeting(t) {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning!'
-  if (h < 18) return 'Good afternoon!'
-  return 'Good evening!'
+  if (h < 12) return t('home.greeting_morning')
+  if (h < 18) return t('home.greeting_afternoon')
+  return t('home.greeting_evening')
 }
 
 
@@ -100,6 +101,7 @@ export default function HomePage() {
   const outletContext = useOutletContext()
   const openRightPanel = outletContext?.openRightPanel ?? (() => {})
   const user = useUser()
+  const { t } = useTranslation()
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase()
 
   // Initialize directly from cache so returning from detail pages renders instantly
@@ -194,7 +196,7 @@ export default function HomePage() {
       }}>
         <Plus size={48} strokeWidth={1.5} color="#ffffff" />
         <span style={{ fontSize: '28px', fontWeight: '800', color: '#fff', letterSpacing: '-0.02em' }}>Welcome</span>
-        <span style={{ fontSize: '13px', color: '#6e6e73' }}>Loading...</span>
+        <span style={{ fontSize: '13px', color: '#6e6e73' }}>{t('home.loading')}</span>
       </div>
     )}
     <div
@@ -218,7 +220,7 @@ export default function HomePage() {
           style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}
         >
           <p style={{ fontSize: '15px', fontWeight: '400', color: '#8e8e93', marginBottom: '2px' }}>
-            {getGreeting()}
+            {getGreeting(t)}
           </p>
           <p style={{ fontSize: '30px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
             {(user?.firstName || 'friend').toLowerCase()}
@@ -260,7 +262,7 @@ export default function HomePage() {
       {/* ── 2. EXPLORE THE CHURCH ── */}
       <div style={{ paddingTop: '28px', paddingLeft: '24px', paddingRight: '24px' }}>
         <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em' }}>
-          Explore the Church
+          {t('home.explore')}
         </p>
         <div style={{ marginTop: '14px' }}>
           {exploreCards.length === 0 ? (
@@ -288,8 +290,8 @@ export default function HomePage() {
       <div style={{ paddingTop: '30px' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '24px', paddingRight: '24px' }}>
-          <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Upcoming events</span>
-          <button onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>See all</button>
+          <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>{t('home.upcoming_events')}</span>
+          <button onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/events', { state: { fromHome: true } }) }} style={{ background: 'none', border: 'none', fontSize: '13px', fontWeight: '600', color: ACCENT, cursor: 'pointer', padding: 0 }}>{t('home.see_all')}</button>
         </div>
 
         {/* Cards row */}
@@ -336,7 +338,7 @@ export default function HomePage() {
             style={{ width: '100%', padding: '12px 0', borderRadius: 12, border: '1px solid #2a2a2a', background: 'transparent', color: '#f97316', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
           >
             <CalendarDays size={16} />
-            View full calendar
+            {t('home.view_full_calendar')}
           </button>
         </div>
       </div>
@@ -345,14 +347,14 @@ export default function HomePage() {
       <section style={{ padding: '30px 24px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-            Announcements
+            {t('home.announcements')}
           </p>
           <button
             type="button"
             onClick={() => { sessionStorage.setItem('scroll_home_saved', sessionStorage.getItem('scroll_home_live') || '0'); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/news') }}
             style={{ color: '#f97316', fontSize: 13, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            See all
+            {t('home.see_all')}
           </button>
         </div>
 
@@ -401,23 +403,23 @@ export default function HomePage() {
 
       {/* ── 5. EXPLORE MORE ── */}
       <div style={{ paddingTop: '30px', paddingLeft: '24px', paddingRight: '24px' }}>
-        <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>Explore More</span>
+        <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', color: '#fff' }}>{t('home.explore_more')}</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '14px' }}>
           <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/last-sunday') }} style={qaCard}>
             <Play size={24} color="#ffffff" strokeWidth={1.75} />
-            <div><p style={qaLabel}>Last Sunday</p><p style={qaSub}>Sermon</p></div>
+            <div><p style={qaLabel}>{t('home.last_sunday')}</p><p style={qaSub}>{t('home.last_sunday_sub')}</p></div>
           </button>
           <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/midweek') }} style={qaCard}>
             <MapPin size={24} color="#5b8cff" strokeWidth={1.75} />
-            <div><p style={qaLabel}>Find Midweek</p><p style={qaSub}>Near you</p></div>
+            <div><p style={qaLabel}>{t('home.find_midweek')}</p><p style={qaSub}>{t('home.find_midweek_sub')}</p></div>
           </button>
           <button type="button" onClick={() => { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate('/prayer-requests') }} style={qaCard}>
             <IconPray size={24} color="#a78bfa" />
-            <div><p style={qaLabel}>Prayer Requests</p><p style={qaSub}>Pray together</p></div>
+            <div><p style={qaLabel}>{t('home.prayer_requests')}</p><p style={qaSub}>{t('home.prayer_requests_sub')}</p></div>
           </button>
           <button type="button" onClick={() => setShowDonateModal(true)} style={qaCard}>
             <Heart size={24} color="#4caf7d" strokeWidth={1.75} />
-            <div><p style={qaLabel}>Donate</p><p style={qaSub}>Support us</p></div>
+            <div><p style={qaLabel}>{t('home.donate')}</p><p style={qaSub}>{t('home.donate_sub')}</p></div>
           </button>
         </div>
       </div>

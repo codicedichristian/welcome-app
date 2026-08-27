@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import BackRow from '../components/BackRow.jsx'
 import { getNewsById } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
@@ -35,6 +36,7 @@ function HeroBackButton({ goBack }) {
 }
 
 function LinkCard({ url }) {
+  const { t } = useTranslation()
   return (
     <button
       type="button"
@@ -54,7 +56,7 @@ function LinkCard({ url }) {
       }}
     >
       <ExternalLink size={20} color="#5b8cff" />
-      <span style={{ flex: 1, fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>Learn more</span>
+      <span style={{ flex: 1, fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>{t('news.learn_more')}</span>
       <ChevronRight size={16} color="#444444" />
     </button>
   )
@@ -63,6 +65,7 @@ function LinkCard({ url }) {
 export default function NewsDetailPage() {
   const location = useLocation()
   const { id } = useParams()
+  const { t } = useTranslation()
   const item = location.state?.item ?? getNewsById(id)
   const [imgError, setImgError] = useState(false)
   const goBack = useSmartBack('/news')
@@ -70,8 +73,8 @@ export default function NewsDetailPage() {
   if (!item) {
     return (
       <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
-        <BackRow label="News" />
-        <p className="mt-4 text-[14px] text-zinc-500">News item not found.</p>
+        <BackRow label={t('news.label')} />
+        <p className="mt-4 text-[14px] text-zinc-500">{t('news.not_found')}</p>
       </div>
     )
   }
@@ -109,7 +112,7 @@ export default function NewsDetailPage() {
 
   return (
     <div className="page-transition px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}>
-      <BackRow label="News" />
+      <BackRow label={t('news.label')} />
 
       <div className="mt-4 flex items-center justify-between">
         <span className="rounded-full px-2.5 py-1 text-[13px] font-medium text-bg" style={{ backgroundColor: item.color }}>

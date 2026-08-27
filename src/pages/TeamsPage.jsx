@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { X, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import DetailPage from '../components/DetailPage.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getExploreCard, getServiceTeams } from '../lib/api.js'
@@ -8,6 +9,7 @@ import { supabase } from '../lib/supabase.js'
 const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
 
 function JoinSheet({ onClose }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
@@ -18,7 +20,7 @@ function JoinSheet({ onClose }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim() || !form.surname.trim() || !form.email.trim()) {
-      setError('Please fill in name, surname and email.')
+      setError(t('teams.error_required'))
       return
     }
     setSaving(true)
@@ -28,7 +30,7 @@ function JoinSheet({ onClose }) {
       .insert([{ full_name: `${form.name.trim()} ${form.surname.trim()}`, email: form.email.trim(), phone: form.phone.trim() }])
     setSaving(false)
     if (dbError) {
-      setError('Something went wrong. Please try again.')
+      setError(t('teams.error_generic'))
     } else {
       setDone(true)
     }
@@ -84,7 +86,7 @@ function JoinSheet({ onClose }) {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', paddingBottom: '24px' }}>
-          <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>Join the team</p>
+          <p style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>{t('teams.sheet_title')}</p>
           <button
             type="button"
             onClick={onClose}
@@ -99,34 +101,34 @@ function JoinSheet({ onClose }) {
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#16a34a22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Check size={32} color="#22c55e" />
             </div>
-            <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', margin: 0 }}>You're in!</p>
+            <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', margin: 0 }}>{t('teams.success_title')}</p>
             <p style={{ fontSize: '15px', color: '#6e6e73', lineHeight: 1.5, maxWidth: '260px', margin: 0 }}>
-              We received your request. Someone from the team will reach out to you soon.
+              {t('teams.success_body')}
             </p>
             <button
               type="button"
               onClick={onClose}
               style={{ marginTop: '8px', padding: '14px 32px', background: '#22c55e', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: '700', color: '#fff', cursor: 'pointer' }}
             >
-              Done
+              {t('teams.done')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={labelStyle}>Name</label>
-              <input style={inputStyle} placeholder="Your first name" value={form.name} onChange={set('name')} autoComplete="given-name" />
+              <label style={labelStyle}>{t('teams.name_label')}</label>
+              <input style={inputStyle} placeholder={t('teams.name_placeholder')} value={form.name} onChange={set('name')} autoComplete="given-name" />
             </div>
             <div>
-              <label style={labelStyle}>Surname</label>
-              <input style={inputStyle} placeholder="Your last name" value={form.surname} onChange={set('surname')} autoComplete="family-name" />
+              <label style={labelStyle}>{t('teams.surname_label')}</label>
+              <input style={inputStyle} placeholder={t('teams.surname_placeholder')} value={form.surname} onChange={set('surname')} autoComplete="family-name" />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label style={labelStyle}>{t('teams.email_label')}</label>
               <input style={inputStyle} type="email" placeholder="you@example.com" value={form.email} onChange={set('email')} autoComplete="email" />
             </div>
             <div>
-              <label style={labelStyle}>Phone number</label>
+              <label style={labelStyle}>{t('teams.phone_label')}</label>
               <input style={inputStyle} type="tel" placeholder="+39 333 000 0000" value={form.phone} onChange={set('phone')} autoComplete="tel" />
             </div>
 
@@ -150,7 +152,7 @@ function JoinSheet({ onClose }) {
                 transition: 'background 0.2s',
               }}
             >
-              {saving ? 'Sending…' : 'Join the team now'}
+              {saving ? t('teams.sending') : t('teams.submit')}
             </button>
           </form>
         )}
@@ -160,6 +162,7 @@ function JoinSheet({ onClose }) {
 }
 
 export default function TeamsPage() {
+  const { t } = useTranslation()
   const [heroImage, setHeroImage] = useState(null)
   const [description, setDescription] = useState(null)
   const [teams, setTeams] = useState([])
@@ -182,9 +185,9 @@ export default function TeamsPage() {
     <>
       <DetailPage
         image={heroImage ?? undefined}
-        title="Service Teams"
+        title={t('teams.title')}
         description={description ?? undefined}
-        backLabel="Home"
+        backLabel={t('teams.back')}
         backPath="/"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -229,7 +232,7 @@ export default function TeamsPage() {
               letterSpacing: '-0.01em',
             }}
           >
-            Join the team!
+            {t('teams.join_button')}
           </button>
         </div>
       </DetailPage>
