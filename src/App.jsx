@@ -50,6 +50,7 @@ import AdminTeams from './pages/admin/AdminTeams.jsx'
 import AdminAttendancePage from './pages/admin/AdminAttendancePage.jsx'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
+import LandingPage from './pages/LandingPage.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 
@@ -181,7 +182,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
+        <Route path="/" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <LandingPage />} />
         <Route path="/welcome" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
