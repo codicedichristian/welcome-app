@@ -164,5 +164,8 @@
     "events": "Events",
     "news": "News",
     "profile": "Profile"
+  },
+  "language": {
+    "label": "Language"
   }
 }

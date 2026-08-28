@@ -353,7 +353,12 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <LanguageSwitcher />
+      <section className="mt-6">
+        <h3 className="text-[13px] uppercase tracking-[0.5px] text-inactive">{t('language.label')}</h3>
+        <div className="mt-2">
+          <LanguageSwitcher />
+        </div>
+      </section>
 
       <button
         type="button"
