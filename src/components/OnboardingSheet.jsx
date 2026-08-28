@@ -7,16 +7,21 @@ import { INTERESTS, migrateInterests } from '../constants/interests.js'
 import { AGE_RANGE_OPTIONS } from '../onboarding/options.js'
 
 const COUNTRY_CODES = [
-  { code: '+39', flag: '🇮🇹' },
   { code: '+34', flag: '🇪🇸' },
-  { code: '+1',  flag: '🇺🇸' },
+  { code: '+39', flag: '🇮🇹' },
+  { code: '+351', flag: '🇵🇹' },
+  { code: '+57', flag: '🇨🇴' },
+  { code: '+56', flag: '🇨🇱' },
+  { code: '+51', flag: '🇵🇪' },
+  { code: '+40', flag: '🇷🇴' },
+  { code: '+380', flag: '🇺🇦' },
+  { code: '+1', flag: '🇺🇸' },
   { code: '+44', flag: '🇬🇧' },
   { code: '+33', flag: '🇫🇷' },
   { code: '+49', flag: '🇩🇪' },
   { code: '+55', flag: '🇧🇷' },
   { code: '+52', flag: '🇲🇽' },
   { code: '+54', flag: '🇦🇷' },
-  { code: '+81', flag: '🇯🇵' },
 ]
 
 function WhatsAppIcon() {
@@ -50,7 +55,7 @@ export default function OnboardingSheet({ sectionsToShow, onComplete, onSave }) 
   const [ageRange, setAgeRange] = useState(user.ageRange || user.age_range || '')
 
   // Phone
-  const [countryCode, setCountryCode] = useState('+39')
+  const [countryCode, setCountryCode] = useState('+34')
   const [phone, setPhone] = useState('')
   const [phoneSkipped, setPhoneSkipped] = useState(false)
 
