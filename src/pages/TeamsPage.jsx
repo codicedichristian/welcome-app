@@ -8,12 +8,13 @@ import { supabase } from '../lib/supabase.js'
 
 const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
 
-function JoinSheet({ onClose }) {
+function JoinSheet({ onClose, areas }) {
   const { t } = useTranslation()
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [selectedArea, setSelectedArea] = useState(null)
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -27,7 +28,13 @@ function JoinSheet({ onClose }) {
     setError('')
     const { error: dbError } = await supabase
       .from('team_join_requests')
-      .insert([{ full_name: `${form.name.trim()} ${form.surname.trim()}`, email: form.email.trim(), phone: form.phone.trim() }])
+      .insert([{
+        full_name: `${form.name.trim()} ${form.surname.trim()}`,
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        area_id: selectedArea?.id ?? null,
+        area_name: selectedArea?.name ?? null,
+      }])
     setSaving(false)
     if (dbError) {
       setError(t('teams.error_generic'))
@@ -122,6 +129,30 @@ function JoinSheet({ onClose }) {
             <div>
               <label style={labelStyle}>{t('teams.surname_label')}</label>
               <input style={inputStyle} placeholder={t('teams.surname_placeholder')} value={form.surname} onChange={set('surname')} autoComplete="family-name" />
+            </div>
+            <div>
+              <label style={labelStyle}>Área de servicio</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                {areas.filter((a) => !a.is_macro).map((area) => (
+                  <button
+                    key={area.id}
+                    type="button"
+                    onClick={() => setSelectedArea(selectedArea?.id === area.id ? null : area)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: selectedArea?.id === area.id ? '1.5px solid #f97316' : '1px solid #3a3a3a',
+                      background: selectedArea?.id === area.id ? '#2a1a0a' : '#242424',
+                      color: selectedArea?.id === area.id ? '#f97316' : '#aaaaaa',
+                      fontSize: '14px',
+                      fontWeight: selectedArea?.id === area.id ? '600' : '400',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {area.name}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label style={labelStyle}>{t('teams.email_label')}</label>
@@ -237,7 +268,7 @@ export default function TeamsPage() {
         </div>
       </DetailPage>
 
-      {showJoin && <JoinSheet onClose={() => setShowJoin(false)} />}
+      {showJoin && <JoinSheet onClose={() => setShowJoin(false)} areas={teams} />}
     </>
   )
 }
