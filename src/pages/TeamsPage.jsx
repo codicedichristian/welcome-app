@@ -133,7 +133,7 @@ function JoinSheet({ onClose, areas }) {
             <div>
               <label style={labelStyle}>Área de servicio</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                {areas.filter((a) => !a.is_macro).map((area) => (
+                {areas.filter((a) => a.is_macro).map((area) => (
                   <button
                     key={area.id}
                     type="button"
