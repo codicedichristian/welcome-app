@@ -115,29 +115,20 @@ export default function App() {
       if (!freshUser.phone || freshUser.phone === 'pending') sectionsToShow.push('phone')
       if (!freshUser.notifEmail && !freshUser.notifWhatsapp && !freshUser.notifApp) sectionsToShow.push('notifications')
 
-      if (count === 1 && freshUser.onboardingCompleted !== true) {
-        // Case 1: first open after registration — show all fields
-        setOnboardingMissing(['interests', 'age_range', 'phone', 'notifications'])
+      if (freshUser.onboardingCompleted !== true) {
+        // Onboarding non completato — mostra ad ogni login
+        const missing = sectionsToShow.length > 0
+          ? sectionsToShow
+          : ['interests', 'age_range', 'phone', 'notifications']
+        setOnboardingMissing(missing)
         setShowOnboardingSheet(true)
         sessionStorage.setItem('onboarding_checked', 'true')
-      } else if (count > 0 && count % 5 === 0 && freshUser.onboardingCompleted !== true) {
-        // Case 3: every 5th open, onboarding not complete — show missing fields or mark complete
-        if (sectionsToShow.length > 0) {
-          setOnboardingMissing(sectionsToShow)
-          setShowOnboardingSheet(true)
-          sessionStorage.setItem('onboarding_checked', 'true')
-        } else {
-          updateUserOnboarding(freshUser.id, {})
-        }
-      } else if (count > 0 && count % 5 === 0) {
-        // Case 4: every 5th open, onboarding complete — check optional missing fields
-        if (sectionsToShow.length > 0) {
-          setOnboardingMissing(sectionsToShow)
-          setShowOnboardingSheet(true)
-          sessionStorage.setItem('onboarding_checked', 'true')
-        }
+      } else if (count > 0 && count % 5 === 0 && sectionsToShow.length > 0) {
+        // Onboarding completato — ogni 5 aperture, se mancano campi li chiede
+        setOnboardingMissing(sectionsToShow)
+        setShowOnboardingSheet(true)
+        sessionStorage.setItem('onboarding_checked', 'true')
       }
-      // Case 2: normal open (not count 1, not multiple of 5) — nothing to show
     }
 
     runOnboardingCheck()
