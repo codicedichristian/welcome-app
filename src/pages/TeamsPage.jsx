@@ -14,7 +14,7 @@ function JoinSheet({ onClose, areas }) {
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
-  const [selectedArea, setSelectedArea] = useState(null)
+  const [selectedAreas, setSelectedAreas] = useState([])
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -32,8 +32,8 @@ function JoinSheet({ onClose, areas }) {
         full_name: `${form.name.trim()} ${form.surname.trim()}`,
         email: form.email.trim(),
         phone: form.phone.trim(),
-        area_id: selectedArea?.id ?? null,
-        area_name: selectedArea?.name ?? null,
+        area_ids: selectedAreas.map((a) => a.id),
+        area_names: selectedAreas.map((a) => a.name).join(', ') || null,
       }])
     setSaving(false)
     if (dbError) {
@@ -131,27 +131,32 @@ function JoinSheet({ onClose, areas }) {
               <input style={inputStyle} placeholder={t('teams.surname_placeholder')} value={form.surname} onChange={set('surname')} autoComplete="family-name" />
             </div>
             <div>
-              <label style={labelStyle}>Área de servicio</label>
+              <label style={labelStyle}>¿En qué área de servicio estás interesado?</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                {areas.filter((a) => a.is_macro).map((area) => (
+                {areas.filter((a) => a.is_macro).map((area) => {
+                  const active = selectedAreas.some((a) => a.id === area.id)
+                  return (
                   <button
                     key={area.id}
                     type="button"
-                    onClick={() => setSelectedArea(selectedArea?.id === area.id ? null : area)}
+                    onClick={() => setSelectedAreas((prev) =>
+                      active ? prev.filter((a) => a.id !== area.id) : [...prev, area]
+                    )}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '20px',
-                      border: selectedArea?.id === area.id ? '1.5px solid #f97316' : '1px solid #3a3a3a',
-                      background: selectedArea?.id === area.id ? '#2a1a0a' : '#242424',
-                      color: selectedArea?.id === area.id ? '#f97316' : '#aaaaaa',
+                      border: active ? '1.5px solid #f97316' : '1px solid #3a3a3a',
+                      background: active ? '#2a1a0a' : '#242424',
+                      color: active ? '#f97316' : '#aaaaaa',
                       fontSize: '14px',
-                      fontWeight: selectedArea?.id === area.id ? '600' : '400',
+                      fontWeight: active ? '600' : '400',
                       cursor: 'pointer',
                     }}
                   >
                     {area.name}
                   </button>
-                ))}
+                  )
+                })}
               </div>
             </div>
             <div>
