@@ -30,6 +30,16 @@ function InvalidateSizeOnMount() {
   }, [map])
   return null
 }
+function MapFlyTo({ group }) {
+  const map = useMap()
+  useEffect(() => {
+    if (group?.lat != null && group?.lng != null) {
+      map.flyTo([Number(group.lat), Number(group.lng)], 14, { duration: 0.8 })
+    }
+  }, [group, map])
+  return null
+}
+
 const TILE_URL = 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
 const midweekEvent = normalizeEvent(getEventById('midweek'))
 
@@ -163,6 +173,7 @@ export default function MidweekPage() {
                     url={TILE_URL}
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                   />
+                  <MapFlyTo group={selectedGroup} />
                   {groups.filter((g) => g.lat != null && g.lng != null).map((group) => (
                     <Marker
                       key={group.id}
@@ -175,9 +186,48 @@ export default function MidweekPage() {
               </div>
             )}
 
-            {!selectedGroup && (
-              <p className="mt-3 text-[13px] text-zinc-500">Tap a pin to see the group details</p>
-            )}
+            <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {groups.map((group) => {
+                const isSelected = String(group.id) === String(selectedId)
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => selectGroup(group.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '14px',
+                      borderRadius: '14px',
+                      background: isSelected ? '#1a1f1a' : '#111211',
+                      border: isSelected ? '1px solid #2d5a2d' : '0.5px solid #2a2a2a',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      background: '#1e1e1e', border: '1px solid #2a2a2a',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '13px', fontWeight: '600', color: '#ffffff',
+                      flexShrink: 0,
+                    }}>
+                      {group.initials}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff', margin: 0 }}>{group.host}</p>
+                      <p style={{ fontSize: '13px', color: '#6e6e73', margin: '2px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {group.zone}{group.address ? ` · ${group.address}` : ''}
+                      </p>
+                    </div>
+                    {isSelected && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />}
+                  </button>
+                )
+              })}
+            </div>
 
             {selectedGroup && (
               <div
