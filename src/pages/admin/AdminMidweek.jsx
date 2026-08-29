@@ -13,6 +13,21 @@ import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
 
+async function geocodeAddress(address) {
+  if (!address?.trim()) return { lat: null, lng: null }
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+      { headers: { 'Accept-Language': 'es' } }
+    )
+    const data = await res.json()
+    if (data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+    }
+  } catch {}
+  return { lat: null, lng: null }
+}
+
 const EMPTY_GROUP = {
   host: '',
   initials: '',
@@ -118,15 +133,6 @@ function GroupForm({ initial, onSave, onCancel, saving }) {
         <Input value={form.phone} onChange={(e) => update({ phone: e.target.value })} placeholder="34600000000" />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Latitude">
-          <Input type="number" step="any" value={form.lat} onChange={(e) => update({ lat: e.target.value })} />
-        </Field>
-        <Field label="Longitude">
-          <Input type="number" step="any" value={form.lng} onChange={(e) => update({ lng: e.target.value })} />
-        </Field>
-      </div>
-
       <Field label="Description">
         <Textarea
           rows={3}
@@ -212,10 +218,13 @@ export default function AdminMidweek() {
 
   const handleSave = async (payload) => {
     setSaving(true)
+    const coords = await geocodeAddress(payload.address)
+    const fullPayload = { ...payload, lat: coords.lat, lng: coords.lng }
     const { error: apiError } =
-      modalGroup === 'new' ? await adminCreateMidweekGroup(payload) : await adminUpdateMidweekGroup(modalGroup.id, payload)
+      modalGroup === 'new'
+        ? await adminCreateMidweekGroup(fullPayload)
+        : await adminUpdateMidweekGroup(modalGroup.id, fullPayload)
     setSaving(false)
-
     if (!apiError) {
       setModalGroup(null)
       load()
