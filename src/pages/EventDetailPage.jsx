@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Calendar, Clock, MapPin, Users, Map, Check, ChevronLeft, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Check, ChevronLeft, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
@@ -258,30 +258,16 @@ export default function EventDetailPage() {
           )}
 
           <div className="mt-6">
-            {event.type === 'midweek' ? (
-              <button
-                type="button"
-                onClick={() => navigate('/midweek')}
-                className="flex w-full items-center gap-3 rounded-xl bg-accent-blue p-4 text-left text-bg"
-              >
-                <Map size={22} />
-                <div>
-                  <p className="text-[16px] font-medium">{t('event_detail.find_group')}</p>
-                  <p className="text-[13px]">{t('event_detail.see_map')}</p>
-                </div>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-                  going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
-                }`}
-              >
-                {going && <Check size={18} />}
-                <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+              }`}
+            >
+              {going && <Check size={18} />}
+              <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
+            </button>
           </div>
         </div>
       </div>
