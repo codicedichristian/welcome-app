@@ -19,6 +19,13 @@ root.style.setProperty('--color-accent-blue', config.colors.accents.blue)
 root.style.setProperty('--color-accent-purple', config.colors.accents.purple)
 root.style.setProperty('--color-accent-orange', config.colors.accents.orange)
 
+document.addEventListener('contextmenu', (e) => {
+  if (e.target.tagName === 'IMG') e.preventDefault()
+})
+document.addEventListener('dragstart', (e) => {
+  if (e.target.tagName === 'IMG') e.preventDefault()
+})
+
 async function bootstrap() {
   let defaultLang = 'es'
   try {

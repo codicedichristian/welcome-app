@@ -413,7 +413,7 @@ export default function EventsPage() {
                 >
                   {/* Thumbnail */}
                   <div style={{ width: '64px', height: '64px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0 }}>
-                    <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={imgSrc} alt="" draggable={false} onContextMenu={(e) => e.preventDefault()} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
 
                   {/* Info */}
@@ -454,6 +454,8 @@ export default function EventsPage() {
             <img
               src={detailEvent.image_url ?? `https://picsum.photos/seed/${detailEvent.id}/800/600`}
               alt=""
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <div

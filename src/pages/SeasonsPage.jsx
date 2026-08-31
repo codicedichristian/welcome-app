@@ -70,6 +70,8 @@ export default function SeasonsPage() {
                 <img
                   src={season.image_url}
                   alt=""
+                  draggable={false}
+                  onContextMenu={(e) => e.preventDefault()}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               )}

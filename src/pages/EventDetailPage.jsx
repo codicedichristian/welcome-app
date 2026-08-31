@@ -200,6 +200,7 @@ export default function EventDetailPage() {
             src={event.image_url ?? `https://picsum.photos/seed/${event.id}/800/520`}
             alt=""
             draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #0a0b0a 100%)' }} />

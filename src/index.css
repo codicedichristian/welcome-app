@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: auto;
+}
+
 @theme {
   --color-bg: #0f0f0f;
   --color-surface: #1a1a1a;

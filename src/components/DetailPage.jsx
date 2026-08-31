@@ -32,6 +32,8 @@ export default function DetailPage({
           <img
             src={image}
             alt=""
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}

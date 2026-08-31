@@ -71,6 +71,7 @@ function ExploreCard({ card, didDrag, navigate }) {
         src={card.image}
         alt=""
         draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
         loading="eager"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#1a1a1a' }}
       />
@@ -315,7 +316,10 @@ export default function HomePage() {
               <div style={{ height: '160px', borderRadius: '16px', overflow: 'hidden', background: '#1c1c1f' }}>
                 <img
                   src={ev.image_url ?? `https://picsum.photos/seed/${ev.id}/400/320`}
-                  alt="" draggable={false} loading="eager"
+                  alt=""
+                  draggable={false}
+                  onContextMenu={(e) => e.preventDefault()}
+                  loading="eager"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#1a1a1a' }}
                 />
               </div>
@@ -379,7 +383,7 @@ export default function HomePage() {
                   background: '#161618',
                 }}
               >
-                <img src={imgSrc} alt="" draggable={false} loading="eager" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#1a1a1a' }} />
+                <img src={imgSrc} alt="" draggable={false} onContextMenu={(e) => e.preventDefault()} loading="eager" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#1a1a1a' }} />
                 <div style={{ position: 'absolute', inset: 0, background: SCRIM, pointerEvents: 'none' }} />
                 <div style={{ position: 'absolute', top: '12px', left: '12px', width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
                 <div style={{ position: 'absolute', left: item.fullWidth ? '16px' : '12px', right: item.fullWidth ? '16px' : '12px', bottom: item.fullWidth ? '14px' : '12px', pointerEvents: 'none', textAlign: 'left' }}>
