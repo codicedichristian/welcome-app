@@ -237,6 +237,26 @@ export default function EventDetailPage() {
 
           <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
 
+          {event.link && (
+            <a
+              href={event.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginTop: '12px',
+                fontSize: '14px',
+                color: '#5b8cff',
+                textDecoration: 'none',
+              }}
+            >
+              <ExternalLink size={15} />
+              <span>Más información</span>
+            </a>
+          )}
+
           <div className="mt-6">
             {event.type === 'midweek' ? (
               <button

@@ -64,6 +64,7 @@ const EMPTY_EVENT = {
   start_time: '',
   end_time: '',
   image_url: '',
+  link: '',
 }
 
 function toFormState(event) {
@@ -84,6 +85,7 @@ function toFormState(event) {
     start_time: event.start_time?.slice(0, 5) ?? '',
     end_time: event.end_time?.slice(0, 5) ?? '',
     image_url: event.image_url ?? '',
+    link: event.link ?? '',
   }
 }
 
@@ -102,6 +104,7 @@ function toPayload(form) {
     start_time:  form.start_time || null,
     end_time:    form.end_time || null,
     image_url:   safeUrl(form.image_url),
+    link:        trimField(form.link) || null,
   }
 }
 
@@ -233,6 +236,15 @@ function EventForm({ initial, onSave, onCancel, saving }) {
           <Input type="time" value={form.end_time} onChange={(e) => update({ end_time: e.target.value })} />
         </Field>
       </div>
+
+      <Field label="Link (optional)">
+        <Input
+          type="url"
+          value={form.link}
+          onChange={(e) => update({ link: e.target.value })}
+          placeholder="https://..."
+        />
+      </Field>
 
       <ImageUploader
         folder="events"
