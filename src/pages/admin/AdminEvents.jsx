@@ -10,6 +10,7 @@ import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
 import { deeplTranslate } from '../../lib/deepl.js'
+import { td } from '../../utils/td.js'
 
 const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special']
 const AUDIENCE_OPTIONS = ['Open to everyone', 'Members only', 'Youth', 'Women', 'Men', 'Leaders']
@@ -411,7 +412,7 @@ export default function AdminEvents() {
               ) : (
                 events.map((event) => (
                   <tr key={event.id} className="border-b border-border last:border-b-0">
-                    <td className="px-4 py-3 text-primary">{event.title}</td>
+                    <td className="px-4 py-3 text-primary">{td(event.title)}</td>
                     <td className="px-4 py-3 text-zinc-400">{capitalize(event.type)}</td>
                     <td className="px-4 py-3 text-zinc-400">{event.location}</td>
                     <td className="px-4 py-3 text-zinc-400">{formatTime12h(event.start_time)}</td>
@@ -448,7 +449,7 @@ export default function AdminEvents() {
       {deleteTarget && (
         <ConfirmDialog
           title="Delete event"
-          message={`Are you sure you want to delete "${deleteTarget.title}"? This cannot be undone.`}
+          message={`Are you sure you want to delete "${td(deleteTarget.title)}"? This cannot be undone.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
         />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
 import { adminGetAttendance, adminGetEventParticipants } from '../../lib/api.js'
 import { getNextOccurrence } from '../../lib/events.js'
+import { td } from '../../utils/td.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 
@@ -134,7 +135,7 @@ export default function AdminAttendancePage() {
             <tbody>
               {events.map((ev) => (
                 <tr key={ev.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-3 font-medium text-primary">{ev.title}</td>
+                  <td className="px-5 py-3 font-medium text-primary">{td(ev.title)}</td>
                   <td className="px-4 py-3 text-zinc-400">{formatEventDate(ev)}</td>
                   <td className="px-4 py-3">
                     {ev.rsvp_count > 0 ? (

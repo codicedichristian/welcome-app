@@ -10,6 +10,7 @@ import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
 import { deeplTranslate } from '../../lib/deepl.js'
+import { td } from '../../utils/td.js'
 
 const CATEGORY_OPTIONS = ['Announcement', 'Event', 'General']
 const COLOR_SWATCHES = [
@@ -272,7 +273,7 @@ export default function AdminNews() {
               ) : (
                 news.map((item) => (
                   <tr key={item.id} className="border-b border-border last:border-b-0">
-                    <td className="px-4 py-3 text-primary">{item.title}</td>
+                    <td className="px-4 py-3 text-primary">{td(item.title)}</td>
                     <td className="px-4 py-3">
                       <span className="rounded-full px-2.5 py-1 text-xs font-medium text-bg" style={{ backgroundColor: item.color }}>
                         {item.category}
@@ -311,7 +312,7 @@ export default function AdminNews() {
       {deleteTarget && (
         <ConfirmDialog
           title="Delete news"
-          message={`Are you sure you want to delete "${deleteTarget.title}"? This cannot be undone.`}
+          message={`Are you sure you want to delete "${td(deleteTarget.title)}"? This cannot be undone.`}
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
         />

@@ -9,6 +9,7 @@ import { getOccurrencesInMonth } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
 import { formatTime12h } from '../lib/format.js'
 import { isRsvped, addRsvp } from '../lib/rsvp.js'
+import { td } from '../utils/td.js'
 
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
 
@@ -421,7 +422,7 @@ export default function EventsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: catColor, flexShrink: 0 }} />
                       <p style={{ fontSize: '15.5px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {ev.title}
+                        {td(ev.title)}
                       </p>
                     </div>
                     <p style={{ fontSize: '12.5px', color: '#8e8e93', marginTop: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -506,7 +507,7 @@ export default function EventsPage() {
                 {detailEvent.type}
               </span>
               <p style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', marginTop: '10px', lineHeight: 1.15 }}>
-                {detailEvent.title}
+                {td(detailEvent.title)}
               </p>
             </div>
           </div>
@@ -531,7 +532,7 @@ export default function EventsPage() {
             <div style={{ height: '1px', background: '#1e1e22' }} />
             {detailEvent.description && (
               <p style={{ fontSize: '14.5px', lineHeight: 1.55, color: '#aeaeb2' }}>
-                {detailEvent.description}
+                {td(detailEvent.description)}
               </p>
             )}
             <div style={{ display: 'flex', gap: '10px', marginTop: '4px', paddingBottom: '40px' }}>

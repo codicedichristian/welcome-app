@@ -6,6 +6,7 @@ import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
 import { useUser } from '../lib/UserContext.js'
+import { td } from '../utils/td.js'
 
 function MetaRow({ icon: Icon, text }) {
   return (
@@ -236,7 +237,7 @@ export default function EventDetailPage() {
             <MetaRow icon={Users} text={event.audience} />
           </div>
 
-          <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{event.description}</p>
+          <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{td(event.description)}</p>
 
           {event.link && (
             <a
