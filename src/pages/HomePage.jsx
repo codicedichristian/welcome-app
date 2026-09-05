@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { IconCalendarHeart, IconPray } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { td } from '../utils/td.js'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
@@ -391,11 +392,11 @@ export default function HomePage() {
                     {formatAnnouncementDate(item.published_at)}
                   </p>
                   <p style={{ fontSize: item.fullWidth ? '18px' : '14.5px', fontWeight: '700', letterSpacing: '-0.015em', lineHeight: 1.2, color: '#ffffff' }}>
-                    {item.title}
+                    {td(item.title)}
                   </p>
                   {item.fullWidth && item.body && (
                     <p style={{ fontSize: '12px', lineHeight: 1.35, color: '#c7c7cc', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {item.body}
+                      {td(item.body)}
                     </p>
                   )}
                 </div>

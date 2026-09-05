@@ -9,6 +9,7 @@ import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
+import { deeplTranslate } from '../../lib/deepl.js'
 
 const CATEGORY_OPTIONS = ['Announcement', 'Event', 'General']
 const COLOR_SWATCHES = [
@@ -20,8 +21,10 @@ const COLOR_SWATCHES = [
 ]
 
 const EMPTY_NEWS = {
-  title: '',
-  body: '',
+  title_es: '',
+  title_en: '',
+  body_es: '',
+  body_en: '',
   category: 'Announcement',
   color: COLOR_SWATCHES[0].hex,
   published_at: new Date().toISOString().slice(0, 10),
@@ -30,9 +33,13 @@ const EMPTY_NEWS = {
 }
 
 function toFormState(item) {
+  const rawTitle = item.title ?? {}
+  const rawBody = item.body ?? {}
   return {
-    title: item.title ?? '',
-    body: item.body ?? '',
+    title_es: (typeof rawTitle === 'string' ? rawTitle : (rawTitle.es ?? '')),
+    title_en: (typeof rawTitle === 'object' ? (rawTitle.en ?? '') : ''),
+    body_es: (typeof rawBody === 'string' ? rawBody : (rawBody.es ?? '')),
+    body_en: (typeof rawBody === 'object' ? (rawBody.en ?? '') : ''),
     category: item.category ?? 'Announcement',
     color: item.color ?? COLOR_SWATCHES[0].hex,
     published_at: item.published_at ?? new Date().toISOString().slice(0, 10),
@@ -41,10 +48,38 @@ function toFormState(item) {
   }
 }
 
+function TranslateBtn({ onClick, loading }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      title="Translate ES → EN"
+      className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-xs text-zinc-400 transition-colors hover:text-primary disabled:opacity-40"
+    >
+      {loading ? '…' : 'EN ✨'}
+    </button>
+  )
+}
+
 function NewsForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial)
+  const [translating, setTranslating] = useState(null)
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }))
+
+  const translate = async (srcKey, dstKey) => {
+    if (!form[srcKey]?.trim()) return
+    setTranslating(dstKey)
+    try {
+      const result = await deeplTranslate(form[srcKey], 'EN')
+      update({ [dstKey]: result })
+    } catch (e) {
+      console.error('DeepL error', e)
+    } finally {
+      setTranslating(null)
+    }
+  }
 
   return (
     <form
@@ -52,8 +87,8 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
         e.preventDefault()
         onSave({
           ...form,
-          title:     trimField(form.title),
-          body:      trimField(form.body),
+          title:     { es: trimField(form.title_es), en: trimField(form.title_en) },
+          body:      { es: trimField(form.body_es), en: trimField(form.body_en) },
           image_url: safeUrl(form.image_url),
           link_url:  safeUrl(form.link_url),
         })
@@ -61,11 +96,23 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
       className="flex flex-col gap-3"
     >
       <Field label="Title">
-        <Input value={form.title} onChange={(e) => update({ title: e.target.value })} required />
+        <div className="flex flex-col gap-2">
+          <Input placeholder="Español" value={form.title_es} onChange={(e) => update({ title_es: e.target.value })} required />
+          <div className="flex items-center gap-2">
+            <Input placeholder="English" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('title_es', 'title_en')} loading={translating === 'title_en'} />
+          </div>
+        </div>
       </Field>
 
       <Field label="Body">
-        <Textarea rows={6} value={form.body} onChange={(e) => update({ body: e.target.value })} required />
+        <div className="flex flex-col gap-2">
+          <Textarea rows={4} placeholder="Español" value={form.body_es} onChange={(e) => update({ body_es: e.target.value })} required />
+          <div className="flex items-start gap-2">
+            <Textarea rows={4} placeholder="English" value={form.body_en} onChange={(e) => update({ body_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('body_es', 'body_en')} loading={translating === 'body_en'} />
+          </div>
+        </div>
       </Field>
 
       <ImageUploader

@@ -9,6 +9,7 @@ import Modal from '../../admin/components/Modal.jsx'
 import ConfirmDialog from '../../admin/components/ConfirmDialog.jsx'
 import { Field, Input, Textarea, Select } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
+import { deeplTranslate } from '../../lib/deepl.js'
 
 const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special']
 const AUDIENCE_OPTIONS = ['Open to everyone', 'Members only', 'Youth', 'Women', 'Men', 'Leaders']
@@ -50,10 +51,12 @@ function detectLocationType(loc) {
 }
 
 const EMPTY_EVENT = {
-  title: '',
+  title_es: '',
+  title_en: '',
   type: 'sunday',
   color: COLOR_SWATCHES[0].hex,
-  description: '',
+  description_es: '',
+  description_en: '',
   location: '',
   location_type: 'in_person',
   audience: 'Open to everyone',
@@ -70,11 +73,15 @@ const EMPTY_EVENT = {
 function toFormState(event) {
   const loc = event.location ?? ''
   const { recur_freq, recur_day, recur_week } = parseRecurring(event.recurring)
+  const rawTitle = event.title ?? {}
+  const rawDesc = event.description ?? {}
   return {
-    title: event.title ?? '',
+    title_es: (typeof rawTitle === 'string' ? rawTitle : (rawTitle.es ?? '')),
+    title_en: (typeof rawTitle === 'object' ? (rawTitle.en ?? '') : ''),
     type: event.type ?? 'sunday',
     color: event.color ?? COLOR_SWATCHES[0].hex,
-    description: event.description ?? '',
+    description_es: (typeof rawDesc === 'string' ? rawDesc : (rawDesc.es ?? '')),
+    description_en: (typeof rawDesc === 'object' ? (rawDesc.en ?? '') : ''),
     location: loc,
     location_type: detectLocationType(loc),
     audience: event.audience || 'Open to everyone',
@@ -92,11 +99,11 @@ function toFormState(event) {
 function toPayload(form) {
   const recurring = buildRecurring(form.recur_freq, form.recur_day, form.recur_week)
   return {
-    title:       trimField(form.title),
+    title:       { es: trimField(form.title_es), en: trimField(form.title_en) },
     type:        form.type,
     color:       form.color,
     icon:        'cross',
-    description: trimField(form.description),
+    description: { es: trimField(form.description_es), en: trimField(form.description_en) },
     location:    trimField(form.location),
     audience:    trimField(form.audience),
     recurring,
@@ -108,10 +115,38 @@ function toPayload(form) {
   }
 }
 
+function TranslateBtn({ onClick, loading }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      title="Translate ES → EN"
+      className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-xs text-zinc-400 transition-colors hover:text-primary disabled:opacity-40"
+    >
+      {loading ? '…' : 'EN ✨'}
+    </button>
+  )
+}
+
 function EventForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial)
+  const [translating, setTranslating] = useState(null)
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }))
+
+  const translate = async (srcKey, dstKey) => {
+    if (!form[srcKey]?.trim()) return
+    setTranslating(dstKey)
+    try {
+      const result = await deeplTranslate(form[srcKey], 'EN')
+      update({ [dstKey]: result })
+    } catch (e) {
+      console.error('DeepL error', e)
+    } finally {
+      setTranslating(null)
+    }
+  }
 
   return (
     <form
@@ -122,7 +157,13 @@ function EventForm({ initial, onSave, onCancel, saving }) {
       className="flex flex-col gap-3"
     >
       <Field label="Title">
-        <Input value={form.title} onChange={(e) => update({ title: e.target.value })} required />
+        <div className="flex flex-col gap-2">
+          <Input placeholder="Español" value={form.title_es} onChange={(e) => update({ title_es: e.target.value })} required />
+          <div className="flex items-center gap-2">
+            <Input placeholder="English" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('title_es', 'title_en')} loading={translating === 'title_en'} />
+          </div>
+        </div>
       </Field>
 
       <Field label="Type">
@@ -153,7 +194,13 @@ function EventForm({ initial, onSave, onCancel, saving }) {
       </Field>
 
       <Field label="Description">
-        <Textarea rows={3} value={form.description} onChange={(e) => update({ description: e.target.value })} />
+        <div className="flex flex-col gap-2">
+          <Textarea rows={3} placeholder="Español" value={form.description_es} onChange={(e) => update({ description_es: e.target.value })} />
+          <div className="flex items-start gap-2">
+            <Textarea rows={3} placeholder="English" value={form.description_en} onChange={(e) => update({ description_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('description_es', 'description_en')} loading={translating === 'description_en'} />
+          </div>
+        </div>
       </Field>
 
       <Field label="Location type">

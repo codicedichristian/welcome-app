@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Megaphone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { td } from '../utils/td.js'
 import { getNews } from '../lib/api.js'
 import { news as fallbackNews } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
@@ -83,8 +84,8 @@ export default function NewsPage() {
                 </span>
                 <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
               </div>
-              <p className="mt-2 text-[18px] font-semibold text-primary">{item.title}</p>
-              <p className="mt-1 line-clamp-3 text-[15px] leading-[1.5] text-zinc-500">{item.body}</p>
+              <p className="mt-2 text-[18px] font-semibold text-primary">{td(item.title)}</p>
+              <p className="mt-1 line-clamp-3 text-[15px] leading-[1.5] text-zinc-500">{td(item.body)}</p>
             </button>
           ))}
         </div>

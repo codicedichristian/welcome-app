@@ -1,4 +1,5 @@
 import { formatTime12h, formatLongDate, capitalize } from './format.js'
+import { td } from '../utils/td.js'
 
 const RECURRING_WEEKDAY = {
   weekly_sunday: 0,
@@ -109,7 +110,7 @@ export function normalizeEvent(event, occurrenceDate) {
 
   return {
     id: event.id,
-    name: event.title,
+    name: td(event.title),
     type: event.type,
     typeLabel: capitalize(event.type),
     color: normalizeColor(event.color),
@@ -121,7 +122,7 @@ export function normalizeEvent(event, occurrenceDate) {
     time: formatTime12h(event.start_time),
     location: event.location,
     audience: event.audience,
-    description: event.description,
+    description: td(event.description),
     image_url: event.image_url ?? null,
   }
 }

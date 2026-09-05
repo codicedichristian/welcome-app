@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { td } from '../utils/td.js'
 import BackRow from '../components/BackRow.jsx'
 import { getNewsById } from '../data/news.js'
 import { formatShortDate } from '../lib/format.js'
@@ -104,8 +105,8 @@ export default function NewsDetailPage() {
             </span>
             <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
           </div>
-          <h1 className="mt-3 text-[26px] font-bold text-primary">{item.title}</h1>
-          <p className="mt-3 text-[15px] leading-[1.7] text-zinc-400">{item.body}</p>
+          <h1 className="mt-3 text-[26px] font-bold text-primary">{td(item.title)}</h1>
+          <p className="mt-3 text-[15px] leading-[1.7] text-zinc-400">{td(item.body)}</p>
           {item.link_url && <LinkCard url={item.link_url} />}
         </div>
       </div>
@@ -123,8 +124,8 @@ export default function NewsDetailPage() {
         <span className="text-[13px] text-zinc-500">{formatShortDate(item.published_at)}</span>
       </div>
 
-      <h1 className="mt-3 text-[26px] font-bold text-primary">{item.title}</h1>
-      <p className="mt-3 text-[15px] leading-[1.7] text-zinc-400">{item.body}</p>
+      <h1 className="mt-3 text-[26px] font-bold text-primary">{td(item.title)}</h1>
+      <p className="mt-3 text-[15px] leading-[1.7] text-zinc-400">{td(item.body)}</p>
       {item.link_url && <LinkCard url={item.link_url} />}
     </div>
   )
