@@ -2,13 +2,12 @@
 
 A production-grade **Progressive Web App** built for a faith community — handling event RSVPs, announcements, real-time updates, and multilingual support for 50+ active members.
 
-> Live → [welcome-app-smoky.vercel.app](https://welcome-app-smoky.vercel.app)
-
 ---
 
 ## Screenshots
 
-<!-- Add screenshots here -->
+<img width="218" height="470" alt="Screenshot 2026-09-07 at 16 41 46" src="https://github.com/user-attachments/assets/82d3b126-21d4-481c-bdff-bffb86e46835" />
+
 <!-- ![Home Screen](docs/screenshots/home.png) -->
 <!-- ![Event RSVP](docs/screenshots/rsvp.png) -->
 <!-- ![Admin Panel](docs/screenshots/admin.png) -->
