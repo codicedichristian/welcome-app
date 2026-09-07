@@ -81,21 +81,11 @@ npm run dev
 npm run test
 ```
 
-### Environment Variables
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
 ---
 
 ## Deployment
 
 The app is deployed on **Vercel** with two separate environments:
-
-- `main` branch → production (`welcome-app-smoky.vercel.app`)
-- `dev` branch → staging (preview URL)
 
 Weekly production releases driven by real user feedback.
 
