@@ -8,9 +8,11 @@ A production-grade **Progressive Web App** built for a faith community — handl
 
 <img width="218" height="470" alt="Screenshot 2026-09-07 at 16 41 46" src="https://github.com/user-attachments/assets/82d3b126-21d4-481c-bdff-bffb86e46835" />
 
-<!-- ![Home Screen](docs/screenshots/home.png) -->
-<!-- ![Event RSVP](docs/screenshots/rsvp.png) -->
-<!-- ![Admin Panel](docs/screenshots/admin.png) -->
+<img width="217" height="442" alt="Screenshot 2026-09-07 at 16 45 23" src="https://github.com/user-attachments/assets/0bedcc21-2af8-4883-aa07-b4d9406c9360" />
+
+<img width="217" height="477" alt="Screenshot 2026-09-07 at 16 51 44" src="https://github.com/user-attachments/assets/98596ca0-1a99-4c37-bf34-92a428d7c792" />
+
+<img width="1429" height="528" alt="Screenshot 2026-09-07 at 16 52 34" src="https://github.com/user-attachments/assets/393ad1e5-f6f2-43e0-a954-e1d51726c622" />
 
 ---
 
