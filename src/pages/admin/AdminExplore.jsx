@@ -32,14 +32,15 @@ function TranslateBtn({ onClick, loading }) {
 
 function toFormState(card) {
   return {
-    title:       card.title ?? '',
-    title_en:    card.title_en ?? '',
-    description: card.description ?? '',
-    image_url:   card.image_url ?? '',
-    pill_label:  card.pill_label ?? '',
-    pill_color:  card.pill_color ?? COLOR_SWATCHES[0].hex,
-    order_index: card.order_index ?? 0,
-    active:      card.active ?? true,
+    title:          card.title ?? '',
+    title_en:       card.title_en ?? '',
+    description:    card.description ?? '',
+    description_en: card.description_en ?? '',
+    image_url:      card.image_url ?? '',
+    pill_label:     card.pill_label ?? '',
+    pill_color:     card.pill_color ?? COLOR_SWATCHES[0].hex,
+    order_index:    card.order_index ?? 0,
+    active:         card.active ?? true,
   }
 }
 
@@ -77,7 +78,13 @@ function ExploreForm({ initial, onSave, onCancel, saving }) {
       </Field>
 
       <Field label="Description">
-        <Textarea rows={2} value={form.description} onChange={(e) => update({ description: e.target.value })} />
+        <div className="flex flex-col gap-2">
+          <Textarea rows={2} placeholder="Español" value={form.description} onChange={(e) => update({ description: e.target.value })} />
+          <div className="flex items-start gap-2">
+            <Textarea rows={2} placeholder="English" value={form.description_en} onChange={(e) => update({ description_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('description', 'description_en')} loading={translating === 'description_en'} />
+          </div>
+        </div>
       </Field>
 
       <ImageUploader
