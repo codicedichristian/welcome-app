@@ -132,7 +132,7 @@ export default function HomePage() {
       const ev = evRes.data?.length ? evRes.data : fallbackEvents
       const nw = nwRes.data?.length ? nwRes.data : fallbackNews
       const ex = exRes.data?.length
-        ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, to: c.route }))
+        ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, title_en: c.title_en, to: c.route }))
         : FALLBACK_EXPLORE
       return [ev, nw, ex]
     }
