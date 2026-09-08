@@ -137,6 +137,7 @@ export default function EventDetailPage() {
 
   const fallbackEvent = getEventById(eventId)
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
+  const isMidweek = event?.type === 'midweek' || event?.id === 'midweek'
 
   const [going, setGoing] = useState(false)
   const [showCancelSheet, setShowCancelSheet] = useState(false)
@@ -260,16 +261,26 @@ export default function EventDetailPage() {
           )}
 
           <div className="mt-6">
-            <button
-              type="button"
-              onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-                going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
-              }`}
-            >
-              {going && <Check size={18} />}
-              <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
-            </button>
+            {isMidweek ? (
+              <button
+                type="button"
+                onClick={() => navigate('/midweek')}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors bg-primary text-bg"
+              >
+                <span>Quiero asistir</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                  going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+                }`}
+              >
+                {going && <Check size={18} />}
+                <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

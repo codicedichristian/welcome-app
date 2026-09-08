@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MapPin, Clock, Check, Home, ChevronRight } from 'lucide-react'
+import { MapPin, Clock, Check, Home } from 'lucide-react'
 import { getMidweekGroups, rsvpMidweek } from '../lib/api.js'
 import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
 import { getEventById } from '../data/events.js'
@@ -233,8 +233,6 @@ export default function MidweekPage() {
               <div
                 ref={popupRef}
                 className="mt-3 rounded-[14px] border border-border bg-surface p-4"
-                onClick={() => navigate(`/midweek/${selectedGroup.id}`)}
-                style={{ cursor: 'pointer' }}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-bg text-[14px] font-medium text-primary">
@@ -244,7 +242,6 @@ export default function MidweekPage() {
                     <p className="text-[16px] text-primary">{selectedGroup.host}</p>
                     <p className="text-[13px] text-zinc-500">{selectedGroup.zone}</p>
                   </div>
-                  <ChevronRight size={16} color="#444444" />
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -281,7 +278,7 @@ export default function MidweekPage() {
                   }`}
                 >
                   {going && <Check size={18} />}
-                  <span>{going ? "You're in!" : "I'm going"}</span>
+                  <span>{going ? 'Contacted ✓' : 'Contact the leader'}</span>
                 </button>
               </div>
             )}
