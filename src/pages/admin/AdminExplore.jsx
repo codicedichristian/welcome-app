@@ -6,6 +6,7 @@ import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
+import { deeplTranslate } from '../../lib/deepl.js'
 
 const COLOR_SWATCHES = [
   { name: 'Purple', hex: '#a78bfa' },
@@ -15,9 +16,24 @@ const COLOR_SWATCHES = [
   { name: 'Orange', hex: '#f97316' },
 ]
 
+function TranslateBtn({ onClick, loading }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      title="Translate ES → EN"
+      className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-xs text-zinc-400 transition-colors hover:text-primary disabled:opacity-40"
+    >
+      {loading ? '…' : 'EN ✨'}
+    </button>
+  )
+}
+
 function toFormState(card) {
   return {
     title:       card.title ?? '',
+    title_en:    card.title_en ?? '',
     description: card.description ?? '',
     image_url:   card.image_url ?? '',
     pill_label:  card.pill_label ?? '',
@@ -29,7 +45,21 @@ function toFormState(card) {
 
 function ExploreForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial)
+  const [translating, setTranslating] = useState(null)
   const update = (patch) => setForm((f) => ({ ...f, ...patch }))
+
+  const translate = async (srcKey, dstKey) => {
+    if (!form[srcKey]?.trim()) return
+    setTranslating(dstKey)
+    try {
+      const result = await deeplTranslate(form[srcKey], 'EN')
+      update({ [dstKey]: result })
+    } catch (e) {
+      console.error('DeepL error', e)
+    } finally {
+      setTranslating(null)
+    }
+  }
 
   return (
     <form
@@ -37,7 +67,13 @@ function ExploreForm({ initial, onSave, onCancel, saving }) {
       className="flex flex-col gap-3"
     >
       <Field label="Title">
-        <Input value={form.title} onChange={(e) => update({ title: e.target.value })} required />
+        <div className="flex flex-col gap-2">
+          <Input placeholder="Español" value={form.title} onChange={(e) => update({ title: e.target.value })} required />
+          <div className="flex items-center gap-2">
+            <Input placeholder="English" value={form.title_en} onChange={(e) => update({ title_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('title', 'title_en')} loading={translating === 'title_en'} />
+          </div>
+        </div>
       </Field>
 
       <Field label="Description">
