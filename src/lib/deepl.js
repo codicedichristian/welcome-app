@@ -1,23 +1,27 @@
 /**
- * DeepL via Supabase Edge Function — la chiave API rimane sul server.
- * Nessuna variabile VITE_ esposta al browser.
+ * DeepL via Supabase Edge Function — API key stays on the server.
  */
-import { supabase } from './supabase.js'
 
-/**
- * @param {string} text - Testo sorgente (spagnolo)
- * @param {string} targetLang - Lingua target, es. 'EN', 'IT', 'FR'
- * @returns {Promise<string>} Testo tradotto
- */
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
 export async function deeplTranslate(text, targetLang = 'EN') {
   if (!text?.trim()) return ''
 
-  const { data, error } = await supabase.functions.invoke('translate', {
-    body: { text, targetLang },
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/translate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ text, targetLang }),
   })
 
-  if (error) throw new Error(`Translate error: ${error.message}`)
-  if (data?.error) throw new Error(`DeepL error: ${data.error}`)
+  const data = await res.json()
 
-  return data?.result ?? ''
+  if (!res.ok || data.error) {
+    throw new Error(data.error ?? `HTTP ${res.status}`)
+  }
+
+  return data.result ?? ''
 }
