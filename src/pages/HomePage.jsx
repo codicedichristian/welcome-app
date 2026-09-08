@@ -55,6 +55,7 @@ function getGreeting(t) {
 
 
 function ExploreCard({ card, didDrag, navigate }) {
+  const { i18n } = useTranslation()
   return (
     <div
       onClick={() => { if (!didDrag.current) { sessionStorage.setItem('scroll_home_saved', String(getScrollY())); sessionStorage.setItem('returning_to_home', 'true'); sessionStorage.setItem('use_manual_restore', 'true'); navigate(card.to) } }}
@@ -91,7 +92,7 @@ function ExploreCard({ card, didDrag, navigate }) {
           {card.category}
         </span>
         <p style={{ fontSize: '26px', fontWeight: '700', color: '#ffffff', marginTop: '8px', lineHeight: 1.1 }}>
-          {card.title}
+          {i18n.language === 'en' && card.title_en ? card.title_en : card.title}
         </p>
       </div>
     </div>
