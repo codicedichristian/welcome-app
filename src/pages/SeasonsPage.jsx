@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import DetailPage from '../components/DetailPage.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getSeasons, getExploreCard } from '../lib/api.js'
@@ -15,16 +16,17 @@ export default function SeasonsPage() {
   const [seasons, setSeasons] = useState([])
   const [loading, setLoading] = useState(true)
   const [heroImage, setHeroImage] = useState(null)
-  const [description, setDescription] = useState(null)
+  const [cardData, setCardData] = useState(null)
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     Promise.all([
       getSeasons(),
       getExploreCard('/seasons'),
-    ]).then(([{ data: seasonsData }, { data: cardData }]) => {
+    ]).then(([{ data: seasonsData }, { data: exploreCard }]) => {
       setSeasons(seasonsData ?? [])
-      if (cardData?.image_url) setHeroImage(cardData.image_url)
-      if (cardData?.description) setDescription(cardData.description)
+      if (exploreCard?.image_url) setHeroImage(exploreCard.image_url)
+      setCardData(exploreCard)
       setLoading(false)
     })
   }, [])
@@ -33,7 +35,7 @@ export default function SeasonsPage() {
     <DetailPage
       image={heroImage ?? undefined}
       title="Sunday Series"
-      description={description ?? undefined}
+      description={(i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description ?? undefined)}
       backLabel="Home"
       backPath="/"
     >

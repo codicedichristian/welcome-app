@@ -1301,7 +1301,7 @@ export async function adminUpdateExploreCard(id, cardData) {
 export async function getExploreCard(route) {
   const { data, error } = await supabase
     .from('explore_cards')
-    .select('id, title, description, image_url, pill_label, pill_color, route, order_index')
+    .select('id, title, title_en, description, description_en, image_url, pill_label, pill_color, route, order_index')
     .eq('route', route)
     .limit(1)
     .maybeSingle()

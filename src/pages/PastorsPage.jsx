@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import DetailPage from '../components/DetailPage.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 import BackRow from '../components/BackRow.jsx'
@@ -27,12 +28,13 @@ function PastorsSkeleton() {
 export default function PastorsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [heroImage, setHeroImage] = useState(null)
-  const [description, setDescription] = useState(null)
+  const [cardData, setCardData] = useState(null)
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     getExploreCard('/pastors').then(({ data }) => {
       setHeroImage(data?.image_url || FALLBACK_IMAGE)
-      setDescription(data?.description || FALLBACK_DESCRIPTION)
+      setCardData(data)
       setIsLoading(false)
     })
   }, [])
@@ -44,7 +46,7 @@ export default function PastorsPage() {
       image={heroImage}
       title="Esteban & Antonella"
       subtitle="Senior Pastors"
-      description={description}
+      description={(i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description || FALLBACK_DESCRIPTION)}
       backLabel="Home"
       backPath="/"
     />

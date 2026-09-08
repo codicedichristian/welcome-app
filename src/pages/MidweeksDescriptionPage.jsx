@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import DetailPage from '../components/DetailPage.jsx'
 import BackRow from '../components/BackRow.jsx'
 import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
@@ -28,14 +29,15 @@ export default function MidweeksDescriptionPage() {
   const navigate = useNavigate()
   const [heroImage, setHeroImage] = useState(null)
   const [title, setTitle] = useState('Midweeks')
-  const [description, setDescription] = useState(null)
+  const [cardData, setCardData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     getExploreCard('/midweeks').then(({ data }) => {
       if (data?.image_url) setHeroImage(data.image_url)
       if (data?.title) setTitle(data.title)
-      if (data?.description) setDescription(data.description)
+      setCardData(data)
       setIsLoading(false)
     })
   }, [])
@@ -46,7 +48,7 @@ export default function MidweeksDescriptionPage() {
     <DetailPage
       image={heroImage ?? undefined}
       title={title}
-      description={description ?? undefined}
+      description={(i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description ?? undefined)}
       backLabel="Explore"
       backPath="/"
     >

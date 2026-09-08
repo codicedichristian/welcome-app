@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import DetailPage from '../components/DetailPage.jsx'
 import BackRow from '../components/BackRow.jsx'
 import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
@@ -56,13 +57,14 @@ function VisionSkeleton() {
 
 export default function VisionPage() {
   const [heroImage, setHeroImage] = useState(null)
-  const [description, setDescription] = useState(null)
+  const [cardData, setCardData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { i18n } = useTranslation()
 
   useEffect(() => {
     getExploreCard('/vision').then(({ data }) => {
       setHeroImage(data?.image_url || FALLBACK_IMAGE)
-      setDescription(data?.description || FALLBACK_DESCRIPTION)
+      setCardData(data)
       setIsLoading(false)
     })
   }, [])
@@ -73,7 +75,7 @@ export default function VisionPage() {
     <DetailPage
       image={heroImage}
       title="Our Vision"
-      description={description}
+      description={(i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description || FALLBACK_DESCRIPTION)}
       backLabel="Home"
       backPath="/"
     >

@@ -198,9 +198,9 @@ function JoinSheet({ onClose, areas }) {
 }
 
 export default function TeamsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [heroImage, setHeroImage] = useState(null)
-  const [description, setDescription] = useState(null)
+  const [cardData, setCardData] = useState(null)
   const [teams, setTeams] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [showJoin, setShowJoin] = useState(false)
@@ -209,9 +209,9 @@ export default function TeamsPage() {
     Promise.all([
       getExploreCard('/teams'),
       getServiceTeams(),
-    ]).then(([{ data: cardData }, { data: teamsData }]) => {
-      if (cardData?.image_url) setHeroImage(cardData.image_url)
-      if (cardData?.description) setDescription(cardData.description)
+    ]).then(([{ data: exploreCard }, { data: teamsData }]) => {
+      if (exploreCard?.image_url) setHeroImage(exploreCard.image_url)
+      setCardData(exploreCard)
       if (teamsData?.length) setTeams(teamsData)
       setIsLoading(false)
     })
@@ -222,7 +222,7 @@ export default function TeamsPage() {
       <DetailPage
         image={heroImage ?? undefined}
         title={t('teams.title')}
-        description={description ?? undefined}
+        description={(i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description ?? undefined)}
         backLabel={t('teams.back')}
         backPath="/"
       >
