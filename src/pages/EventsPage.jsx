@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, ArrowLeft, Clock, MapPin, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { getEvents, rsvpEvent } from '../lib/api.js'
+import { getEvents } from '../lib/api.js'
 import { SkeletonText } from '../components/SkeletonCard.jsx'
 import { events as fallbackEvents } from '../data/events.js'
-import { getOccurrencesInMonth } from '../lib/events.js'
+import { getOccurrencesInMonth, normalizeEvent } from '../lib/events.js'
 import { getStoredUser } from '../lib/user.js'
 import { formatTime12h } from '../lib/format.js'
-import { isRsvped, addRsvp } from '../lib/rsvp.js'
 import { td } from '../utils/td.js'
 
 const FONT = '"Helvetica Neue", Helvetica, "SF Pro Text", system-ui, sans-serif'
@@ -67,8 +66,6 @@ export default function EventsPage() {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('All')
-  const [detailEvent, setDetailEvent] = useState(null)
-  const [overlayGoing, setOverlayGoing] = useState(false)
 
   const loadEvents = useCallback(async () => {
     const { data } = await getEvents()
@@ -77,10 +74,6 @@ export default function EventsPage() {
   }, [])
 
   useEffect(() => { loadEvents() }, [loadEvents])
-
-  useEffect(() => {
-    if (detailEvent) setOverlayGoing(isRsvped(detailEvent.id))
-  }, [detailEvent])
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth()
@@ -118,18 +111,6 @@ export default function EventsPage() {
   const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long' })
 
   const selEvents = getEventsOnDate(filteredEvents, selectedDate)
-
-  const handleOverlayRsvp = () => {
-    if (!detailEvent) return
-    if (detailEvent.type === 'midweek') {
-      navigate('/midweek')
-      return
-    }
-    addRsvp(detailEvent.id)
-    setOverlayGoing(true)
-    const u = getStoredUser()
-    if (u.id) rsvpEvent(u.id, detailEvent.id)
-  }
 
   return (
     <div
@@ -398,7 +379,7 @@ export default function EventsPage() {
                 <button
                   key={`${ev.id}-${ei}`}
                   type="button"
-                  onClick={() => setDetailEvent(ev)}
+                  onClick={() => navigate(`/events/${ev.id}`, { state: { event: normalizeEvent(ev) } })}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -438,149 +419,6 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* ── 5. EVENT DETAIL OVERLAY ── */}
-      {detailEvent && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: '#0a0a0a',
-            zIndex: 20,
-            overflowY: 'auto',
-            fontFamily: FONT,
-          }}
-        >
-          {/* Hero */}
-          <div style={{ position: 'relative', height: '300px', flexShrink: 0 }}>
-            <img
-              src={detailEvent.image_url ?? `https://picsum.photos/seed/${detailEvent.id}/800/600`}
-              alt=""
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, #0a0a0a 2%, rgba(10,10,10,0.1) 60%)',
-              }}
-            />
-            {/* Back button */}
-            <button
-              type="button"
-              onClick={() => setDetailEvent(null)}
-              style={{
-                position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 16px)',
-                left: '20px',
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                background: 'rgba(10,10,10,0.6)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ArrowLeft size={18} color="#ffffff" />
-            </button>
-            {/* Overlay text */}
-            <div style={{ position: 'absolute', left: '24px', right: '24px', bottom: '16px' }}>
-              <span
-                style={{
-                  display: 'inline-block',
-                  background: 'rgba(255,255,255,0.1)',
-                  color: CAT_COLOR[detailEvent.type] ?? '#8e8e93',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  letterSpacing: '0.08em',
-                  padding: '5px 10px',
-                  borderRadius: '8px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {detailEvent.type}
-              </span>
-              <p style={{ fontSize: '28px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', marginTop: '10px', lineHeight: 1.15 }}>
-                {td(detailEvent.title)}
-              </p>
-            </div>
-          </div>
-
-          {/* Body */}
-          <div style={{ padding: '6px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {(detailEvent.start_time || detailEvent.end_time) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Clock size={17} color="#8e8e93" />
-                <span style={{ fontSize: '14px', color: '#c7c7cc' }}>
-                  {formatTime12h(detailEvent.start_time)}
-                  {detailEvent.end_time ? ` – ${formatTime12h(detailEvent.end_time)}` : ''}
-                </span>
-              </div>
-            )}
-            {detailEvent.location && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <MapPin size={17} color="#8e8e93" />
-                <span style={{ fontSize: '14px', color: '#c7c7cc' }}>{detailEvent.location}</span>
-              </div>
-            )}
-            <div style={{ height: '1px', background: '#1e1e22' }} />
-            {detailEvent.description && (
-              <p style={{ fontSize: '14.5px', lineHeight: 1.55, color: '#aeaeb2' }}>
-                {td(detailEvent.description)}
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: '10px', marginTop: '4px', paddingBottom: '40px' }}>
-              <button
-                type="button"
-                onClick={handleOverlayRsvp}
-                disabled={overlayGoing}
-                style={{
-                  flex: 1,
-                  background: overlayGoing ? '#2c2c30' : CAT_COLOR[detailEvent.type] ?? '#f97316',
-                  color: '#ffffff',
-                  fontSize: '15px',
-                  fontWeight: '700',
-                  borderRadius: '16px',
-                  padding: '15px',
-                  border: 'none',
-                  cursor: overlayGoing ? 'default' : 'pointer',
-                }}
-              >
-                {detailEvent.type === 'midweek'
-                  ? t('events.find_group')
-                  : overlayGoing
-                    ? t('events.going')
-                    : t('events.im_going')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addRsvp(detailEvent.id)
-                  setOverlayGoing(true)
-                }}
-                style={{
-                  width: '54px',
-                  border: '1px solid #2c2c30',
-                  borderRadius: '16px',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Bookmark size={20} color={overlayGoing ? '#ffffff' : '#e5e5ea'} fill={overlayGoing ? '#ffffff' : 'none'} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
