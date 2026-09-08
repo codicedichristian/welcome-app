@@ -13,6 +13,7 @@ import {
   Compass,
   ChevronLeft,
   CheckSquare,
+  Inbox,
 } from 'lucide-react'
 
 const NAV = [
@@ -23,6 +24,7 @@ const NAV = [
   { label: 'Explore',    to: '/admin/explore',    icon: Compass },
   { label: 'Midweek',    to: '/admin/midweek',    icon: Home },
   { label: 'Teams',      to: '/admin/teams',      icon: Users2 },
+  { label: 'Join Req.',  to: '/admin/join-requests', icon: Inbox },
   { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
   { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },
   { label: 'Seasons',    to: '/admin/seasons',    icon: Layers },

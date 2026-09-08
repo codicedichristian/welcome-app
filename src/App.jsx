@@ -46,6 +46,7 @@ import AdminMessages from './pages/admin/AdminMessages.jsx'
 import AdminSeasons from './pages/admin/AdminSeasons.jsx'
 import AdminExplore from './pages/admin/AdminExplore.jsx'
 import AdminTeams from './pages/admin/AdminTeams.jsx'
+import AdminJoinRequests from './pages/admin/AdminJoinRequests.jsx'
 import AdminAttendancePage from './pages/admin/AdminAttendancePage.jsx'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
@@ -229,6 +230,7 @@ export default function App() {
             <Route path="admin/seasons" element={<AdminSeasons />} />
             <Route path="admin/explore" element={<AdminExplore />} />
             <Route path="admin/teams" element={<AdminTeams />} />
+            <Route path="admin/join-requests" element={<AdminJoinRequests />} />
             <Route path="admin/attendance" element={<AdminAttendancePage />} />
           </Route>
         </Route>
