@@ -86,12 +86,13 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
     <form
       onSubmit={(e) => {
         e.preventDefault()
+        const { title_es, title_en, body_es, body_en, ...rest } = form
         onSave({
-          ...form,
-          title:     { es: trimField(form.title_es), en: trimField(form.title_en) },
-          body:      { es: trimField(form.body_es), en: trimField(form.body_en) },
-          image_url: safeUrl(form.image_url),
-          link_url:  safeUrl(form.link_url),
+          ...rest,
+          title:     { es: trimField(title_es), en: trimField(title_en) },
+          body:      { es: trimField(body_es), en: trimField(body_en) },
+          image_url: safeUrl(rest.image_url),
+          link_url:  safeUrl(rest.link_url),
         })
       }}
       className="flex flex-col gap-3"
