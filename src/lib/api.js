@@ -522,7 +522,7 @@ export async function adminUpdateUserRole(userId, role) {
 export async function adminGetServiceAreas() {
   const { data, error } = await supabase
     .from('service_areas')
-    .select('id, name, icon, color, description, is_macro')
+    .select('id, name, icon, color, description, description_en, is_macro')
     .order('is_macro', { ascending: false })
     .order('name', { ascending: true })
   return { data, error }
@@ -1257,7 +1257,7 @@ export async function adminDeleteSeason(id) {
 export async function getServiceTeams() {
   const { data, error } = await supabase
     .from('service_areas')
-    .select('id, name, icon, color, description, is_macro')
+    .select('id, name, icon, color, description, description_en, is_macro')
     .order('is_macro', { ascending: false })
     .order('name', { ascending: true })
   return { data, error }

@@ -244,7 +244,7 @@ export default function TeamsPage() {
               </p>
               {team.description && (
                 <p style={{ fontSize: '14px', color: '#c9c9c6', lineHeight: 1.6, marginTop: '12px' }}>
-                  {team.description}
+                  {(i18n.language === 'en' && team.description_en) ? team.description_en : team.description}
                 </p>
               )}
             </div>

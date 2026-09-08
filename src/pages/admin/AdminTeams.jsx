@@ -5,6 +5,7 @@ import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
+import { deeplTranslate } from '../../lib/deepl.js'
 
 const COLOR_SWATCHES = [
   { name: 'Purple', hex: '#a78bfa' },
@@ -15,18 +16,47 @@ const COLOR_SWATCHES = [
   { name: 'White',  hex: '#ffffff' },
 ]
 
+function TranslateBtn({ onClick, loading }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      title="Translate ES → EN"
+      className="shrink-0 rounded-lg border border-border px-2.5 py-2 text-xs text-zinc-400 transition-colors hover:text-primary disabled:opacity-40"
+    >
+      {loading ? '…' : 'EN ✨'}
+    </button>
+  )
+}
+
 function toFormState(area) {
   return {
-    name:        area.name ?? '',
-    icon:        area.icon ?? '',
-    color:       area.color ?? COLOR_SWATCHES[0].hex,
-    description: area.description ?? '',
+    name:           area.name ?? '',
+    icon:           area.icon ?? '',
+    color:          area.color ?? COLOR_SWATCHES[0].hex,
+    description:    area.description ?? '',
+    description_en: area.description_en ?? '',
   }
 }
 
 function TeamForm({ initial, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial)
+  const [translating, setTranslating] = useState(null)
   const update = (patch) => setForm((f) => ({ ...f, ...patch }))
+
+  const translate = async (srcKey, dstKey) => {
+    if (!form[srcKey]?.trim()) return
+    setTranslating(dstKey)
+    try {
+      const result = await deeplTranslate(form[srcKey], 'EN')
+      update({ [dstKey]: result })
+    } catch (e) {
+      console.error('DeepL error', e)
+    } finally {
+      setTranslating(null)
+    }
+  }
 
   return (
     <form
@@ -74,11 +104,13 @@ function TeamForm({ initial, onSave, onCancel, saving }) {
       </Field>
 
       <Field label="Description">
-        <Textarea
-          rows={3}
-          value={form.description}
-          onChange={(e) => update({ description: e.target.value })}
-        />
+        <div className="flex flex-col gap-2">
+          <Textarea rows={3} placeholder="Español" value={form.description} onChange={(e) => update({ description: e.target.value })} />
+          <div className="flex items-start gap-2">
+            <Textarea rows={3} placeholder="English" value={form.description_en} onChange={(e) => update({ description_en: e.target.value })} />
+            <TranslateBtn onClick={() => translate('description', 'description_en')} loading={translating === 'description_en'} />
+          </div>
+        </div>
       </Field>
 
       <div className="mt-1 flex gap-3">
@@ -112,10 +144,11 @@ export default function AdminTeams() {
   async function handleSave(form) {
     setSaving(true)
     await adminUpdateServiceArea(editTarget.id, {
-      name:        form.name,
-      icon:        form.icon,
-      color:       form.color,
-      description: form.description,
+      name:           form.name,
+      icon:           form.icon,
+      color:          form.color,
+      description:    form.description,
+      description_en: form.description_en,
     })
     setSaving(false)
     setEditTarget(null)
