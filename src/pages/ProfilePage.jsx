@@ -8,7 +8,6 @@ import { supabase } from '../lib/supabase.js'
 import { saveSubscription, deleteSubscription, updateUserConsents } from '../lib/api.js'
 import { subscribeToPush, unsubscribeFromPush } from '../lib/push.js'
 import { useUser } from '../lib/UserContext.js'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 
 function WhatsAppIcon() {
   return (
@@ -353,7 +352,38 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <LanguageSwitcher />
+      <div style={{ marginTop: 24 }}>
+        <h3 style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#888888', marginBottom: 8 }}>
+          {t('profile.language')}
+        </h3>
+        <div style={{ overflow: 'hidden', borderRadius: 12, border: '1px solid #2e2e2e', background: '#1a1a1a' }}>
+          {[
+            { code: 'es', label: 'Español' },
+            { code: 'en', label: 'English' },
+          ].map((lang, index) => (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => {
+                i18n.changeLanguage(lang.code)
+                localStorage.setItem('i18n_lang', lang.code)
+              }}
+              style={{
+                display: 'flex', width: '100%', alignItems: 'center',
+                justifyContent: 'space-between', padding: '16px',
+                textAlign: 'left', background: 'transparent',
+                borderBottom: index === 0 ? '1px solid #2e2e2e' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: 16, color: '#ffffff' }}>{lang.label}</span>
+              {i18n.language === lang.code && (
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f97316' }} />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <button
         type="button"
