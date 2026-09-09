@@ -67,7 +67,7 @@ export default function MidweeksDescriptionPage() {
           cursor: 'pointer',
         }}
       >
-        Find your group
+        {i18n.language === 'en' ? 'I want to come' : 'Quiero asistir'}
       </button>
     </DetailPage>
   )
