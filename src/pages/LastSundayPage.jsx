@@ -4,6 +4,7 @@ import { PlayCircle, Headphones, Camera, FileText } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getLatestSundaySummary } from '../lib/api.js'
+import { useAudioPlayer } from '../contexts/AudioPlayerContext.jsx'
 
 function formatSundayDate(dateStr) {
   if (!dateStr) return null
@@ -37,6 +38,7 @@ function MediaButton({ icon, label, href }) {
 
 export default function LastSundayPage() {
   const location = useLocation()
+  const { play } = useAudioPlayer()
   const [summary, setSummary] = useState(location.state?.summary ?? null)
   const [loading, setLoading] = useState(!location.state?.summary)
 
@@ -143,11 +145,14 @@ export default function LastSundayPage() {
                 />
               )}
               {summary.audio_url && (
-                <MediaButton
-                  href={summary.audio_url}
-                  label="Listen"
-                  icon={<Headphones size={22} color="#a78bfa" />}
-                />
+                <button
+                  onClick={() => play(summary.audio_url, summary.title)}
+                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
+                  style={{ background: '#34d399', color: '#fff' }}
+                >
+                  <Headphones size={16} />
+                  Listen
+                </button>
               )}
               {summary.photos_url && (
                 <MediaButton

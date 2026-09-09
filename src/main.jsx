@@ -6,6 +6,7 @@ import App from './App.jsx'
 import config from './config.js'
 import { initI18n } from './lib/i18n.js'
 import { supabase } from './lib/supabase.js'
+import { AudioPlayerProvider } from './contexts/AudioPlayerContext.jsx'
 
 const root = document.documentElement
 root.style.setProperty('--color-bg', config.backgroundColor)
@@ -44,7 +45,9 @@ async function bootstrap() {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <App />
+        <AudioPlayerProvider>
+          <App />
+        </AudioPlayerProvider>
       </BrowserRouter>
     </StrictMode>,
   )
