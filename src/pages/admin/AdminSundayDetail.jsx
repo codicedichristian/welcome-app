@@ -7,8 +7,9 @@ import { safeUrl, trimField } from '../../lib/sanitize.js'
 import Spinner from '../../components/Spinner.jsx'
 import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
+import FileUploader from '../../components/admin/FileUploader.jsx'
 
-const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', image_url: '', video_url: '', photos_url: '', audio_url: '' }
+const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', image_url: '', video_url: '', photos_url: '', audio_url: '', pdf_url: '' }
 
 function toForm(s) {
   if (!s) return EMPTY_FORM
@@ -21,6 +22,7 @@ function toForm(s) {
     video_url:   s.video_url ?? '',
     photos_url:  s.photos_url ?? '',
     audio_url:   s.audio_url ?? '',
+    pdf_url:     s.pdf_url ?? '',
   }
 }
 
@@ -59,6 +61,7 @@ export default function AdminSundayDetail() {
       video_url:   safeUrl(form.video_url),
       photos_url:  safeUrl(form.photos_url),
       audio_url:   safeUrl(form.audio_url),
+      pdf_url:     safeUrl(form.pdf_url),
     }
     await adminUpsertSummary(scheduleId, payload)
     setSaving(false)
@@ -116,14 +119,22 @@ export default function AdminSundayDetail() {
             placeholder="https://…"
           />
         </Field>
-        <Field label="Audio / Podcast URL (optional)">
-          <Input
-            type="url"
-            value={form.audio_url}
-            onChange={(e) => update({ audio_url: e.target.value })}
-            placeholder="https://…"
-          />
-        </Field>
+        <FileUploader
+          folder="sundays/audio"
+          accept="audio/*,.mp3,.m4a,.wav,.ogg"
+          label="Audio / Podcast (optional)"
+          buttonLabel="Upload audio"
+          fileUrl={form.audio_url}
+          onUpload={(url) => update({ audio_url: url })}
+        />
+        <FileUploader
+          folder="sundays/pdfs"
+          accept=".pdf,application/pdf"
+          label="Sermon notes PDF (optional)"
+          buttonLabel="Upload PDF"
+          fileUrl={form.pdf_url}
+          onUpload={(url) => update({ pdf_url: url })}
+        />
         <Field label="Photos URL">
           <Input
             type="url"

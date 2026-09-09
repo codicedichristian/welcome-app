@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { PlayCircle, Headphones, Camera } from 'lucide-react'
+import { PlayCircle, Headphones, Camera, FileText } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getLatestSundaySummary } from '../lib/api.js'
@@ -133,7 +133,7 @@ export default function LastSundayPage() {
           </div>
 
           {/* Media buttons — conditional, order: Watch / Listen / Photos */}
-          {(summary.video_url || summary.audio_url || summary.photos_url) && (
+          {(summary.video_url || summary.audio_url || summary.photos_url || summary.pdf_url) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {summary.video_url && (
                 <MediaButton
@@ -154,6 +154,13 @@ export default function LastSundayPage() {
                   href={summary.photos_url}
                   label="Photos"
                   icon={<Camera size={22} color="#5b8cff" />}
+                />
+              )}
+              {summary.pdf_url && (
+                <MediaButton
+                  href={summary.pdf_url}
+                  label="Sermon notes"
+                  icon={<FileText size={22} color="#34d399" />}
                 />
               )}
             </div>
