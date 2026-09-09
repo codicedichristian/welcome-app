@@ -31,7 +31,6 @@ import { subscribeToPush } from './lib/push.js'
 import { saveSubscription, incrementAppOpenCount, updateUserOnboarding } from './lib/api.js'
 import { supabase } from './lib/supabase.js'
 import { ScrollToTop } from './components/ScrollToTop.jsx'
-import GlobalAudioPlayer from './components/GlobalAudioPlayer.jsx'
 import AdminRoute from './components/AdminRoute.jsx'
 import AdminLayout from './components/AdminLayout.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
@@ -267,7 +266,6 @@ export default function App() {
         </Route>
         <Route path="*" element={user ? <Navigate to="/home" replace /> : <Navigate to="/welcome" replace />} />
       </Routes>
-      <GlobalAudioPlayer />
     </>
     </UserSetterContext.Provider>
     </UserContext.Provider>

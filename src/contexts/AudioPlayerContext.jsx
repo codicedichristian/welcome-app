@@ -10,7 +10,6 @@ export function AudioPlayerProvider({ children }) {
     isPlaying: false,
     currentTime: 0,
     duration: 0,
-    visible: false,
   })
 
   const play = useCallback((url, title = '') => {
@@ -20,7 +19,7 @@ export function AudioPlayerProvider({ children }) {
       audio.load()
     }
     audio.play()
-    setState(s => ({ ...s, url, title, isPlaying: true, visible: true }))
+    setState(s => ({ ...s, url, title, isPlaying: true }))
   }, [])
 
   const togglePlay = useCallback(() => {
@@ -39,12 +38,6 @@ export function AudioPlayerProvider({ children }) {
     setState(s => ({ ...s, currentTime: time }))
   }, [])
 
-  const close = useCallback(() => {
-    audioRef.current.pause()
-    audioRef.current.src = ''
-    setState({ url: null, title: '', isPlaying: false, currentTime: 0, duration: 0, visible: false })
-  }, [])
-
   // Sync audio events to state
   const audioEl = audioRef.current
   audioEl.ontimeupdate = () => setState(s => ({ ...s, currentTime: audioEl.currentTime }))
@@ -52,7 +45,7 @@ export function AudioPlayerProvider({ children }) {
   audioEl.onended = () => setState(s => ({ ...s, isPlaying: false }))
 
   return (
-    <AudioPlayerContext.Provider value={{ state, play, togglePlay, seek, close }}>
+    <AudioPlayerContext.Provider value={{ state, play, togglePlay, seek }}>
       {children}
     </AudioPlayerContext.Provider>
   )
