@@ -1398,9 +1398,13 @@ export async function adminGetEventParticipants(eventId) {
   return { data: rows, error: null }
 }
 
-export async function trackMidweekContact(userId, groupId, groupHost) {
-  return supabase.from('midweek_contacts').insert({
+export async function trackMidweekContact({ userId, firstName, lastName, email, phone, groupId, groupHost }) {
+  return supabase.from('midweek_info_click').insert({
     user_id: userId || null,
+    first_name: firstName || null,
+    last_name: lastName || null,
+    email: email || null,
+    phone: phone || null,
     group_id: groupId,
     group_host: groupHost,
   })

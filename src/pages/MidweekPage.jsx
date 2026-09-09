@@ -122,7 +122,15 @@ export default function MidweekPage() {
     window.open(`https://wa.me/${selectedGroup.phone}?text=${message}`, '_blank', 'noopener')
 
     const user = getStoredUser()
-    trackMidweekContact(user.id || null, selectedGroup.id, selectedGroup.host).catch(() => {})
+    trackMidweekContact({
+      userId: user.id || null,
+      firstName: user.firstName || null,
+      lastName: user.lastName || null,
+      email: user.email || null,
+      phone: user.phone || null,
+      groupId: selectedGroup.id,
+      groupHost: selectedGroup.host,
+    }).catch(() => {})
 
     if (user.id) {
       const { error: apiError } = await rsvpMidweek(user.id, selectedGroup.id, getNextWednesday())

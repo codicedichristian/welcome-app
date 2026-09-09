@@ -7,8 +7,8 @@ export default function AdminMidweekContacts() {
 
   useEffect(() => {
     supabase
-      .from('midweek_contacts')
-      .select('*, users(first_name, last_name, email)')
+      .from('midweek_info_click')
+      .select('*')
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         setRows(data ?? [])
@@ -18,7 +18,7 @@ export default function AdminMidweekContacts() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginBottom: '16px' }}>Midweek contacts</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginBottom: '16px' }}>Midweek clicks</h2>
       {loading ? (
         <p style={{ color: '#888' }}>Cargando...</p>
       ) : rows.length === 0 ? (
@@ -28,9 +28,11 @@ export default function AdminMidweekContacts() {
           {rows.map((r) => (
             <div key={r.id} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '14px' }}>
               <p style={{ color: '#ffffff', fontWeight: '600', margin: '0 0 4px' }}>
-                {r.users ? `${r.users.first_name ?? ''} ${r.users.last_name ?? ''}`.trim() || r.users.email : 'Utente anonimo'}
+                {[r.first_name, r.last_name].filter(Boolean).join(' ') || 'Anonimo'}
               </p>
-              <p style={{ color: '#888', fontSize: '13px', margin: '0 0 2px' }}>Gruppo: {r.group_host}</p>
+              {r.email && <p style={{ color: '#888', fontSize: '13px', margin: '0 0 2px' }}>{r.email}</p>}
+              {r.phone && <p style={{ color: '#888', fontSize: '13px', margin: '0 0 2px' }}>{r.phone}</p>}
+              <p style={{ color: '#555', fontSize: '13px', margin: '4px 0 2px' }}>Gruppo: {r.group_host}</p>
               <p style={{ color: '#555', fontSize: '12px', margin: '4px 0 0' }}>
                 {new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
