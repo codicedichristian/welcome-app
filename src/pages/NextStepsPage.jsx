@@ -7,7 +7,7 @@ import DetailPage from '../components/DetailPage.jsx'
 
 const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
 
-function SignUpSheet({ lang, onClose }) {
+function SignUpSheet({ lang, onClose, onSubmitted }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -25,6 +25,8 @@ function SignUpSheet({ lang, onClose }) {
     })
     setSending(false)
     setSent(true)
+    localStorage.setItem('nextsteps_submitted', 'true')
+    onSubmitted()
   }
 
   const inputStyle = {
@@ -121,6 +123,7 @@ export default function NextStepsPage() {
   const [cardData, setCardData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [submitted, setSubmitted] = useState(() => !!localStorage.getItem('nextsteps_submitted'))
 
   useEffect(() => {
     getExploreCard('/nextsteps').then(({ data }) => {
@@ -145,28 +148,32 @@ export default function NextStepsPage() {
           <div style={{ marginTop: '8px' }}>
             <button
               type="button"
-              onClick={() => setShowForm(true)}
+              onClick={submitted ? undefined : () => setShowForm(true)}
+              disabled={submitted}
               style={{
                 width: '100%',
                 padding: '16px',
                 borderRadius: '14px',
-                background: '#ffffff',
-                color: '#000000',
+                background: submitted ? '#22c55e' : '#ffffff',
+                color: submitted ? '#ffffff' : '#000000',
                 fontSize: '16px',
                 fontWeight: '700',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: submitted ? 'default' : 'pointer',
                 letterSpacing: '-0.01em',
+                transition: 'background 0.3s ease',
               }}
             >
-              {i18n.language === 'en' ? 'I want to sign up' : 'Quiero inscribirme'}
+              {submitted
+                ? '✓ ' + (i18n.language === 'en' ? 'Request sent!' : '¡Solicitud enviada!')
+                : (i18n.language === 'en' ? 'I want to sign up' : 'Quiero inscribirme')}
             </button>
           </div>
         )}
       </DetailPage>
 
       {showForm && (
-        <SignUpSheet lang={i18n.language} onClose={() => setShowForm(false)} />
+        <SignUpSheet lang={i18n.language} onClose={() => setShowForm(false)} onSubmitted={() => setSubmitted(true)} />
       )}
     </>
   )

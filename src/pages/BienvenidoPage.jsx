@@ -63,7 +63,7 @@ function InfoSheet({ lang, onSignUp, onClose }) {
   )
 }
 
-function ConnectSheet({ lang, onClose }) {
+function ConnectSheet({ lang, onClose, onSubmitted }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -80,6 +80,8 @@ function ConnectSheet({ lang, onClose }) {
     })
     setSending(false)
     setSent(true)
+    localStorage.setItem('bienvenido_submitted', 'true')
+    onSubmitted()
   }
 
   const inputStyle = {
@@ -181,6 +183,7 @@ function ConnectSheet({ lang, onClose }) {
 export default function BienvenidoPage() {
   const [showInfo, setShowInfo] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [submitted, setSubmitted] = useState(() => !!localStorage.getItem('bienvenido_submitted'))
   const [cardData, setCardData] = useState(null)
   const { i18n } = useTranslation()
 
@@ -261,21 +264,25 @@ export default function BienvenidoPage() {
 
           <button
             type="button"
-            onClick={() => setShowInfo(true)}
+            onClick={submitted ? undefined : () => setShowInfo(true)}
+            disabled={submitted}
             style={{
               width: '100%',
               padding: '16px',
               borderRadius: '14px',
-              background: '#ffffff',
-              color: '#000000',
+              background: submitted ? '#22c55e' : '#ffffff',
+              color: submitted ? '#ffffff' : '#000000',
               fontSize: '16px',
               fontWeight: '700',
               border: 'none',
-              cursor: 'pointer',
+              cursor: submitted ? 'default' : 'pointer',
               letterSpacing: '-0.01em',
+              transition: 'background 0.3s ease',
             }}
           >
-            {i18n.language === 'en' ? 'Get to know us' : 'Conócenos mejor'}
+            {submitted
+              ? '✓ ' + (i18n.language === 'en' ? 'Request sent!' : '¡Solicitud enviada!')
+              : (i18n.language === 'en' ? 'Get to know us' : 'Conócenos mejor')}
           </button>
         </div>
       </div>
@@ -291,6 +298,7 @@ export default function BienvenidoPage() {
         <ConnectSheet
           lang={i18n.language}
           onClose={() => setShowForm(false)}
+          onSubmitted={() => setSubmitted(true)}
         />
       )}
     </>

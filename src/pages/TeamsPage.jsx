@@ -15,6 +15,7 @@ function JoinSheet({ onClose, areas }) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const [selectedAreas, setSelectedAreas] = useState([])
+  const [submitted, setSubmitted] = useState(() => !!localStorage.getItem('join_team_submitted'))
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -40,6 +41,8 @@ function JoinSheet({ onClose, areas }) {
       setError(t('teams.error_generic'))
     } else {
       setDone(true)
+      localStorage.setItem('join_team_submitted', 'true')
+      setSubmitted(true)
     }
   }
 
@@ -173,22 +176,22 @@ function JoinSheet({ onClose, areas }) {
             )}
 
             <button
-              type="submit"
-              disabled={saving}
+              type={submitted ? 'button' : 'submit'}
+              disabled={submitted}
               style={{
-                marginTop: '8px',
+                width: '100%',
                 padding: '16px',
-                background: saving ? '#166534' : '#22c55e',
-                border: 'none',
                 borderRadius: '14px',
-                fontSize: '17px',
+                background: submitted ? '#22c55e' : '#ffffff',
+                color: submitted ? '#ffffff' : '#000000',
+                fontSize: '16px',
                 fontWeight: '700',
-                color: '#fff',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                transition: 'background 0.2s',
+                border: 'none',
+                cursor: submitted ? 'default' : 'pointer',
+                transition: 'background 0.3s ease',
               }}
             >
-              {saving ? t('teams.sending') : t('teams.submit')}
+              {submitted ? '✓ ¡Solicitud enviada!' : 'Unirme al equipo'}
             </button>
           </form>
         )}
