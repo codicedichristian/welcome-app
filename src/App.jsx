@@ -53,6 +53,8 @@ import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
 import LandingPage from './pages/LandingPage.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
+const BienvenidoPage = lazy(() => import('./pages/BienvenidoPage.jsx'))
+const AdminConnectRequests = lazy(() => import('./pages/admin/AdminConnectRequests.jsx'))
 
 export default function App() {
   const location = useLocation()
@@ -184,6 +186,14 @@ export default function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <LandingPage />} />
         <Route path="/welcome" element={user && !sessionStorage.getItem('registration_in_progress') ? <Navigate to="/home" replace /> : <WelcomeFlowPage />} />
+        <Route
+          path="bienvenido"
+          element={
+            <Suspense fallback={null}>
+              <BienvenidoPage />
+            </Suspense>
+          }
+        />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
@@ -231,6 +241,14 @@ export default function App() {
             <Route path="admin/explore" element={<AdminExplore />} />
             <Route path="admin/teams" element={<AdminTeams />} />
             <Route path="admin/join-requests" element={<AdminJoinRequests />} />
+            <Route
+              path="admin/connect-requests"
+              element={
+                <Suspense fallback={null}>
+                  <AdminConnectRequests />
+                </Suspense>
+              }
+            />
             <Route path="admin/attendance" element={<AdminAttendancePage />} />
           </Route>
         </Route>

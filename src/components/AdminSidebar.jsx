@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   CheckSquare,
   Inbox,
+  Heart,
 } from 'lucide-react'
 
 const NAV = [
@@ -25,6 +26,7 @@ const NAV = [
   { label: 'Midweek',    to: '/admin/midweek',    icon: Home },
   { label: 'Teams',      to: '/admin/teams',      icon: Users2 },
   { label: 'Join Req.',  to: '/admin/join-requests', icon: Inbox },
+  { label: 'Conexiones', to: '/admin/connect-requests', icon: Heart },
   { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
   { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },
   { label: 'Seasons',    to: '/admin/seasons',    icon: Layers },
