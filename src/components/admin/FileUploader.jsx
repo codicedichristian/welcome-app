@@ -2,6 +2,14 @@ import { useRef, useState } from 'react'
 import { FileIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase.js'
 
+function sanitizeFilename(name) {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // strip accents
+    .replace(/[^a-zA-Z0-9._-]/g, '_') // replace any non-safe char with _
+    .replace(/_+/g, '_')               // collapse multiple underscores
+}
+
 export default function FileUploader({ folder, fileUrl, onUpload, label, accept = '*/*', buttonLabel = 'Upload file' }) {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(false)
@@ -14,7 +22,7 @@ export default function FileUploader({ folder, fileUrl, onUpload, label, accept 
     setUploading(true)
     setUploadError(false)
 
-    const path = `${folder}/${Date.now()}_${file.name}`
+    const path = `${folder}/${Date.now()}_${sanitizeFilename(file.name)}`
     const { error } = await supabase.storage.from('files').upload(path, file, { upsert: true })
 
     if (error) {
