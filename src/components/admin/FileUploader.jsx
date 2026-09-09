@@ -15,7 +15,7 @@ export default function FileUploader({ folder, fileUrl, onUpload, label, accept 
     setUploadError(false)
 
     const path = `${folder}/${Date.now()}_${file.name}`
-    const { error } = await supabase.storage.from('images').upload(path, file, { upsert: true })
+    const { error } = await supabase.storage.from('files').upload(path, file, { upsert: true })
 
     if (error) {
       setUploadError(true)
@@ -23,7 +23,7 @@ export default function FileUploader({ folder, fileUrl, onUpload, label, accept 
       return
     }
 
-    const { data } = supabase.storage.from('images').getPublicUrl(path)
+    const { data } = supabase.storage.from('files').getPublicUrl(path)
     onUpload(data.publicUrl)
     setUploading(false)
   }
