@@ -4,11 +4,66 @@ import { ChevronLeft, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { getExploreCard } from '../lib/api.js'
 
-const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
+const EMPTY_FORM = { name: '', surname: '', phone: '' }
 const FALLBACK_TITLE = 'Bienvenido a casa'
 const FALLBACK_DESCRIPTION = 'En VIVE Church somos una familia que apasionadamente busca a Dios y ama a las personas. Creemos que cada persona fue creada con un propósito y que la vida plena se encuentra en una relación genuina con Dios y con la comunidad. Vivimos en libertad, caminamos en misión, buscamos la santidad y rechazamos los patrones de este mundo. Encarnamos la generosidad — no como obligación, sino como estilo de vida. Si estás buscando una iglesia donde puedas crecer, servir y pertenecer, ¡este es tu hogar!'
 
-function ConnectSheet({ onClose }) {
+function InfoSheet({ lang, onSignUp, onClose }) {
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200 }}
+      />
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#1a1a1a',
+          borderRadius: '20px 20px 0 0',
+          zIndex: 201,
+          padding: '32px 24px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: '#333' }} />
+        </div>
+        <p style={{ fontSize: '22px', fontWeight: '800', color: '#ffffff', marginBottom: '12px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+          {lang === 'en'
+            ? 'We have a special gathering for newcomers.'
+            : 'Tenemos un encuentro especial para los nuevos.'}
+        </p>
+        <p style={{ fontSize: '15px', color: '#888', lineHeight: '1.6', marginBottom: '28px' }}>
+          {lang === 'en'
+            ? 'Sign up and we\'ll get in touch with you to tell you more.'
+            : 'Inscríbete y te contactamos para contarte más.'}
+        </p>
+        <button
+          type="button"
+          onClick={onSignUp}
+          style={{
+            width: '100%',
+            padding: '16px',
+            borderRadius: '14px',
+            background: '#ffffff',
+            color: '#000000',
+            fontSize: '16px',
+            fontWeight: '700',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {lang === 'en' ? 'Sign up' : 'Inscribirme'}
+        </button>
+      </div>
+    </>
+  )
+}
+
+function ConnectSheet({ lang, onClose }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -21,7 +76,6 @@ function ConnectSheet({ onClose }) {
     setSending(true)
     await supabase.from('connect_requests').insert({
       full_name: `${form.name.trim()} ${form.surname.trim()}`.trim(),
-      email: form.email.trim() || null,
       phone: form.phone.trim() || null,
     })
     setSending(false)
@@ -94,10 +148,9 @@ function ConnectSheet({ onClose }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <input type="text" placeholder="Nombre *" value={form.name} onChange={set('name')} required style={inputStyle} />
-            <input type="text" placeholder="Apellido" value={form.surname} onChange={set('surname')} style={inputStyle} />
-            <input type="email" placeholder="Email" value={form.email} onChange={set('email')} style={inputStyle} />
-            <input type="tel" placeholder="Teléfono" value={form.phone} onChange={set('phone')} style={inputStyle} />
+            <input type="text" placeholder={lang === 'en' ? 'First name *' : 'Nombre *'} value={form.name} onChange={set('name')} required style={inputStyle} />
+            <input type="text" placeholder={lang === 'en' ? 'Last name' : 'Apellido'} value={form.surname} onChange={set('surname')} style={inputStyle} />
+            <input type="tel" placeholder={lang === 'en' ? 'Phone number' : 'Número de teléfono'} value={form.phone} onChange={set('phone')} style={inputStyle} />
             <button
               type="submit"
               disabled={sending || !form.name.trim()}
@@ -126,16 +179,13 @@ function ConnectSheet({ onClose }) {
 }
 
 export default function BienvenidoPage() {
-  const [showSheet, setShowSheet] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
+  const [showForm, setShowForm] = useState(false)
   const [cardData, setCardData] = useState(null)
   const { i18n } = useTranslation()
 
   useEffect(() => {
-    getExploreCard('/bienvenido').then(({ data, error }) => {
-      console.log('[BienvenidoPage] cardData:', data)
-      console.log('[BienvenidoPage] error:', error)
-      setCardData(data)
-    })
+    getExploreCard('/bienvenido').then(({ data }) => setCardData(data))
   }, [])
 
   const title = (i18n.language === 'en' && cardData?.title_en) ? cardData.title_en : (cardData?.title || FALLBACK_TITLE)
@@ -211,7 +261,7 @@ export default function BienvenidoPage() {
 
           <button
             type="button"
-            onClick={() => setShowSheet(true)}
+            onClick={() => setShowInfo(true)}
             style={{
               width: '100%',
               padding: '16px',
@@ -225,12 +275,24 @@ export default function BienvenidoPage() {
               letterSpacing: '-0.01em',
             }}
           >
-            Conéctate con nosotros
+            {i18n.language === 'en' ? 'Get to know us' : 'Conócenos mejor'}
           </button>
         </div>
       </div>
 
-      {showSheet && <ConnectSheet onClose={() => setShowSheet(false)} />}
+      {showInfo && (
+        <InfoSheet
+          lang={i18n.language}
+          onSignUp={() => { setShowInfo(false); setShowForm(true) }}
+          onClose={() => setShowInfo(false)}
+        />
+      )}
+      {showForm && (
+        <ConnectSheet
+          lang={i18n.language}
+          onClose={() => setShowForm(false)}
+        />
+      )}
     </>
   )
 }
