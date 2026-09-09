@@ -27,6 +27,7 @@ const NAV = [
   { label: 'Teams',      to: '/admin/teams',      icon: Users2 },
   { label: 'Join Team Req.', to: '/admin/join-requests', icon: Inbox },
   { label: 'Bienvenido Req.', to: '/admin/connect-requests', icon: Heart },
+  { label: 'Midweek clicks', to: '/admin/midweek-contacts', icon: MessageSquare },
   { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
   { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },
   { label: 'Seasons',    to: '/admin/seasons',    icon: Layers },

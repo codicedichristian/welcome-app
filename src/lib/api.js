@@ -1397,3 +1397,11 @@ export async function adminGetEventParticipants(eventId) {
   }))
   return { data: rows, error: null }
 }
+
+export async function trackMidweekContact(userId, groupId, groupHost) {
+  return supabase.from('midweek_contacts').insert({
+    user_id: userId || null,
+    group_id: groupId,
+    group_host: groupHost,
+  })
+}

@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, Clock, Check, Home } from 'lucide-react'
-import { getMidweekGroups, rsvpMidweek } from '../lib/api.js'
+import { getMidweekGroups, rsvpMidweek, trackMidweekContact } from '../lib/api.js'
 import { midweeks as fallbackMidweeks } from '../data/midweeks.js'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent, getNextWednesday } from '../lib/events.js'
@@ -122,6 +122,8 @@ export default function MidweekPage() {
     window.open(`https://wa.me/${selectedGroup.phone}?text=${message}`, '_blank', 'noopener')
 
     const user = getStoredUser()
+    trackMidweekContact(user.id || null, selectedGroup.id, selectedGroup.host).catch(() => {})
+
     if (user.id) {
       const { error: apiError } = await rsvpMidweek(user.id, selectedGroup.id, getNextWednesday())
       if (apiError) {

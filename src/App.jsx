@@ -55,6 +55,7 @@ import LandingPage from './pages/LandingPage.jsx'
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 const BienvenidoPage = lazy(() => import('./pages/BienvenidoPage.jsx'))
 const AdminConnectRequests = lazy(() => import('./pages/admin/AdminConnectRequests.jsx'))
+const AdminMidweekContacts = lazy(() => import('./pages/admin/AdminMidweekContacts.jsx'))
 
 export default function App() {
   const location = useLocation()
@@ -246,6 +247,14 @@ export default function App() {
               element={
                 <Suspense fallback={null}>
                   <AdminConnectRequests />
+                </Suspense>
+              }
+            />
+            <Route
+              path="admin/midweek-contacts"
+              element={
+                <Suspense fallback={null}>
+                  <AdminMidweekContacts />
                 </Suspense>
               }
             />
