@@ -1074,7 +1074,8 @@ export async function getLatestSundaySummary() {
     const { data, error } = await supabase
       .from('sunday_summaries')
       .select('*, schedule:sunday_schedules!schedule_id(id, date)')
-      .order('date', { ascending: false, foreignTable: 'schedule' })
+      .not('date', 'is', null)
+      .order('date', { ascending: false })
       .limit(1)
       .single()
     if (error) throw error

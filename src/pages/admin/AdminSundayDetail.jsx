@@ -9,7 +9,7 @@ import { Field, Input, Textarea } from '../../admin/components/FormField.jsx'
 import ImageUploader from '../../components/admin/ImageUploader.jsx'
 import FileUploader from '../../components/admin/FileUploader.jsx'
 
-const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', image_url: '', video_url: '', photos_url: '', audio_url: '', pdf_url: '' }
+const EMPTY_FORM = { title: '', speaker: '', scripture: '', description: '', image_url: '', video_url: '', photos_url: '', audio_url: '', pdf_url: '', date: '' }
 
 function toForm(s) {
   if (!s) return EMPTY_FORM
@@ -23,6 +23,7 @@ function toForm(s) {
     photos_url:  s.photos_url ?? '',
     audio_url:   s.audio_url ?? '',
     pdf_url:     s.pdf_url ?? '',
+    date:        s.date ?? '',
   }
 }
 
@@ -62,6 +63,7 @@ export default function AdminSundayDetail() {
       photos_url:  safeUrl(form.photos_url),
       audio_url:   safeUrl(form.audio_url),
       pdf_url:     safeUrl(form.pdf_url),
+      date:        form.date || null,
     }
     await adminUpsertSummary(scheduleId, payload)
     setSaving(false)
@@ -87,6 +89,15 @@ export default function AdminSundayDetail() {
       </h1>
 
       <form onSubmit={handleSave} className="mt-5 flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-zinc-400">Date</label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={e => update({ date: e.target.value })}
+            className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-primary"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Title">
             <Input value={form.title} onChange={(e) => update({ title: e.target.value })} />
