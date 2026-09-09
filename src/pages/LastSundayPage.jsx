@@ -146,12 +146,23 @@ export default function LastSundayPage() {
               )}
               {summary.audio_url && (
                 <button
+                  type="button"
                   onClick={() => play(summary.audio_url, summary.title)}
-                  className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
-                  style={{ background: '#34d399', color: '#fff' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    width: '100%',
+                    background: '#1a1a1a',
+                    border: '0.5px solid #2e2e2e',
+                    borderRadius: '16px',
+                    padding: '16px 18px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                 >
-                  <Headphones size={16} />
-                  Listen
+                  <Headphones size={22} color="#34d399" />
+                  <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>Listen</span>
                 </button>
               )}
               {summary.photos_url && (
