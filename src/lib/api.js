@@ -772,9 +772,27 @@ export async function adminGetSummary(scheduleId) {
 
 export async function adminUpsertSummary(scheduleId, summaryData) {
   try {
+    const { data: existing, error: findError } = await supabase
+      .from('sunday_summaries')
+      .select('id')
+      .eq('schedule_id', scheduleId)
+      .maybeSingle()
+    if (findError) throw findError
+
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from('sunday_summaries')
+        .update(summaryData)
+        .eq('id', existing.id)
+        .select()
+        .single()
+      if (error) throw error
+      return { data, error: null }
+    }
+
     const { data, error } = await supabase
       .from('sunday_summaries')
-      .upsert({ schedule_id: scheduleId, ...summaryData }, { onConflict: 'schedule_id' })
+      .insert({ schedule_id: scheduleId, ...summaryData })
       .select()
       .single()
     if (error) throw error
