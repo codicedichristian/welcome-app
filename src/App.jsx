@@ -51,6 +51,7 @@ import AdminAttendancePage from './pages/admin/AdminAttendancePage.jsx'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
 import LandingPage from './pages/LandingPage.jsx'
+import NextStepsPage from './pages/NextStepsPage.jsx'
 
 const MidweekPage = lazy(() => import('./pages/MidweekPage.jsx'))
 const BienvenidoPage = lazy(() => import('./pages/BienvenidoPage.jsx'))
@@ -195,6 +196,7 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route path="nextsteps" element={<NextStepsPage />} />
         <Route element={<RedirectIfAuthenticated />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>

@@ -28,6 +28,7 @@ const FALLBACK_EXPLORE = [
   { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',                    category: 'Community',  title: 'Midweeks',         to: '/midweek'  },
   { image: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80',                    category: 'Sermons',    title: 'Sundays',          to: '/seasons'  },
   { image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',                    category: 'Serve',      title: 'Service Teams',    to: '/teams'    },
+  { image: null, category: 'Community', title: 'Next Steps', to: '/nextsteps', pill_color: '#a78bfa' },
 ]
 
 const NEWS_DOT = {
