@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft, X } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
+import { getExploreCard } from '../lib/api.js'
 
 const EMPTY_FORM = { name: '', surname: '', email: '', phone: '' }
+const FALLBACK_TITLE = 'Bienvenido a casa'
+const FALLBACK_DESCRIPTION = 'En VIVE Church somos una familia que apasionadamente busca a Dios y ama a las personas. Creemos que cada persona fue creada con un propósito y que la vida plena se encuentra en una relación genuina con Dios y con la comunidad. Vivimos en libertad, caminamos en misión, buscamos la santidad y rechazamos los patrones de este mundo. Encarnamos la generosidad — no como obligación, sino como estilo de vida. Si estás buscando una iglesia donde puedas crecer, servir y pertenecer, ¡este es tu hogar!'
 
 function ConnectSheet({ onClose }) {
   const [form, setForm] = useState(EMPTY_FORM)
@@ -123,6 +127,19 @@ function ConnectSheet({ onClose }) {
 
 export default function BienvenidoPage() {
   const [showSheet, setShowSheet] = useState(false)
+  const [cardData, setCardData] = useState(null)
+  const { i18n } = useTranslation()
+
+  useEffect(() => {
+    getExploreCard('/bienvenido').then(({ data, error }) => {
+      console.log('[BienvenidoPage] cardData:', data)
+      console.log('[BienvenidoPage] error:', error)
+      setCardData(data)
+    })
+  }, [])
+
+  const title = (i18n.language === 'en' && cardData?.title_en) ? cardData.title_en : (cardData?.title || FALLBACK_TITLE)
+  const description = (i18n.language === 'en' && cardData?.description_en) ? cardData.description_en : (cardData?.description || FALLBACK_DESCRIPTION)
 
   return (
     <>
@@ -175,7 +192,7 @@ export default function BienvenidoPage() {
               borderRadius: '999px',
               marginBottom: '8px',
             }}>
-              Bienvenido a casa
+              {title}
             </span>
             <p style={{ fontSize: '28px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.01em', margin: 0, lineHeight: 1.1 }}>
               VIVE Church
@@ -188,14 +205,8 @@ export default function BienvenidoPage() {
           <p style={{ fontSize: '22px', fontWeight: '700', color: '#ffffff', marginBottom: '14px', letterSpacing: '-0.01em' }}>
             Bringing People to Life!
           </p>
-          <p style={{ fontSize: '15px', color: '#888', lineHeight: '1.7', marginBottom: '12px' }}>
-            En VIVE Church somos una familia que apasionadamente busca a Dios y ama a las personas. Creemos que cada persona fue creada con un propósito y que la vida plena se encuentra en una relación genuina con Dios y con la comunidad.
-          </p>
-          <p style={{ fontSize: '15px', color: '#888', lineHeight: '1.7', marginBottom: '12px' }}>
-            Vivimos en libertad, caminamos en misión, buscamos la santidad y rechazamos los patrones de este mundo. Encarnamos la generosidad — no como obligación, sino como estilo de vida.
-          </p>
           <p style={{ fontSize: '15px', color: '#888', lineHeight: '1.7', marginBottom: '32px' }}>
-            Si estás buscando una iglesia donde puedas crecer, servir y pertenecer, ¡este es tu hogar!
+            {description}
           </p>
 
           <button
