@@ -3,11 +3,12 @@ import { FileIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase.js'
 
 function sanitizeFilename(name) {
-  return name
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')   // strip accents
-    .replace(/[^a-zA-Z0-9._-]/g, '_') // replace any non-safe char with _
-    .replace(/_+/g, '_')               // collapse multiple underscores
+  // Decompose accented chars, then remove combining diacritical marks (U+0300–U+036F)
+  const noAccents = name.normalize('NFD').replace(/\p{M}/gu, '')
+  // Replace any non-safe character with underscore
+  return noAccents
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .replace(/_+/g, '_')
 }
 
 export default function FileUploader({ folder, fileUrl, onUpload, label, accept = '*/*', buttonLabel = 'Upload file' }) {
