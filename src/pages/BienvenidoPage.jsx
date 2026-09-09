@@ -153,7 +153,7 @@ export default function BienvenidoPage() {
         {/* Hero */}
         <div style={{ position: 'relative', width: '100%', height: '320px', background: '#111' }}>
           <img
-            src="https://picsum.photos/seed/bienvenido/800/520"
+            src="https://abcufxrkmyqvbxeghvkp.supabase.co/storage/v1/object/public/images/explore/1787573025463_RLmGvYtKErutAy2pF3l7ZVZMoc.avif"
             alt=""
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
