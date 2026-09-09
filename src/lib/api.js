@@ -1298,6 +1298,22 @@ export async function adminUpdateExploreCard(id, cardData) {
   return { data, error }
 }
 
+export async function adminCreateExploreCard(cardData) {
+  const { data, error } = await supabase
+    .from('explore_cards')
+    .insert([cardData])
+    .select()
+  return { data, error }
+}
+
+export async function adminDeleteExploreCard(id) {
+  const { error } = await supabase
+    .from('explore_cards')
+    .delete()
+    .eq('id', id)
+  return { error }
+}
+
 export async function getExploreCard(route) {
   const { data, error } = await supabase
     .from('explore_cards')

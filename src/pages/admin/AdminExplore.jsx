@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Pencil } from 'lucide-react'
-import { adminGetExploreCards, adminUpdateExploreCard } from '../../lib/api.js'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { adminGetExploreCards, adminUpdateExploreCard, adminCreateExploreCard, adminDeleteExploreCard } from '../../lib/api.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
 import Modal from '../../admin/components/Modal.jsx'
@@ -41,6 +41,7 @@ function toFormState(card) {
     pill_color:     card.pill_color ?? COLOR_SWATCHES[0].hex,
     order_index:    card.order_index ?? 0,
     active:         card.active ?? true,
+    route:          card.route ?? '',
   }
 }
 
@@ -75,6 +76,15 @@ function ExploreForm({ initial, onSave, onCancel, saving }) {
             <TranslateBtn onClick={() => translate('title', 'title_en')} loading={translating === 'title_en'} />
           </div>
         </div>
+      </Field>
+
+      <Field label="Route (app path)">
+        <Input
+          placeholder="e.g. /bienvenido"
+          value={form.route}
+          onChange={(e) => update({ route: e.target.value })}
+          required
+        />
       </Field>
 
       <Field label="Description">
@@ -159,7 +169,9 @@ export default function AdminExplore() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [editTarget, setEditTarget] = useState(null)
+  const [isCreating, setIsCreating] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   async function load() {
     const { data, error: apiError } = await adminGetExploreCards()
@@ -177,17 +189,42 @@ export default function AdminExplore() {
 
   async function handleSave(form) {
     setSaving(true)
-    await adminUpdateExploreCard(editTarget.id, form)
+    if (isCreating) {
+      await adminCreateExploreCard(form)
+    } else {
+      await adminUpdateExploreCard(editTarget.id, form)
+    }
     setSaving(false)
     setEditTarget(null)
+    setIsCreating(false)
     load()
   }
 
+  async function handleDelete(card) {
+    if (!window.confirm(`Delete "${card.title}"?`)) return
+    setDeletingId(card.id)
+    await adminDeleteExploreCard(card.id)
+    setDeletingId(null)
+    load()
+  }
+
+  const EMPTY_CARD = { title: '', title_en: '', description: '', description_en: '', image_url: '', pill_label: '', pill_color: COLOR_SWATCHES[0].hex, order_index: cards.length, active: true, route: '' }
+
   return (
     <div>
-      <div className="mb-1">
-        <h1 className="text-lg font-medium text-primary">Explore the Church</h1>
-        <p className="mt-1 text-xs text-zinc-500">Drag to reorder — changes reflect immediately on the home screen</p>
+      <div className="mb-1 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-medium text-primary">Explore the Church</h1>
+          <p className="mt-1 text-xs text-zinc-500">Drag to reorder — changes reflect immediately on the home screen</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setIsCreating(true); setEditTarget(null) }}
+          className="flex items-center gap-1.5 rounded-xl bg-accent-blue px-3 py-2 text-sm font-medium text-bg"
+        >
+          <Plus size={15} />
+          New card
+        </button>
       </div>
 
       {loading ? (
@@ -226,9 +263,10 @@ export default function AdminExplore() {
                 )}
               </div>
 
-              {/* Title + pill */}
+              {/* Title + pill + route */}
               <div className="flex-1 min-w-0">
                 <p className="truncate text-sm font-semibold text-primary">{card.title}</p>
+                <p className="text-[11px] text-zinc-600 truncate">{card.route}</p>
                 {card.pill_label && (
                   <span
                     className="mt-0.5 inline-block text-[10px] font-semibold uppercase tracking-wide"
@@ -244,10 +282,21 @@ export default function AdminExplore() {
                 {card.active ? 'Active' : 'Hidden'}
               </span>
 
+              {/* Delete */}
+              <button
+                type="button"
+                onClick={() => handleDelete(card)}
+                disabled={deletingId === card.id}
+                aria-label="Delete"
+                className="shrink-0 text-zinc-600 transition-colors hover:text-red-500 disabled:opacity-40"
+              >
+                <Trash2 size={15} />
+              </button>
+
               {/* Edit */}
               <button
                 type="button"
-                onClick={() => setEditTarget(card)}
+                onClick={() => { setEditTarget(card); setIsCreating(false) }}
                 aria-label="Edit"
                 className="shrink-0 text-zinc-400 transition-colors hover:text-primary"
               >
@@ -258,12 +307,15 @@ export default function AdminExplore() {
         </div>
       )}
 
-      {editTarget && (
-        <Modal title="Edit card" onClose={() => setEditTarget(null)}>
+      {(editTarget || isCreating) && (
+        <Modal
+          title={isCreating ? 'New card' : 'Edit card'}
+          onClose={() => { setEditTarget(null); setIsCreating(false) }}
+        >
           <ExploreForm
-            initial={toFormState(editTarget)}
+            initial={isCreating ? toFormState(EMPTY_CARD) : toFormState(editTarget)}
             onSave={handleSave}
-            onCancel={() => setEditTarget(null)}
+            onCancel={() => { setEditTarget(null); setIsCreating(false) }}
             saving={saving}
           />
         </Modal>
