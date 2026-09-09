@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { PlayCircle, Headphones, Camera, FileText } from 'lucide-react'
+import { PlayCircle, Camera, FileText } from 'lucide-react'
 import BackRow from '../components/BackRow.jsx'
 import SkeletonCard, { SkeletonText } from '../components/SkeletonCard.jsx'
 import { getLatestSundaySummary } from '../lib/api.js'
-import { useAudioPlayer } from '../contexts/AudioPlayerContext.jsx'
+import WaveformPlayer from '../components/WaveformPlayer.jsx'
 
 function formatSundayDate(dateStr) {
   if (!dateStr) return null
@@ -38,7 +38,6 @@ function MediaButton({ icon, label, href }) {
 
 export default function LastSundayPage() {
   const location = useLocation()
-  const { play } = useAudioPlayer()
   const [summary, setSummary] = useState(location.state?.summary ?? null)
   const [loading, setLoading] = useState(!location.state?.summary)
 
@@ -145,25 +144,7 @@ export default function LastSundayPage() {
                 />
               )}
               {summary.audio_url && (
-                <button
-                  type="button"
-                  onClick={() => play(summary.audio_url, summary.title)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    width: '100%',
-                    background: '#1a1a1a',
-                    border: '0.5px solid #2e2e2e',
-                    borderRadius: '16px',
-                    padding: '16px 18px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <Headphones size={22} color="#34d399" />
-                  <span style={{ fontSize: '15px', fontWeight: '600', color: '#ffffff' }}>Listen</span>
-                </button>
+                <WaveformPlayer url={summary.audio_url} title={summary.title} />
               )}
               {summary.photos_url && (
                 <MediaButton
