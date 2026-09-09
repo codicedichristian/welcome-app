@@ -1314,6 +1314,14 @@ export async function adminDeleteExploreCard(id) {
   return { error }
 }
 
+export async function adminGetNextStepsRequests() {
+  const { data, error } = await supabase
+    .from('nextsteps_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+  return { data, error }
+}
+
 export async function getExploreCard(route) {
   const { data, error } = await supabase
     .from('explore_cards')
