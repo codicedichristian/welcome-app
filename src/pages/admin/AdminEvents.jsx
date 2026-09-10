@@ -69,6 +69,7 @@ const EMPTY_EVENT = {
   end_time: '',
   image_url: '',
   link: '',
+  members_only: false,
 }
 
 function toFormState(event) {
@@ -94,6 +95,7 @@ function toFormState(event) {
     end_time: event.end_time?.slice(0, 5) ?? '',
     image_url: event.image_url ?? '',
     link: event.link ?? '',
+    members_only: event.members_only ?? false,
   }
 }
 
@@ -113,6 +115,7 @@ function toPayload(form) {
     end_time:    form.end_time || null,
     image_url:   safeUrl(form.image_url),
     link:        trimField(form.link) || null,
+    members_only: form.members_only,
   }
 }
 
@@ -175,6 +178,17 @@ function EventForm({ initial, onSave, onCancel, saving }) {
             </option>
           ))}
         </Select>
+      </Field>
+
+      <Field label="Members only">
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={form.members_only}
+            onChange={e => update({ members_only: e.target.checked })}
+          />
+          <span style={{ fontSize: '14px', color: '#a78bfa' }}>Members · Miembros</span>
+        </label>
       </Field>
 
       <Field label="Color">

@@ -356,6 +356,12 @@ export default function HomePage() {
                 </p>
                 <p style={{ fontSize: '17px', fontWeight: '700', color: '#fff', letterSpacing: '-0.01em', margin: '3px 0 0' }}>{ev.name}</p>
                 <p style={{ fontSize: '12.5px', color: '#8e8e93', marginTop: '3px', marginBottom: 0 }}>{ev.time}</p>
+                {ev.members_only && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#a78bfa22', border: '1px solid #a78bfa55', borderRadius: '20px', padding: '2px 7px', marginTop: '4px' }}>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="#a78bfa"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#a78bfa', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Members · Miembros</span>
+                  </div>
+                )}
               </div>
             </button>
           ))}
@@ -413,6 +419,12 @@ export default function HomePage() {
                 <img src={imgSrc} alt="" draggable={false} onContextMenu={(e) => e.preventDefault()} loading="eager" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', backgroundColor: '#1a1a1a' }} />
                 <div style={{ position: 'absolute', inset: 0, background: SCRIM, pointerEvents: 'none' }} />
                 <div style={{ position: 'absolute', top: '12px', left: '12px', width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
+                {item.members_only && (
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#a78bfa22', border: '1px solid #a78bfa55', borderRadius: '20px', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#a78bfa"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#a78bfa', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Members · Miembros</span>
+                  </div>
+                )}
                 <div style={{ position: 'absolute', left: item.fullWidth ? '16px' : '12px', right: item.fullWidth ? '16px' : '12px', bottom: item.fullWidth ? '14px' : '12px', pointerEvents: 'none', textAlign: 'left' }}>
                   <p style={{ fontSize: item.fullWidth ? '10.5px' : '10px', fontWeight: '700', letterSpacing: '0.07em', color: '#d1d1d6', marginBottom: item.fullWidth ? '6px' : '4px' }}>
                     {formatAnnouncementDate(item.published_at)}

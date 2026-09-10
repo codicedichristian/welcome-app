@@ -124,6 +124,7 @@ export function normalizeEvent(event, occurrenceDate) {
     audience: event.audience,
     description: td(event.description),
     image_url: event.image_url ?? null,
+    members_only: event.members_only ?? false,
   }
 }
 
