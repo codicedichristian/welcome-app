@@ -1,12 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Calendar, Clock, MapPin, Users, Check, ChevronLeft, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Check, ChevronLeft, ExternalLink, Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
 import { useUser } from '../lib/UserContext.js'
 import { td } from '../utils/td.js'
+
+function EventNotice({ icon, title, message }) {
+  return (
+    <div style={{
+      margin: '16px 0',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      border: '1px solid #f97316',
+    }}>
+      <div style={{
+        background: '#f97316',
+        padding: '8px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }}>
+        {icon}
+        <span style={{ fontSize: '11px', fontWeight: '800', color: '#000', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          {title}
+        </span>
+      </div>
+      <div style={{ background: '#0d0d0d', padding: '12px 14px' }}>
+        <p style={{ margin: 0, fontSize: '13.5px', color: '#f97316', fontFamily: 'monospace', lineHeight: 1.5 }}>
+          {message}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 function MetaRow({ icon: Icon, text }) {
   return (
@@ -240,38 +269,31 @@ export default function EventDetailPage() {
 
           <p className="mt-4 text-[14px] leading-[1.7] text-zinc-500">{td(event.description)}</p>
 
+          {event.members_only && (
+            <EventNotice
+              icon={<Lock size={13} color="#000" strokeWidth={2.5} />}
+              title={i18n.language === 'en' ? 'Members only' : 'Solo para miembros'}
+              message={i18n.language === 'en'
+                ? 'This event is only open to church members.'
+                : '¡Este evento es solo para miembros de la iglesia!'}
+            />
+          )}
+
           {event.registration_required && (
-            <div style={{
-              margin: '16px 0',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              border: '1px solid #f97316',
-            }}>
-              <div style={{
-                background: '#f97316',
-                padding: '8px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}>
+            <EventNotice
+              icon={
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#000', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  {i18n.language === 'en' ? 'Registration required' : 'Iscrizione richiesta'}
-                </span>
-              </div>
-              <div style={{ background: '#0d0d0d', padding: '12px 14px' }}>
-                <p style={{ margin: 0, fontSize: '13.5px', color: '#f97316', fontFamily: 'monospace', lineHeight: 1.5 }}>
-                  {i18n.language === 'en'
-                    ? 'Registration is required to attend this event!'
-                    : 'Per questo evento è necessario iscriversi!'}
-                </p>
-              </div>
-            </div>
+              }
+              title={i18n.language === 'en' ? 'Registration required' : 'Inscripción requerida'}
+              message={i18n.language === 'en'
+                ? 'Registration is required to attend this event!'
+                : '¡Es necesario inscribirse para asistir a este evento!'}
+            />
           )}
 
           {event.link && (
