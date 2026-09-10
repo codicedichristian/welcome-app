@@ -258,3 +258,7 @@ textarea {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+@keyframes ptr-spin {
+  to { transform: rotate(360deg); }
+}

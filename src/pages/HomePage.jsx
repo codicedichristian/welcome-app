@@ -138,7 +138,7 @@ export default function HomePage() {
     setEvents(ev); setNews(nw); setExploreCards(ex)
   }, [])
 
-  const { pulling, pullDistance, refreshing } = usePullToRefresh(loadData)
+  const { pullDistance, refreshing } = usePullToRefresh(loadData)
 
   useEffect(() => {
     let cancelled = false
@@ -196,35 +196,41 @@ export default function HomePage() {
         <span style={{ fontSize: '13px', color: '#6e6e73' }}>{t('home.loading')}</span>
       </div>
     )}
+    {(pullDistance > 0 || refreshing) && (
+      <div style={{
+        position: 'fixed',
+        top: `calc(${pullDistance}px - 36px)`,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 100,
+        pointerEvents: 'none',
+        transition: refreshing ? 'top 0.3s ease' : 'none',
+      }}>
+        <div style={{
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          border: '2.5px solid #34d399',
+          borderTopColor: 'transparent',
+          animation: refreshing ? 'ptr-spin 0.7s linear infinite' : 'none',
+          transform: refreshing ? 'none' : `rotate(${pullDistance * 3}deg)`,
+        }} />
+      </div>
+    )}
     <div
       className="page-transition"
-      style={{ fontFamily: FONT, background: '#0a0a0a', minHeight: '100dvh', paddingBottom: '40px' }}
+      style={{
+        fontFamily: FONT,
+        background: '#0a0a0a',
+        minHeight: '100dvh',
+        paddingBottom: '40px',
+        transform: `translateY(${pullDistance}px)`,
+        transition: refreshing ? 'transform 0.3s ease' : pullDistance > 0 ? 'none' : 'transform 0.3s ease',
+      }}
     >
-      {(pulling || refreshing) && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          justifyContent: 'center',
-          paddingTop: `${Math.min(pullDistance * 0.5, 40)}px`,
-          zIndex: 100,
-          pointerEvents: 'none',
-          transition: refreshing ? 'none' : 'padding 0.1s',
-        }}>
-          <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '50%',
-            border: '2.5px solid #34d399',
-            borderTopColor: 'transparent',
-            animation: refreshing ? 'spin 0.7s linear infinite' : 'none',
-            transform: refreshing ? 'none' : `rotate(${pullDistance * 2}deg)`,
-            transition: refreshing ? 'none' : 'transform 0.05s',
-          }} />
-        </div>
-      )}
       {/* ── 1. GREETING HEADER ── */}
       <div
         style={{
