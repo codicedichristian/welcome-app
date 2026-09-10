@@ -31,7 +31,6 @@ const EMPTY_NEWS = {
   published_at: new Date().toISOString().slice(0, 10),
   image_url: '',
   link_url: '',
-  members_only: false,
 }
 
 function toFormState(item) {
@@ -47,7 +46,6 @@ function toFormState(item) {
     published_at: item.published_at ?? new Date().toISOString().slice(0, 10),
     image_url: item.image_url ?? '',
     link_url: item.link_url ?? '',
-    members_only: item.members_only ?? false,
   }
 }
 
@@ -150,17 +148,6 @@ function NewsForm({ initial, onSave, onCancel, saving }) {
           <Input type="date" value={form.published_at} onChange={(e) => update({ published_at: e.target.value })} />
         </Field>
       </div>
-
-      <Field label="Members only">
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={form.members_only}
-            onChange={e => update({ members_only: e.target.checked })}
-          />
-          <span style={{ fontSize: '14px', color: '#a78bfa' }}>Members · Miembros</span>
-        </label>
-      </Field>
 
       <Field label="Color">
         <div className="flex gap-2">
