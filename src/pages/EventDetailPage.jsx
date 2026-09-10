@@ -243,40 +243,32 @@ export default function EventDetailPage() {
           {event.registration_required && (
             <div style={{
               margin: '16px 0',
-              padding: '14px 16px',
-              borderRadius: '14px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: '1px solid #f97316',
             }}>
               <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'rgba(249,115,22,0.15)',
-                border: '1px solid rgba(249,115,22,0.3)',
+                background: '#f97316',
+                padding: '8px 14px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
+                gap: '8px',
               }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#000', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  {i18n.language === 'en' ? 'Registration required' : 'Iscrizione richiesta'}
+                </span>
               </div>
-              <div>
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: '#ffffff' }}>
-                  {i18n.language === 'en' ? 'Registration required' : 'Inscripción requerida'}
-                </p>
-                <p style={{ margin: '3px 0 0', fontSize: '12.5px', color: '#8e8e93', lineHeight: 1.4 }}>
+              <div style={{ background: '#0d0d0d', padding: '12px 14px' }}>
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#f97316', fontFamily: 'monospace', lineHeight: 1.5 }}>
                   {i18n.language === 'en'
-                    ? 'You need to sign up to attend this event.'
-                    : 'Es necesario inscribirse para asistir a este evento.'}
+                    ? 'Registration is required to attend this event!'
+                    : 'Per questo evento è necessario iscriversi!'}
                 </p>
               </div>
             </div>
