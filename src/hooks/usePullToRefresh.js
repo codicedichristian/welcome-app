@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-export function usePullToRefresh(onRefresh, { threshold = 72 } = {}) {
+export function usePullToRefresh(onRefresh, { threshold = 120 } = {}) {
   const [pullDistance, setPullDistance] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
   const startY = useRef(null)
@@ -30,7 +30,7 @@ export function usePullToRefresh(onRefresh, { threshold = 72 } = {}) {
       if (!isDragging.current || startY.current === null) return
       const dist = e.touches[0].clientY - startY.current
       if (dist > 0 && document.documentElement.scrollTop === 0) {
-        e.preventDefault()
+        if (dist > 30) e.preventDefault()
         // Apply resistance so it feels elastic
         const resistance = 0.45
         setPullDistance(Math.min(dist * resistance, threshold * 1.5))
