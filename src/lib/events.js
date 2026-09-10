@@ -126,6 +126,8 @@ export function normalizeEvent(event, occurrenceDate) {
     image_url: event.image_url ?? null,
     members_only: event.members_only ?? false,
     registration_required: event.registration_required ?? false,
+    cta_type: event.cta_type ?? 'rsvp',
+    cta_url: event.cta_url ?? null,
   }
 }
 

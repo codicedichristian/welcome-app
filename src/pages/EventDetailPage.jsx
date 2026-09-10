@@ -133,7 +133,7 @@ export default function EventDetailPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const user = useUser()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const fallbackEvent = getEventById(eventId)
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
@@ -270,16 +270,44 @@ export default function EventDetailPage() {
                 <span>Quiero asistir</span>
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
-                className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
-                  going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
-                }`}
-              >
-                {going && <Check size={18} />}
-                <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
-              </button>
+              <>
+                {(!event.cta_type || event.cta_type === 'rsvp') && (
+                  <button
+                    type="button"
+                    onClick={going ? () => setShowCancelSheet(true) : handleRsvp}
+                    className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                      going ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+                    }`}
+                  >
+                    {going && <Check size={18} />}
+                    <span>{going ? t('event_detail.youre_in') : t('event_detail.ill_be_there')}</span>
+                  </button>
+                )}
+
+                {event.cta_type === 'link' && event.cta_url && (
+                  <a
+                    href={event.cta_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '16px',
+                      borderRadius: '14px',
+                      background: '#f97316',
+                      color: '#fff',
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      textAlign: 'center',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    {i18n.language === 'en' ? 'Sign up' : 'Inscríbete'}
+                  </a>
+                )}
+
+                {event.cta_type === 'none' && null}
+              </>
             )}
           </div>
         </div>

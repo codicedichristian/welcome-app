@@ -71,6 +71,8 @@ const EMPTY_EVENT = {
   link: '',
   members_only: false,
   registration_required: false,
+  cta_type: 'rsvp',
+  cta_url: '',
 }
 
 function toFormState(event) {
@@ -98,6 +100,8 @@ function toFormState(event) {
     link: event.link ?? '',
     members_only: event.members_only ?? false,
     registration_required: event.registration_required ?? false,
+    cta_type: event.cta_type ?? 'rsvp',
+    cta_url: event.cta_url ?? '',
   }
 }
 
@@ -119,6 +123,8 @@ function toPayload(form) {
     link:        trimField(form.link) || null,
     members_only: form.members_only,
     registration_required: form.registration_required,
+    cta_type: form.cta_type,
+    cta_url: form.cta_url || null,
   }
 }
 
@@ -204,6 +210,25 @@ function EventForm({ initial, onSave, onCancel, saving }) {
           <span style={{ fontSize: '14px', color: '#38bdf8' }}>Solo su iscrición · Registration required</span>
         </label>
       </Field>
+
+      <Field label="Bottone CTA">
+        <Select value={form.cta_type} onChange={e => update({ cta_type: e.target.value })}>
+          <option value="rsvp">RSVP (Quiero inscribirme)</option>
+          <option value="link">Link esterno</option>
+          <option value="none">Nascosto</option>
+        </Select>
+      </Field>
+
+      {form.cta_type === 'link' && (
+        <Field label="URL del link">
+          <Input
+            type="url"
+            placeholder="https://..."
+            value={form.cta_url}
+            onChange={e => update({ cta_url: e.target.value })}
+          />
+        </Field>
+      )}
 
       <Field label="Color">
         <div className="flex gap-2">
