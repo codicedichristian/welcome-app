@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { CalendarDays, Play, MapPin, Heart, Plus } from 'lucide-react'
 import { IconCalendarHeart, IconPray } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { td } from '../utils/td.js'
 import { useScrollMemory } from '../hooks/useScrollMemory.js'
+import { usePullToRefresh } from '../hooks/usePullToRefresh.js'
 import SwipeCarousel from '../components/SwipeCarousel.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 import { getEvents, getNews, getExploreCards } from '../lib/api.js'
@@ -126,42 +127,34 @@ export default function HomePage() {
   const qaLabel = { fontSize: '13px', fontWeight: '500', color: '#fff', margin: 0 }
   const qaSub = { fontSize: '10px', color: '#555', marginTop: '2px', marginBottom: 0 }
 
+  const loadData = useCallback(async () => {
+    const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
+    const ev = evRes.data?.length ? evRes.data : fallbackEvents
+    const nw = nwRes.data?.length ? nwRes.data : fallbackNews
+    const ex = exRes.data?.length
+      ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, title_en: c.title_en, to: c.route }))
+      : FALLBACK_EXPLORE
+    cachedEvents = ev; cachedNews = nw; cachedExploreCards = ex
+    setEvents(ev); setNews(nw); setExploreCards(ex)
+  }, [])
+
+  const { pulling, pullDistance, refreshing } = usePullToRefresh(loadData)
+
   useEffect(() => {
     let cancelled = false
+    const hadCache = cachedEvents && cachedNews && cachedExploreCards
 
-    const processResults = (evRes, nwRes, exRes) => {
-      const ev = evRes.data?.length ? evRes.data : fallbackEvents
-      const nw = nwRes.data?.length ? nwRes.data : fallbackNews
-      const ex = exRes.data?.length
-        ? exRes.data.map((c) => ({ image: c.image_url, category: c.pill_label, pill_color: c.pill_color, title: c.title, title_en: c.title_en, to: c.route }))
-        : FALLBACK_EXPLORE
-      return [ev, nw, ex]
-    }
-
-    async function load() {
-      if (cachedEvents && cachedNews && cachedExploreCards) {
-        // Cache hit — content already rendered from state init, refresh silently in background
-        const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
-        if (cancelled) return
-        const [ev, nw, ex] = processResults(evRes, nwRes, exRes)
-        cachedEvents = ev; cachedNews = nw; cachedExploreCards = ex
-        setEvents(ev); setNews(nw); setExploreCards(ex)
-        return
-      }
-
-      // No cache — show skeleton until data arrives
-      const [evRes, nwRes, exRes] = await Promise.all([getEvents(), getNews(), getExploreCards()])
-      if (cancelled) return
-      const [ev, nw, ex] = processResults(evRes, nwRes, exRes)
-      cachedEvents = ev; cachedNews = nw; cachedExploreCards = ex
-      setEvents(ev); setNews(nw); setExploreCards(ex)
+    async function run() {
+      await loadData()
+      if (cancelled || hadCache) return
+      // No cache — skeleton was showing until data arrived
       setFadeOut(true)
       setTimeout(() => { if (!cancelled) setIsLoading(false) }, 300)
     }
+    run()
 
-    load()
     return () => { cancelled = true }
-  }, [])
+  }, [loadData])
 
   useEffect(() => {
     if (isLoading) return
@@ -207,6 +200,31 @@ export default function HomePage() {
       className="page-transition"
       style={{ fontFamily: FONT, background: '#0a0a0a', minHeight: '100dvh', paddingBottom: '40px' }}
     >
+      {(pulling || refreshing) && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: `${Math.min(pullDistance * 0.5, 40)}px`,
+          zIndex: 100,
+          pointerEvents: 'none',
+          transition: refreshing ? 'none' : 'padding 0.1s',
+        }}>
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            border: '2.5px solid #34d399',
+            borderTopColor: 'transparent',
+            animation: refreshing ? 'spin 0.7s linear infinite' : 'none',
+            transform: refreshing ? 'none' : `rotate(${pullDistance * 2}deg)`,
+            transition: refreshing ? 'none' : 'transform 0.05s',
+          }} />
+        </div>
+      )}
       {/* ── 1. GREETING HEADER ── */}
       <div
         style={{
