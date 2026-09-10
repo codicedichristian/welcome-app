@@ -70,6 +70,7 @@ const EMPTY_EVENT = {
   image_url: '',
   link: '',
   members_only: false,
+  registration_required: false,
 }
 
 function toFormState(event) {
@@ -96,6 +97,7 @@ function toFormState(event) {
     image_url: event.image_url ?? '',
     link: event.link ?? '',
     members_only: event.members_only ?? false,
+    registration_required: event.registration_required ?? false,
   }
 }
 
@@ -116,6 +118,7 @@ function toPayload(form) {
     image_url:   safeUrl(form.image_url),
     link:        trimField(form.link) || null,
     members_only: form.members_only,
+    registration_required: form.registration_required,
   }
 }
 
@@ -188,6 +191,17 @@ function EventForm({ initial, onSave, onCancel, saving }) {
             onChange={e => update({ members_only: e.target.checked })}
           />
           <span style={{ fontSize: '14px', color: '#a78bfa' }}>Members · Miembros</span>
+        </label>
+      </Field>
+
+      <Field label="Registration required">
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={form.registration_required}
+            onChange={e => update({ registration_required: e.target.checked })}
+          />
+          <span style={{ fontSize: '14px', color: '#38bdf8' }}>Solo su iscrición · Registration required</span>
         </label>
       </Field>
 
