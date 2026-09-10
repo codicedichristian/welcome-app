@@ -222,7 +222,7 @@ function EventForm({ initial, onSave, onCancel, saving }) {
       {form.cta_type === 'link' && (
         <Field label="URL del link">
           <Input
-            type="url"
+            type="text"
             placeholder="https://..."
             value={form.cta_url}
             onChange={e => update({ cta_url: e.target.value })}
