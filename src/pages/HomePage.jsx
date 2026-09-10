@@ -342,8 +342,8 @@ export default function HomePage() {
               style={{
                 flexShrink: 0,
                 width: '176px',
-                background: ev.members_only ? '#f97316' : '#161618',
-                border: `1px solid ${ev.members_only ? '#f97316' : '#222226'}`,
+                background: (ev.members_only || ev.registration_required) ? '#f97316' : '#161618',
+                border: `1px solid ${(ev.members_only || ev.registration_required) ? '#f97316' : '#222226'}`,
                 borderRadius: '22px',
                 padding: '8px 8px 12px',
                 cursor: 'pointer',
@@ -360,11 +360,11 @@ export default function HomePage() {
                 />
               </div>
               <div style={{ padding: '9px 6px 0' }}>
-                <p style={{ fontSize: '11px', fontWeight: '600', color: ev.members_only ? 'rgba(255,255,255,0.75)' : ACCENT, letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
+                <p style={{ fontSize: '11px', fontWeight: '600', color: (ev.members_only || ev.registration_required) ? 'rgba(255,255,255,0.75)' : ACCENT, letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
                   {ev.dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </p>
                 <p style={{ fontSize: '17px', fontWeight: '700', color: '#fff', letterSpacing: '-0.01em', margin: '3px 0 0' }}>{ev.name}</p>
-                <p style={{ fontSize: '12.5px', color: ev.members_only ? 'rgba(255,255,255,0.7)' : '#8e8e93', marginTop: '3px', marginBottom: 0 }}>{ev.time}</p>
+                <p style={{ fontSize: '12.5px', color: (ev.members_only || ev.registration_required) ? 'rgba(255,255,255,0.7)' : '#8e8e93', marginTop: '3px', marginBottom: 0 }}>{ev.time}</p>
                 {ev.members_only && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 8px', marginTop: '5px' }}>
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
