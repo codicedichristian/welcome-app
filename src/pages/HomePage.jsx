@@ -191,7 +191,7 @@ export default function HomePage() {
         pointerEvents: fadeOut ? 'none' : 'auto',
       }}>
         <Plus size={48} strokeWidth={1.5} color="#ffffff" />
-        <span style={{ fontSize: '28px', fontWeight: '800', color: '#fff', letterSpacing: '-0.02em' }}>Welcome</span>
+        <span style={{ fontSize: '28px', fontWeight: '800', color: '#fff', letterSpacing: '-0.02em' }}>Welcome Vive Madrid</span>
         <span style={{ fontSize: '13px', color: '#6e6e73' }}>{t('home.loading')}</span>
       </div>
     )}
