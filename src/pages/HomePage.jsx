@@ -113,7 +113,6 @@ export default function HomePage() {
   const [events, setEvents] = useState(cachedEvents || [])
   const [news, setNews] = useState(cachedNews || [])
   const [exploreCards, setExploreCards] = useState(cachedExploreCards || [])
-  const [showDonateModal, setShowDonateModal] = useState(false)
   const [isLoading, setIsLoading] = useState(!cachedEvents || !cachedNews || !cachedExploreCards)
   const [fadeOut, setFadeOut] = useState(false)
   const eventsScrollRef = useRef(null)
@@ -469,7 +468,7 @@ export default function HomePage() {
             <IconPray size={24} color="#a78bfa" />
             <div><p style={qaLabel}>{t('home.prayer_requests')}</p><p style={qaSub}>{t('home.prayer_requests_sub')}</p></div>
           </button>
-          <button type="button" onClick={() => setShowDonateModal(true)} style={qaCard}>
+          <button type="button" onClick={() => window.open('https://donorbox.org/madrid', '_blank', 'noopener')} style={qaCard}>
             <Heart size={24} color="#4caf7d" strokeWidth={1.75} />
             <div><p style={qaLabel}>{t('home.donate')}</p><p style={qaSub}>{t('home.donate_sub')}</p></div>
           </button>
