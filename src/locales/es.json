@@ -84,7 +84,9 @@
     "see_map": "Ver todas las ubicaciones en el mapa",
     "youre_in": "¡Ya estás inscrito!",
     "ill_be_there": "Quiero inscribirme",
-    "not_found": "Evento no encontrado."
+    "not_found": "Evento no encontrado.",
+    "want_contact": "Quiero ser contactado",
+    "contact_sent": "¡Gracias! Te contactaremos pronto con más información."
   },
   "news": {
     "back": "Inicio",

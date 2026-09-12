@@ -215,6 +215,7 @@ function EventForm({ initial, onSave, onCancel, saving }) {
         <Select value={form.cta_type} onChange={e => update({ cta_type: e.target.value })}>
           <option value="rsvp">RSVP (Quiero inscribirme)</option>
           <option value="link">Link esterno</option>
+          <option value="contact">Voglio essere contattato</option>
           <option value="none">Nascosto</option>
         </Select>
       </Field>

@@ -170,6 +170,7 @@ export default function EventDetailPage() {
 
   const [going, setGoing] = useState(false)
   const [showCancelSheet, setShowCancelSheet] = useState(false)
+  const [contactSent, setContactSent] = useState(false)
 
   useEffect(() => {
     if (!user?.id || !event?.id) return
@@ -363,6 +364,22 @@ export default function EventDetailPage() {
                 )}
 
                 {event.cta_type === 'none' && null}
+
+                {event.cta_type === 'contact' && (
+                  contactSent ? (
+                    <div className="w-full rounded-xl bg-surface border border-border px-4 py-4 text-center">
+                      <p className="text-sm text-accent-green font-medium">{t('event_detail.contact_sent')}</p>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setContactSent(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors bg-primary text-bg"
+                    >
+                      <span>{t('event_detail.want_contact')}</span>
+                    </button>
+                  )
+                )}
               </>
             )}
           </div>

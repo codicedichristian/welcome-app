@@ -84,7 +84,9 @@
     "see_map": "See all locations on the map",
     "youre_in": "You're in!",
     "ill_be_there": "I want to sign up",
-    "not_found": "Event not found."
+    "not_found": "Event not found.",
+    "want_contact": "I want to be contacted",
+    "contact_sent": "Thanks! We'll reach out soon with more information."
   },
   "news": {
     "back": "Home",
