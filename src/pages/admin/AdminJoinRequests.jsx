@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase.js'
 import Spinner from '../../components/Spinner.jsx'
 import ErrorState from '../../components/ErrorState.jsx'
+import { exportToCSV } from '../../lib/exportCsv.js'
 
 export default function AdminJoinRequests() {
   const [requests, setRequests] = useState([])
@@ -28,7 +29,16 @@ export default function AdminJoinRequests() {
 
   return (
     <div>
-      <h1 className="text-lg font-medium text-primary">Join Requests</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-medium text-primary">Join Requests</h1>
+        <button
+          type="button"
+          onClick={() => exportToCSV(requests, 'join-team-requests.csv')}
+          className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-medium text-bg"
+        >
+          Export CSV
+        </button>
+      </div>
       <p className="mt-1 text-xs text-zinc-500">{requests.length} total requests</p>
 
       <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-surface">

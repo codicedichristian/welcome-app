@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase.js'
+import { exportToCSV } from '../../lib/exportCsv.js'
 
 export default function AdminMidweekContacts() {
   const [rows, setRows] = useState([])
@@ -18,7 +19,16 @@ export default function AdminMidweekContacts() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginBottom: '16px' }}>Midweek clicks</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>Midweek clicks</h2>
+        <button
+          type="button"
+          onClick={() => exportToCSV(rows, 'midweek-clicks.csv')}
+          style={{ background: '#f97316', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+        >
+          Export CSV
+        </button>
+      </div>
       {loading ? (
         <p style={{ color: '#888' }}>Cargando...</p>
       ) : rows.length === 0 ? (

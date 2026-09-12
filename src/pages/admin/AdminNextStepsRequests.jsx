@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { adminGetNextStepsRequests } from '../../lib/api.js'
 import Spinner from '../../components/Spinner.jsx'
+import { exportToCSV } from '../../lib/exportCsv.js'
 
 function fmt(ts) {
   if (!ts) return ''
@@ -22,7 +23,16 @@ export default function AdminNextStepsRequests() {
 
   return (
     <div>
-      <h1 className="text-lg font-medium text-primary mb-4">Next Steps Requests</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-lg font-medium text-primary">Next Steps Requests</h1>
+        <button
+          type="button"
+          onClick={() => exportToCSV(rows, 'next-steps-requests.csv')}
+          className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-medium text-bg"
+        >
+          Export CSV
+        </button>
+      </div>
       {rows.length === 0 ? (
         <p className="text-sm text-zinc-500">No requests yet.</p>
       ) : (
