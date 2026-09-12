@@ -135,7 +135,7 @@ function SplashScreen({ onStart, onLogin }) {
           gap: 12,
         }}
       >
-        <img src="/logo.svg" alt="logo" style={{ width: 64, height: 64 }} />
+        <img src="/favicon-dark.png" alt="logo" style={{ width: 64, height: 64 }} />
 
         <h1
           style={{
