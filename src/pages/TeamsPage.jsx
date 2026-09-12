@@ -27,15 +27,21 @@ function JoinSheet({ onClose, areas }) {
     }
     setSaving(true)
     setError('')
+    const fullName = `${form.name.trim()} ${form.surname.trim()}`
+    const email = form.email.trim()
+    const phone = form.phone.trim()
+    const rows = selectedAreas.length > 0
+      ? selectedAreas.map((area) => ({
+          full_name: fullName,
+          email,
+          phone,
+          area_id: area.id,
+          area_name: area.name,
+        }))
+      : [{ full_name: fullName, email, phone, area_id: null, area_name: null }]
     const { error: dbError } = await supabase
       .from('team_join_requests')
-      .insert([{
-        full_name: `${form.name.trim()} ${form.surname.trim()}`,
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        area_ids: selectedAreas.map((a) => a.id),
-        area_names: selectedAreas.map((a) => a.name).join(', ') || null,
-      }])
+      .insert(rows)
     setSaving(false)
     if (dbError) {
       setError(t('teams.error_generic'))

@@ -48,8 +48,8 @@ export default function AdminJoinRequests() {
                 {req.phone && (
                   <p className="mt-0.5 text-xs text-zinc-500">{req.phone}</p>
                 )}
-                {req.area_names && (
-                  <p className="mt-1.5 text-xs text-accent-blue">{req.area_names}</p>
+                {req.area_name && (
+                  <p className="mt-1.5 text-xs text-accent-blue">{req.area_name}</p>
                 )}
               </div>
               <p className="shrink-0 text-xs text-zinc-500">
