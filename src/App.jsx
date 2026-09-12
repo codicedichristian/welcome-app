@@ -48,6 +48,7 @@ import AdminExplore from './pages/admin/AdminExplore.jsx'
 import AdminTeams from './pages/admin/AdminTeams.jsx'
 import AdminJoinRequests from './pages/admin/AdminJoinRequests.jsx'
 import AdminNextStepsRequests from './pages/admin/AdminNextStepsRequests.jsx'
+import AdminEventContactRequests from './pages/admin/AdminEventContactRequests.jsx'
 import AdminAttendancePage from './pages/admin/AdminAttendancePage.jsx'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
 import PrayerRequestsPage from './pages/PrayerRequestsPage.jsx'
@@ -261,6 +262,7 @@ export default function App() {
               }
             />
             <Route path="admin/nextsteps-requests" element={<AdminNextStepsRequests />} />
+            <Route path="admin/event-contact-requests" element={<AdminEventContactRequests />} />
             <Route path="admin/attendance" element={<AdminAttendancePage />} />
           </Route>
         </Route>

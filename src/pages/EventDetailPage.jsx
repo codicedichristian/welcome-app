@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { getEventById } from '../data/events.js'
 import { normalizeEvent } from '../lib/events.js'
 import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
+import { supabase } from '../lib/supabase.js'
 import { useUser } from '../lib/UserContext.js'
 import { td } from '../utils/td.js'
 
@@ -157,6 +158,84 @@ function CancelSheet({ eventName, onConfirm, onClose }) {
   )
 }
 
+function ContactSheet({ event, onClose }) {
+  const { i18n } = useTranslation()
+  const [form, setForm] = useState({ first_name: '', last_name: '', phone: '' })
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!form.first_name || !form.last_name || !form.phone) return
+    setSending(true)
+    await supabase.from('event_contact_requests').insert({
+      event_id: event.id,
+      event_name: typeof event.name === 'object' ? (event.name.es || event.name.en) : event.name,
+      first_name: form.first_name,
+      last_name: form.last_name,
+      phone: form.phone,
+    })
+    setSending(false)
+    setSent(true)
+  }
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 14px',
+    borderRadius: '10px',
+    background: '#111',
+    border: '1px solid #2e2e2e',
+    color: '#ffffff',
+    fontSize: '15px',
+    boxSizing: 'border-box',
+  }
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200 }} />
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#1a1a1a', borderRadius: '20px 20px 0 0',
+        zIndex: 201, padding: '20px',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '16px' }}>
+          <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: '#333' }} />
+        </div>
+        {sent ? (
+          <p style={{ fontSize: '15px', color: '#4caf7d', textAlign: 'center', padding: '24px 0' }}>
+            {i18n.language === 'en' ? '✓ Thanks! We\'ll contact you soon.' : '✓ ¡Gracias! Te contactaremos pronto.'}
+          </p>
+        ) : (
+          <>
+            <p style={{ fontSize: '16px', fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: '20px' }}>
+              {i18n.language === 'en' ? 'I want to be contacted' : 'Quiero ser contactado'}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input style={inputStyle} placeholder={i18n.language === 'en' ? 'First name' : 'Nombre'}
+                value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} />
+              <input style={inputStyle} placeholder={i18n.language === 'en' ? 'Last name' : 'Apellido'}
+                value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} />
+              <input style={inputStyle} placeholder={i18n.language === 'en' ? 'Phone number' : 'Número de teléfono'}
+                type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              <button type="button" onClick={handleSubmit} disabled={sending}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '12px',
+                  background: '#ffffff', color: '#000000',
+                  fontSize: '15px', fontWeight: '600', border: 'none', cursor: 'pointer',
+                  marginTop: '4px', opacity: sending ? 0.6 : 1,
+                }}>
+                {sending
+                  ? (i18n.language === 'en' ? 'Sending...' : 'Enviando...')
+                  : (i18n.language === 'en' ? 'Send' : 'Enviar')}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  )
+}
+
 export default function EventDetailPage() {
   const { eventId } = useParams()
   const location = useLocation()
@@ -170,7 +249,7 @@ export default function EventDetailPage() {
 
   const [going, setGoing] = useState(false)
   const [showCancelSheet, setShowCancelSheet] = useState(false)
-  const [contactSent, setContactSent] = useState(false)
+  const [showContactSheet, setShowContactSheet] = useState(false)
 
   useEffect(() => {
     if (!user?.id || !event?.id) return
@@ -366,19 +445,13 @@ export default function EventDetailPage() {
                 {event.cta_type === 'none' && null}
 
                 {event.cta_type === 'contact' && (
-                  contactSent ? (
-                    <div className="w-full rounded-xl bg-surface border border-border px-4 py-4 text-center">
-                      <p className="text-sm text-accent-green font-medium">{t('event_detail.contact_sent')}</p>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setContactSent(true)}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors bg-primary text-bg"
-                    >
-                      <span>{t('event_detail.want_contact')}</span>
-                    </button>
-                  )
+                  <button
+                    type="button"
+                    onClick={() => setShowContactSheet(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors bg-primary text-bg"
+                  >
+                    <span>{i18n.language === 'en' ? 'I want to be contacted' : 'Quiero ser contactado'}</span>
+                  </button>
                 )}
               </>
             )}
@@ -392,6 +465,10 @@ export default function EventDetailPage() {
           onConfirm={handleCancelConfirm}
           onClose={() => setShowCancelSheet(false)}
         />
+      )}
+
+      {showContactSheet && (
+        <ContactSheet event={event} onClose={() => setShowContactSheet(false)} />
       )}
     </>
   )

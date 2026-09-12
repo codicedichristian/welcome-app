@@ -16,6 +16,7 @@ import {
   Inbox,
   Heart,
   Star,
+  Phone,
 } from 'lucide-react'
 
 const NAV = [
@@ -30,6 +31,7 @@ const NAV = [
   { label: 'Bienvenido Req.', to: '/admin/connect-requests', icon: Heart },
   { label: 'Midweek clicks', to: '/admin/midweek-contacts', icon: MessageSquare },
   { label: 'Next Steps Req.', to: '/admin/nextsteps-requests', icon: Star },
+  { label: 'Event Contact Req.', to: '/admin/event-contact-requests', icon: Phone },
   { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
   { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },
   { label: 'Seasons',    to: '/admin/seasons',    icon: Layers },
