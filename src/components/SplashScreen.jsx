@@ -1,4 +1,3 @@
-import { Cross } from 'lucide-react'
 import config from '../config.js'
 
 const buildTime = new Date(__BUILD_TIME__)
@@ -18,7 +17,7 @@ export default function SplashScreen({ visible }) {
         visible ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
     >
-      <Cross size={48} className="text-primary" />
+      <img src="/logo.svg" alt="logo" style={{ width: 64, height: 64 }} />
       <p className="text-[20px] text-primary">{config.churchName}</p>
       <p style={{ fontSize: '11px' }} className="text-zinc-600">{buildLabel}</p>
     </div>
