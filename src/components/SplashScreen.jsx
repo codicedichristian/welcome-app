@@ -17,7 +17,11 @@ export default function SplashScreen({ visible }) {
         visible ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
     >
-      <p className="text-[20px] text-primary">{config.churchName}</p>
+      <img src="/favicon-dark.png" alt="logo" style={{ width: 64, height: 64, borderRadius: 14 }} />
+      <div className="flex flex-col items-center gap-0.5">
+        <p className="text-[20px] font-semibold text-primary">{config.churchName}</p>
+        <p className="text-[13px] text-zinc-500">Vive Madrid</p>
+      </div>
       <p style={{ fontSize: '11px' }} className="text-zinc-600">{buildLabel}</p>
     </div>
   )
