@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Cross, Check } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { registerVisitor } from '../lib/api.js'
 import { toStoredUser } from '../lib/user.js'
@@ -135,7 +135,7 @@ function SplashScreen({ onStart, onLogin }) {
           gap: 12,
         }}
       >
-        <Cross size={48} color="#ffffff" strokeWidth={2} />
+        <img src="/logo.svg" alt="logo" style={{ width: 64, height: 64 }} />
 
         <h1
           style={{
