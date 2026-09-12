@@ -33,7 +33,15 @@ export default function AdminJoinRequests() {
         <h1 className="text-lg font-medium text-primary">Join Requests</h1>
         <button
           type="button"
-          onClick={() => exportToCSV(requests, 'join-team-requests.csv')}
+          onClick={() => exportToCSV(
+            requests.map(r => ({
+              'Nome':     r.full_name ?? '',
+              'Telefono': r.phone ?? '',
+              'Email':    r.email ?? '',
+              'Area':     r.area_name ?? '',
+            })),
+            'join-requests.csv'
+          )}
           className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-medium text-bg"
         >
           Export CSV

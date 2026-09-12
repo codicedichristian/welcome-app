@@ -23,7 +23,14 @@ export default function AdminConnectRequests() {
         <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>Conexiones</h2>
         <button
           type="button"
-          onClick={() => exportToCSV(rows, 'bienvenido-requests.csv')}
+          onClick={() => exportToCSV(
+            rows.map(r => ({
+              'Nome':     r.full_name ?? '',
+              'Telefono': r.phone ?? '',
+              'Email':    r.email ?? '',
+            })),
+            'bienvenido-requests.csv'
+          )}
           style={{ background: '#f97316', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
         >
           Export CSV

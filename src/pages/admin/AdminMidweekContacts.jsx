@@ -23,7 +23,15 @@ export default function AdminMidweekContacts() {
         <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: 0 }}>Midweek clicks</h2>
         <button
           type="button"
-          onClick={() => exportToCSV(rows, 'midweek-clicks.csv')}
+          onClick={() => exportToCSV(
+            rows.map(r => ({
+              'Nome':    [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Anonimo',
+              'Telefono': r.phone ?? '',
+              'Email':   r.email ?? '',
+              'Gruppo':  r.group_host ?? '',
+            })),
+            'midweek-clicks.csv'
+          )}
           style={{ background: '#f97316', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
         >
           Export CSV

@@ -27,7 +27,14 @@ export default function AdminNextStepsRequests() {
         <h1 className="text-lg font-medium text-primary">Next Steps Requests</h1>
         <button
           type="button"
-          onClick={() => exportToCSV(rows, 'next-steps-requests.csv')}
+          onClick={() => exportToCSV(
+            rows.map(r => ({
+              'Nome':     r.full_name ?? '',
+              'Telefono': r.phone ?? '',
+              'Email':    r.email ?? '',
+            })),
+            'next-steps-requests.csv'
+          )}
           className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-medium text-bg"
         >
           Export CSV
