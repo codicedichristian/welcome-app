@@ -28,51 +28,61 @@ export default function PrivacyPolicyPage() {
         <h1 style={{ fontSize: '28px', fontWeight: '800', letterSpacing: '-0.02em', margin: 0 }}>
           Privacy Policy
         </h1>
-        <p style={{ fontSize: '13px', color: '#6e6e73', marginTop: '6px' }}>v1.0 · August 2026</p>
+        <p style={{ fontSize: '13px', color: '#6e6e73', marginTop: '6px' }}>v1.1 · September 2026</p>
 
-        <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '15px', lineHeight: 1.7, color: '#c9c9c6' }}>
+        <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '15px', lineHeight: 1.7, color: '#c9c9c6' }}>
+
           <p>
-            Welcome Church (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your personal data and respecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your information when you use the Welcome Church app.
+            The Welcome app is a private project managed by an individual on behalf of Vive Church Madrid. We take your privacy seriously and want to be transparent about how we handle your data.
           </p>
 
-          <section>
-            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>1. Data We Collect</h2>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>1. What We Collect</h2>
+            <p>Depending on how you use the app, we may collect:</p>
+            <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <li>Name, email address, and phone number (registration and contact forms)</li>
+              <li>Age range and interests (registration)</li>
+              <li>Event attendance (RSVPs)</li>
+              <li>Service team preferences (join requests)</li>
+              <li>Midweek group interest</li>
+              <li>Next Steps and Bienvenido form submissions</li>
+            </ul>
+          </section>
+
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>2. How We Use Your Data</h2>
+            <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <li>To manage your account and app experience</li>
+              <li>To follow up on requests you submit (events, teams, next steps)</li>
+              <li>To send church communications relevant to you</li>
+            </ul>
+            <p>We do not sell, share, or use your data for advertising purposes.</p>
+          </section>
+
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>3. Data Storage</h2>
             <p>
-              We collect the information you provide during registration (name, email, phone number, age range, interests) and usage data to improve your experience.
+              Your data is stored securely via Supabase, a GDPR-compliant infrastructure provider. Data is encrypted at rest and in transit. Only authorised administrators of this app can access your information.
             </p>
           </section>
 
-          <section>
-            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>2. How We Use Your Data</h2>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>4. Your Rights</h2>
             <p>
-              Your data is used to provide and personalise the app experience, send you event reminders and church communications (with your consent), and improve our services.
+              You have the right to access, correct, or delete your personal data at any time. To make a request, send an email to{' '}
+              <a href="mailto:christianscorza@outlook.com" style={{ color: '#5b8cff' }}>christianscorza@outlook.com</a>{' '}
+              and we will process it within 30 days.
             </p>
           </section>
 
-          <section>
-            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>3. Data Storage &amp; Security</h2>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>5. Contact</h2>
             <p>
-              Your data is stored securely using AES-256 encryption at rest and TLS 1.3 in transit. Passwords are hashed using bcrypt and are never stored in plain text.
+              For any questions about this policy or your data, contact us at{' '}
+              <a href="mailto:madproduction@vivechurch.org" style={{ color: '#5b8cff' }}>madproduction@vivechurch.org</a>.
             </p>
           </section>
 
-          <section>
-            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>4. Your Rights (GDPR)</h2>
-            <p>
-              Under the General Data Protection Regulation (GDPR), you have the right to access, correct, or delete your personal data. You may also withdraw consent for marketing or profiling at any time from your profile settings.
-            </p>
-          </section>
-
-          <section>
-            <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', marginBottom: '8px' }}>5. Contact</h2>
-            <p>
-              For any data-related requests or questions, please contact us at privacy@welcomechurch.com.
-            </p>
-          </section>
-
-          <p style={{ fontSize: '13px', color: '#6e6e73', marginTop: '12px' }}>
-            Full policy text will be published here. This is a placeholder version.
-          </p>
         </div>
       </div>
     </div>
