@@ -162,6 +162,8 @@ function SplashScreen({ onStart, onLogin }) {
             borderRadius: 9999,
             border: 'none',
             cursor: 'pointer',
+            paddingLeft: 24,
+            paddingRight: 24,
           }}
         >
           {t('welcome.join_button')}
