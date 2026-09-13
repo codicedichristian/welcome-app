@@ -375,7 +375,7 @@ export default function HomePage() {
                 {ev.registration_required && (
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '20px', padding: '2px 8px', marginTop: ev.members_only ? '3px' : '5px' }}>
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="#fff5eb" stroke="none"><path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
-                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#fff5eb', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Iscrición · Registration</span>
+                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#fff5eb', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Inscripción · Registration</span>
                   </div>
                 )}
               </div>
