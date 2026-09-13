@@ -250,7 +250,9 @@ export default function HomePage() {
             {getGreeting(t)}
           </p>
           <p style={{ fontSize: '30px', fontWeight: '700', color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-            {(user?.firstName || 'friend').toLowerCase()}
+            {user?.firstName
+              ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1).toLowerCase()
+              : 'friend'}
           </p>
         </button>
 

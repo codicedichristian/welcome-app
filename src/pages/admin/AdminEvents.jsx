@@ -207,7 +207,7 @@ function EventForm({ initial, onSave, onCancel, saving }) {
             checked={form.registration_required}
             onChange={e => update({ registration_required: e.target.checked })}
           />
-          <span style={{ fontSize: '14px', color: '#38bdf8' }}>Solo su iscrición · Registration required</span>
+          <span style={{ fontSize: '14px', color: '#38bdf8' }}>Solo su inscripción · Registration required</span>
         </label>
       </Field>
 
