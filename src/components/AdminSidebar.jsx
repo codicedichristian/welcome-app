@@ -18,29 +18,34 @@ import {
   Star,
   Phone,
 } from 'lucide-react'
+import { getStoredUser } from '../lib/user.js'
 
 const NAV = [
-  { label: 'Dashboard',  to: '/admin',            icon: LayoutDashboard, end: true },
-  { label: 'Events',     to: '/admin/events',     icon: CalendarDays },
-  { label: 'Attendance', to: '/admin/attendance', icon: CheckSquare },
-  { label: 'News',       to: '/admin/news',       icon: Newspaper },
-  { label: 'Explore',    to: '/admin/explore',    icon: Compass },
-  { label: 'Midweek',    to: '/admin/midweek',    icon: Home },
-  { label: 'Teams',      to: '/admin/teams',      icon: Users2 },
-  { label: 'Join Team Req.', to: '/admin/join-requests', icon: Inbox },
-  { label: 'Bienvenido Req.', to: '/admin/connect-requests', icon: Heart },
-  { label: 'Midweek clicks', to: '/admin/midweek-contacts', icon: MessageSquare },
-  { label: 'Next Steps Req.', to: '/admin/nextsteps-requests', icon: Star },
-  { label: 'Event Contact Req.', to: '/admin/event-contact-requests', icon: Phone },
-  { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList },
-  { label: 'Sundays',    to: '/admin/sundays',    icon: Sun },
-  { label: 'Seasons',    to: '/admin/seasons',    icon: Layers },
-  { label: 'Members',    to: '/admin/members',    icon: Users },
-  { label: 'Messages',   to: '/admin/messages',   icon: MessageSquare },
+  { label: 'Dashboard',  to: '/admin',            icon: LayoutDashboard, end: true, key: 'dashboard' },
+  { label: 'Events',     to: '/admin/events',     icon: CalendarDays,    key: 'events' },
+  { label: 'Attendance', to: '/admin/attendance', icon: CheckSquare,     key: 'attendance' },
+  { label: 'News',       to: '/admin/news',       icon: Newspaper,       key: 'news' },
+  { label: 'Explore',    to: '/admin/explore',    icon: Compass,         key: 'explore' },
+  { label: 'Midweek',    to: '/admin/midweek',    icon: Home,            key: 'midweek' },
+  { label: 'Teams',      to: '/admin/teams',      icon: Users2,          key: 'teams' },
+  { label: 'Join Team Req.', to: '/admin/join-requests', icon: Inbox,    key: 'join-requests' },
+  { label: 'Bienvenido Req.', to: '/admin/connect-requests', icon: Heart, key: 'connect-requests' },
+  { label: 'Midweek clicks', to: '/admin/midweek-contacts', icon: MessageSquare, key: 'midweek-contacts' },
+  { label: 'Next Steps Req.', to: '/admin/nextsteps-requests', icon: Star, key: 'nextsteps-requests' },
+  { label: 'Event Contact Req.', to: '/admin/event-contact-requests', icon: Phone, key: 'event-contact-requests' },
+  { label: 'Schedules',  to: '/admin/schedules',  icon: ClipboardList,   key: 'schedules' },
+  { label: 'Sundays',    to: '/admin/sundays',    icon: Sun,             key: 'sundays' },
+  { label: 'Seasons',    to: '/admin/seasons',    icon: Layers,          key: 'seasons' },
+  { label: 'Members',    to: '/admin/members',    icon: Users,           key: 'members' },
+  { label: 'Messages',   to: '/admin/messages',   icon: MessageSquare,   key: 'messages' },
 ]
 
 export default function AdminSidebar() {
   const navigate = useNavigate()
+  const user = getStoredUser()
+  const visibleNav = user.adminTabs
+    ? NAV.filter((item) => user.adminTabs.includes(item.key))
+    : NAV
 
   return (
     <aside className="flex w-52 shrink-0 flex-col border-r border-border bg-surface">
@@ -49,7 +54,7 @@ export default function AdminSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 pb-2">
-        {NAV.map(({ label, to, icon: Icon, end }) => (
+        {visibleNav.map(({ label, to, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}

@@ -4,20 +4,24 @@ import { supabase } from '../lib/supabase.js'
 import { getStoredUser } from '../lib/user.js'
 
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/members', label: 'Members', icon: Users },
-  { to: '/admin/schedules', label: 'Schedules', icon: CalendarCheck },
-  { to: '/admin/sundays', label: 'Sundays', icon: Sun },
-  { to: '/admin/midweek', label: 'Midweek', icon: Home },
-  { to: '/admin/news', label: 'News', icon: Megaphone },
-  { to: '/admin/events', label: 'Events', icon: CalendarDays },
-  { to: '/admin/messages', label: 'Messages', icon: MessageSquare },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true, key: 'dashboard' },
+  { to: '/admin/members', label: 'Members', icon: Users, key: 'members' },
+  { to: '/admin/schedules', label: 'Schedules', icon: CalendarCheck, key: 'schedules' },
+  { to: '/admin/sundays', label: 'Sundays', icon: Sun, key: 'sundays' },
+  { to: '/admin/midweek', label: 'Midweek', icon: Home, key: 'midweek' },
+  { to: '/admin/news', label: 'News', icon: Megaphone, key: 'news' },
+  { to: '/admin/events', label: 'Events', icon: CalendarDays, key: 'events' },
+  { to: '/admin/messages', label: 'Messages', icon: MessageSquare, key: 'messages' },
 ]
 
 export default function AdminLayout() {
   const navigate = useNavigate()
   const user = getStoredUser()
   const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
+
+  const visibleNav = user.adminTabs
+    ? NAV_ITEMS.filter((item) => user.adminTabs.includes(item.key))
+    : NAV_ITEMS
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -66,7 +70,7 @@ export default function AdminLayout() {
       <div className="flex flex-col md:flex-row">
         <nav className="border-b border-border px-2 py-2 md:w-56 md:shrink-0 md:border-b-0 md:border-r md:px-3 md:py-4">
           <ul className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
-            {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+            {visibleNav.map(({ to, label, icon: Icon, end }) => (
               <li key={to} className="shrink-0 md:w-full">
                 <NavLink to={to} end={end} className={navLinkClass}>
                   <Icon size={18} />

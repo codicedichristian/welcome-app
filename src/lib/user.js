@@ -24,6 +24,7 @@ export function toStoredUser(profile, authId) {
     notifWhatsapp: profile.notif_whatsapp,
     notifApp: profile.notif_app,
     role: profile.role,
+    adminTabs: profile.admin_tabs ?? null,
     registeredAt: profile.created_at,
     appOpenCount: profile.app_open_count ?? 0,
   }
