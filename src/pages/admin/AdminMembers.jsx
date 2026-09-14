@@ -13,6 +13,7 @@ import {
   adminAssignMidweekGroup,
   adminRemoveMidweekGroup,
   adminGetMidweekGroups,
+  adminUpdateAdminTabs,
 } from '../../lib/api.js'
 import { formatShortDate } from '../../lib/format.js'
 import Spinner from '../../components/Spinner.jsx'
@@ -25,6 +26,23 @@ const ROLE_STYLE = {
   leader:  { color: '#5b8cff' },
   admin:   { color: '#f97316' },
 }
+
+const ALL_TABS = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'members', label: 'Members' },
+  { key: 'schedules', label: 'Schedules' },
+  { key: 'sundays', label: 'Sundays' },
+  { key: 'midweek', label: 'Midweek' },
+  { key: 'news', label: 'News' },
+  { key: 'events', label: 'Events' },
+  { key: 'messages', label: 'Messages' },
+  { key: 'join-requests', label: 'Join Team Req.' },
+  { key: 'connect-requests', label: 'Bienvenido Req.' },
+  { key: 'midweek-contacts', label: 'Midweek Clicks' },
+  { key: 'nextsteps-requests', label: 'Next Steps Req.' },
+  { key: 'event-contact-requests', label: 'Event Contact Req.' },
+  { key: 'attendance', label: 'Attendance' },
+]
 
 function toCsv(members) {
   const headers = ['First name', 'Last name', 'Email', 'Phone', 'Age range', 'Role', 'Joined']
@@ -127,7 +145,7 @@ function AreaDropdown({ areas, onSelect }) {
   )
 }
 
-function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdate }) {
+function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdate, setTabsTarget }) {
   const [expanded, setExpanded] = useState(false)
   const [roleSaving, setRoleSaving] = useState(false)
 
@@ -382,10 +400,136 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
                 <p className="mt-0.5 text-primary">{formatShortDate(member.created_at?.slice(0, 10))}</p>
               </div>
             </div>
+
+            {(member.role === 'admin' || member.role === 'leader') && (
+              <button
+                onClick={() => setTabsTarget(member)}
+                style={{
+                  marginTop: 12,
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: '1px solid #7c3aed',
+                  background: 'transparent',
+                  color: '#a78bfa',
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                Manage admin tabs
+              </button>
+            )}
           </td>
         </tr>
       )}
     </>
+  )
+}
+
+function TabsSheet({ member, onClose, onSaved }) {
+  // null admin_tabs means superadmin (all tabs). We represent that as all keys selected.
+  const allKeys = ALL_TABS.map((t) => t.key)
+  const [selected, setSelected] = useState(
+    member.admin_tabs === null ? allKeys : member.admin_tabs,
+  )
+  const [saving, setSaving] = useState(false)
+
+  function toggle(key) {
+    setSelected((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    )
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      // If all tabs selected, save null (superadmin = all)
+      const value =
+        selected.length === allKeys.length ? null : selected.length === 0 ? [] : selected
+      await adminUpdateAdminTabs(member.id, value)
+      onSaved(member.id, value)
+      onClose()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return createPortal(
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200 }}
+      />
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: '#1a1a1a',
+          borderRadius: '20px 20px 0 0',
+          padding: '24px 20px 40px',
+          zIndex: 201,
+          maxHeight: '80vh',
+          overflowY: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 17, color: '#fff' }}>
+            Admin tabs — {member.first_name} {member.last_name}
+          </h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 22, cursor: 'pointer' }}>×</button>
+        </div>
+
+        <p style={{ color: '#888', fontSize: 13, marginBottom: 16 }}>
+          {member.admin_tabs === null
+            ? 'Superadmin: currently sees all tabs.'
+            : `Restricted to ${member.admin_tabs.length} tab(s).`}
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+          {ALL_TABS.map(({ key, label }) => (
+            <label
+              key={key}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ddd', fontSize: 15, cursor: 'pointer' }}
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(key)}
+                onChange={() => toggle(key)}
+                style={{ width: 18, height: 18, accentColor: '#7c3aed', cursor: 'pointer' }}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setSelected(allKeys)}
+            style={{
+              flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid #555',
+              background: 'transparent', color: '#aaa', fontSize: 14, cursor: 'pointer',
+            }}
+          >
+            Reset (all tabs)
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              flex: 2, padding: '10px 0', borderRadius: 10, border: 'none',
+              background: '#7c3aed', color: '#fff', fontSize: 15, fontWeight: 600,
+              cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </>,
+    document.body,
   )
 }
 
@@ -396,6 +540,7 @@ export default function AdminMembers() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
+  const [tabsTarget, setTabsTarget] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -491,12 +636,23 @@ export default function AdminMembers() {
                     midweekGroups={midweekGroups}
                     takenGroupIds={takenGroupIds}
                     onUpdate={onUpdate}
+                    setTabsTarget={setTabsTarget}
                   />
                 ))
               )}
             </tbody>
           </table>
         </div>
+      )}
+
+      {tabsTarget && (
+        <TabsSheet
+          member={tabsTarget}
+          onClose={() => setTabsTarget(null)}
+          onSaved={(id, value) =>
+            setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, admin_tabs: value } : m)))
+          }
+        />
       )}
     </div>
   )

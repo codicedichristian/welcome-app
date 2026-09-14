@@ -1452,3 +1452,11 @@ export async function trackMidweekContact({ userId, firstName, lastName, email, 
     group_host: groupHost,
   })
 }
+
+export async function adminUpdateAdminTabs(userId, tabs) {
+  const { error } = await supabase
+    .from('users')
+    .update({ admin_tabs: tabs })
+    .eq('id', userId)
+  if (error) throw error
+}
