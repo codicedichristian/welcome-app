@@ -343,6 +343,11 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
           )}
         </td>
 
+        {/* Joined */}
+        <td className="px-4 py-3 text-xs text-zinc-500 whitespace-nowrap">
+          {member.created_at ? formatShortDate(member.created_at.slice(0, 10)) : '—'}
+        </td>
+
         {/* Actions */}
         <td className="px-4 py-3">
           <button
@@ -358,7 +363,7 @@ function MemberRow({ member, serviceAreas, midweekGroups, takenGroupIds, onUpdat
 
       {expanded && (
         <tr className="border-b border-border bg-bg last:border-b-0">
-          <td colSpan={8} className="px-4 py-3">
+          <td colSpan={9} className="px-4 py-3">
             <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
               <div>
                 <p className="text-zinc-500">Phone</p>
@@ -466,6 +471,7 @@ export default function AdminMembers() {
                 <th className="px-4 py-3 font-normal">Leading</th>
                 <th className="px-4 py-3 font-normal">Midweek leader</th>
                 <th className="px-4 py-3 font-normal">Midweek group</th>
+                <th className="px-4 py-3 font-normal">Joined</th>
                 <th className="px-4 py-3 font-normal"></th>
               </tr>
             </thead>
