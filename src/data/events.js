@@ -81,6 +81,22 @@ export const events = [
     end_time: null,
     image_url: 'https://images.unsplash.com/photo-1607748862156-7c548e7e98f4?w=800&q=80',
   },
+  {
+    id: 'next-steps',
+    title: 'Next Steps',
+    type: 'next_steps',
+    color: 'orange',
+    icon: 'ArrowRight',
+    description:
+      'Taking your next step in faith and community. Sign up and someone from our team will reach out to walk it with you.',
+    location: null,
+    audience: 'Open to everyone',
+    recurring: null,
+    event_date: null,
+    start_time: null,
+    end_time: null,
+    image_url: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=800&q=80',
+  },
 ]
 
 export function getEventById(id) {

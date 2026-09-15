@@ -8,6 +8,7 @@ import { rsvpEvent, deleteRsvp, checkRsvp } from '../lib/api.js'
 import { supabase } from '../lib/supabase.js'
 import { useUser } from '../lib/UserContext.js'
 import { td } from '../utils/td.js'
+import NextStepsSignUpSheet from '../components/NextStepsSignUpSheet.jsx'
 
 function EventNotice({ icon, title, message }) {
   return (
@@ -246,10 +247,13 @@ export default function EventDetailPage() {
   const fallbackEvent = getEventById(eventId)
   const event = location.state?.event ?? (fallbackEvent ? normalizeEvent(fallbackEvent) : null)
   const isMidweek = event?.type === 'midweek' || event?.id === 'midweek'
+  const isNextSteps = event?.type === 'next_steps'
 
   const [going, setGoing] = useState(false)
   const [showCancelSheet, setShowCancelSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false)
+  const [showNextStepsSheet, setShowNextStepsSheet] = useState(false)
+  const [nextStepsSubmitted, setNextStepsSubmitted] = useState(() => !!localStorage.getItem('nextsteps_submitted'))
 
   useEffect(() => {
     if (!user?.id || !event?.id) return
@@ -405,6 +409,22 @@ export default function EventDetailPage() {
               >
                 <span>Quiero asistir</span>
               </button>
+            ) : isNextSteps ? (
+              <button
+                type="button"
+                onClick={nextStepsSubmitted ? undefined : () => setShowNextStepsSheet(true)}
+                disabled={nextStepsSubmitted}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[16px] font-medium transition-colors ${
+                  nextStepsSubmitted ? 'bg-accent-green text-bg' : 'bg-primary text-bg'
+                }`}
+              >
+                {nextStepsSubmitted && <Check size={18} />}
+                <span>
+                  {nextStepsSubmitted
+                    ? '✓ ' + (i18n.language === 'en' ? 'Request sent!' : '¡Solicitud enviada!')
+                    : (i18n.language === 'en' ? 'I want to sign up' : 'Quiero inscribirme')}
+                </span>
+              </button>
             ) : (
               <>
                 {(!event.cta_type || event.cta_type === 'rsvp') && (
@@ -469,6 +489,14 @@ export default function EventDetailPage() {
 
       {showContactSheet && (
         <ContactSheet event={event} onClose={() => setShowContactSheet(false)} />
+      )}
+
+      {showNextStepsSheet && (
+        <NextStepsSignUpSheet
+          lang={i18n.language}
+          onClose={() => setShowNextStepsSheet(false)}
+          onSubmitted={() => setNextStepsSubmitted(true)}
+        />
       )}
     </>
   )
