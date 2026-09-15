@@ -12,7 +12,7 @@ import ImageUploader from '../../components/admin/ImageUploader.jsx'
 import { deeplTranslate } from '../../lib/deepl.js'
 import { td } from '../../utils/td.js'
 
-const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special']
+const TYPE_OPTIONS = ['sunday', 'youth', 'midweek', 'prayer', 'special', 'next_steps']
 const AUDIENCE_OPTIONS = ['Open to everyone', 'Members only', 'Youth', 'Women', 'Men', 'Leaders']
 const LOCATION_TYPES = [
   { value: 'in_person', label: 'In person' },
